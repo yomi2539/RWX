@@ -1,0 +1,3 @@
+User-agent:*
+Allow:/
+Sitemap:https://rustplanet.netlify.app/sitemap.xml

@@ -1,0 +1,17 @@
+[build]
+  base = "/"
+  # Build command for the VitePress site
+  command = "npm run docs:build"
+  # VitePress output directory
+  publish = "docs/.vitepress/dist"
+
+[dev]
+  # Local dev command (used with Netlify Dev if desired)
+  command = "npm run docs:dev"
+  port = 5173
+
+[[redirects]]
+from = "/zh/*"
+to = "/:splat"
+status = 301
+force = true
