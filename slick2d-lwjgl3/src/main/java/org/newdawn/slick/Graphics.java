@@ -14,6 +14,7 @@ import org.newdawn.slick.util.Log;
 import java.nio.ByteBuffer;
 import java.nio.DoubleBuffer;
 import java.nio.FloatBuffer;
+import java.nio.IntBuffer;
 import java.security.AccessController;
 import java.security.PrivilegedAction;
 import java.util.ArrayList;
@@ -137,6 +138,12 @@ public class Graphics {
      * Buffer used for setting the world clip
      */
     private DoubleBuffer worldClip = BufferUtils.createDoubleBuffer(4);
+
+    /**
+     * The current OpenGL viewport. Unlike {@link #screenWidth}/{@link #screenHeight}, this is
+     * expressed in physical framebuffer pixels.
+     */
+    private final IntBuffer viewport = BufferUtils.createIntBuffer(4);
 
     /**
      * The buffer used to read a screen pixel
@@ -827,7 +834,24 @@ public class Graphics {
             clip.setBounds(x, y, width, height);
         }
 
-        GL.glScissor(x, screenHeight - y - height, width, height);
+        // Slick coordinates are logical screen coordinates, while glScissor always receives
+        // physical framebuffer coordinates. On a HiDPI AWT canvas the viewport is larger than
+        // screenWidth/screenHeight; passing the logical values clips a shifted, undersized area.
+        // The result is especially visible on the right-side command/build panel, whose entire
+        // draw region can be clipped to the cleared (black) framebuffer.
+        viewport.clear();
+        GL.glGetInteger(SGL.GL_VIEWPORT, viewport);
+        int viewportX = viewport.get(0);
+        int viewportY = viewport.get(1);
+        int viewportWidth = viewport.get(2);
+        int viewportHeight = viewport.get(3);
+        float scaleX = screenWidth > 0 ? (float) viewportWidth / screenWidth : 1.0f;
+        float scaleY = screenHeight > 0 ? (float) viewportHeight / screenHeight : 1.0f;
+        int scissorX = viewportX + Math.round(x * scaleX);
+        int scissorY = viewportY + viewportHeight - Math.round((y + height) * scaleY);
+        int scissorWidth = Math.round(width * scaleX);
+        int scissorHeight = Math.round(height * scaleY);
+        GL.glScissor(scissorX, scissorY, scissorWidth, scissorHeight);
         postdraw();
     }
 

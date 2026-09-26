@@ -68,6 +68,12 @@ public interface SGL {
     public static final int GL_SCISSOR_TEST = GL11.GL_SCISSOR_TEST;
 
     /**
+     * OpenGL viewport rectangle. Its dimensions are framebuffer pixels, which can differ from
+     * Slick's logical display size on HiDPI screens.
+     */
+    public static final int GL_VIEWPORT = GL11.GL_VIEWPORT;
+
+    /**
      * OpenGL Enum - @url http://www.opengl.org/documentation
      */
     public static final int GL_MODULATE = GL11.GL_MODULATE;

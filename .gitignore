@@ -46,3 +46,13 @@ bin/
 *.jks
 *.keystore
 *.p12
+
+.httpCache
+replays
+saves
+logs
+cache
+p2p.toml 
+preferences.toml
+commonMain
+desktopMain
