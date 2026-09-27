@@ -83,7 +83,7 @@ if (!result.accepted) {
 ## 确定性规则
 
 - 只在单位监听器、调度任务、同步队伍动作等确定性回调中提交影响模拟的命令
-- 不要从 Renderer 或 Kool UI 绘制代码直接提交命令
+- 不要从 Renderer 或 Compose HUD / 窗口组合代码直接提交命令
 - 对相同模拟状态必须按固定顺序生成相同请求
 - 接近使用点时通过 `api.unitWorld` 重新解析单位，已保存引用可能失效
 - `api.commands` 不应用 AI 控制范围或 `AiActionSpaceDefinition`，这些限制只属于 `AiBehavior.submitActions()`

@@ -58,7 +58,7 @@ export default withMermaid(defineConfig({
                        { text: 'Content API', link: '/modding/jvm-content' },
                        { text: 'Rendering and Effects', link: '/modding/jvm-rendering' },
                        { text: 'Game Runtime', link: '/modding/jvm-runtime' },
-                       { text: 'Kool UI and HUD', link: '/modding/jvm-ui' },
+                        { text: 'Compose UI and HUD', link: '/modding/jvm-ui' },
                        {text: 'AI', link: '/modding/jvm-ai'}
                      ]
                    }
@@ -129,7 +129,7 @@ export default withMermaid(defineConfig({
                     {text: '内容 API', link: '/modding/jvm-content'},
                     {text: '渲染与效果', link: '/modding/jvm-rendering'},
                     {text: '游戏运行时', link: '/modding/jvm-runtime'},
-                    {text: 'Kool UI 与 HUD', link: '/modding/jvm-ui'},
+                    {text: 'Compose UI 与 HUD', link: '/modding/jvm-ui'},
                     {text: 'AI', link: '/modding/jvm-ai'}
                   ]
                 }

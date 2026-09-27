@@ -29,14 +29,6 @@ RWX 支持：
 | 区域控制 | 可用                              | [区域控制](./area-control) |
 | 地图联通 | 可用                              | [地图联通](./linked-maps)  |
 
-## 从源码构建
-
-1. 安装 JDK 25。
-2. 克隆 [RWX](https://github.com/yomi2539/RWX)。
-3. 使用仓库 Gradle 任务构建 Desktop / Android。
-4. 对外分发时优先对齐 CI 流程。
-
-具体任务名会随 Gradle 脚本演进，以 CI 为准。
 
 ## 下一步
 

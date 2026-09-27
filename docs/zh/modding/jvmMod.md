@@ -11,7 +11,7 @@ dependencies {
 }
 ```
 
-Kotlin、`mod-api` 和 Kool 由 RWX 在运行时提供，不要打进 JAR。
+Kotlin、`mod-api` 和 Compose 运行时由宿主在运行时提供，不要打进 JAR。
 
 ## mod.toml
 
@@ -104,7 +104,7 @@ interface Api {
 | `unitWorld`    | 已接入   | 确定性单位快照、查询、创建、Action 与传送                           |
 | `commands`     | 已接入   | 向实时单位提交联机同步的原生命令                                    |
 | `graphics`     | 部分接入 | 纹理、各类渲染器、单位 Shader 已接入；通用动画和 Render Pass 为占位 |
-| `ui`           | 已接入   | 游戏内菜单、Kool 窗口与 HUD、消息和世界坐标选择                     |
+| `ui`           | 已接入   | 游戏内菜单、Compose 窗口与 HUD、消息和世界坐标选择                  |
 | `audio`        | 部分接入 | 声音注册和播放已接入；音乐注册为占位                                |
 | `localization` | 已接入   | 运行时词条注册、查找和参数替换                                      |
 | `ai`           | 已接入   | AI 玩家配置、观察帧和命令提交                                       |

@@ -78,7 +78,8 @@ Actions 和扩展属性。
 - `update()` — 单位已摧毁或引用失效时返回 `false`；生命限制在最大生命以内，建造进度保持在 `0f..1f`
 
 > **注意**
-> `UnitWorld` 的查询和修改只能从 `UnitEventHandler`、`ModTask`、队伍动作处理器等确定性模拟回调调用，不能从 Kool UI content
+> `UnitWorld` 的查询和修改只能从 `UnitEventHandler`、`ModTask`、队伍动作处理器等确定性模拟回调调用，不能从 Compose HUD /
+> 窗口组合
 > 或 Renderer 回调调用。联机各端必须从相同的同步事件执行相同操作。
 
 ## Audio

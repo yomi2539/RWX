@@ -24,7 +24,7 @@ features:
     details: 同一套开源栈，支持 Windows、Linux、macOS 与 Android。
   - icon: 🌐
     title: P2P 联机
-    details: WebRTC DataChannel 传输，配合 libp2p 房间发现与信令。
+    details: WebRTC DataChannel 传输，配合 HTTP 大厅服务做房间发现与信令。
     link: /tutorial/p2p
     linkText: 了解联机机制
   - icon: 🏁
