@@ -239,7 +239,7 @@ STUN 只能帮助多数普通 NAT 打洞，不能保证所有网络可用。TURN
 
 `relayPeers` 和 `bootstrapRelays` 可以填写 relay multiaddr。为空时，RWX 会尝试把已经连接的 peer 作为 relay candidate。
 
-`enableDcutr` 是为后续兼容预留的配置。当前内置的 `jvm-libp2p 1.2.0` 没有 DCUtR 协议实现，启用后只会输出日志警告。
+`enableDcutr` 是预留配置。当前内置的 `jvm-libp2p 1.2.0` 没有 DCUtR 协议实现，启用后只会输出日志警告。
 
 
 ## EasyTier 集成
