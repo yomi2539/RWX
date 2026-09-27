@@ -200,7 +200,7 @@ public class InGameActivity extends TaskQueueActivity {
                     @Override // java.lang.Runnable
                     public void run() {
                         if (AppFrameworkUtils.requestStoragePermission(InGameActivity.this)) {
-                            InGameActivity.this.showExportMapDialog(null);
+                            InGameActivity.this.showSaveGameDialog(null);
                         }
                     }
                 };
@@ -230,7 +230,7 @@ public class InGameActivity extends TaskQueueActivity {
                 break;
             case 18:
                 if (AppFrameworkUtils.requestStoragePermission((Activity) this)) {
-                    showSaveGameDialog(null);
+                    showExportMapDialog(null);
                 }
                 break;
             case 19:
@@ -317,7 +317,7 @@ public class InGameActivity extends TaskQueueActivity {
 
     /* JADX INFO: Access modifiers changed from: private */
     /* JADX INFO: renamed from: e */
-    public void showSaveGameDialog(String str) {
+    public void showExportMapDialog(String str) {
         final GameEngine gameEngine = GameEngine.getInstance();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Export Map");
@@ -340,7 +340,7 @@ public class InGameActivity extends TaskQueueActivity {
                     builder2.setPositiveButton("Ok", new DialogInterface.OnClickListener() { // from class: com.corrodinggames.rts.appFramework.g.4.1
                         @Override // android.content.DialogInterface.OnClickListener
                         public void onClick(DialogInterface dialogInterface2, int i2) {
-                            InGameActivity.this.showSaveGameDialog(string);
+                            InGameActivity.this.showExportMapDialog(string);
                         }
                     });
                     builder2.show();
@@ -359,7 +359,7 @@ public class InGameActivity extends TaskQueueActivity {
 
     /* JADX INFO: Access modifiers changed from: private */
     /* JADX INFO: renamed from: f */
-    public void showExportMapDialog(String str) {
+    public void showSaveGameDialog(String str) {
         GameEngine gameEngine = GameEngine.getInstance();
         AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Save Game");
@@ -382,7 +382,7 @@ public class InGameActivity extends TaskQueueActivity {
                     builder2.setPositiveButton("Ok", new DialogInterface.OnClickListener() { // from class: com.corrodinggames.rts.appFramework.g.6.1
                         @Override // android.content.DialogInterface.OnClickListener
                         public void onClick(DialogInterface dialogInterface2, int i2) {
-                            InGameActivity.this.showExportMapDialog(string);
+                            InGameActivity.this.showSaveGameDialog(string);
                         }
                     });
                     builder2.show();

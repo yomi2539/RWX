@@ -919,9 +919,9 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
         if (customProjectileTemplate.lightColor != -1) {
             boolean z = false;
             Effect effect = projectile.aP;
-            if (effect != null && effect.parentObject == projectile && effect.d && effect != null) {
-                if (effect.V < 150.0f) {
-                    effect.V = 200.0f;
+            if (effect != null && effect.parentObject == projectile && effect.isLight && effect != null) {
+                if (effect.lifeTimer < 150.0f) {
+                    effect.lifeTimer = 200.0f;
                 }
                 z = true;
             }
@@ -1645,32 +1645,32 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
                             this.damageEffectTimer2 = Utility.randomFloatInRange(1.0f, 3.0f);
                             Effect effectCreateEffectInternal = gameEngine.effectManager.createEffectInternal(this.posX, this.posY, this.posZ, EffectType.custom, false, EffectQuality.low);
                             if (effectCreateEffectInternal != null) {
-                                effectCreateEffectInternal.aq = 0;
-                                effectCreateEffectInternal.ap = 0;
-                                effectCreateEffectInternal.ar = (short) 2;
+                                effectCreateEffectInternal.stripIndex = 0;
+                                effectCreateEffectInternal.frameIndex = 0;
+                                effectCreateEffectInternal.drawLayer = (short) 2;
                                 effectCreateEffectInternal.fadeIn = true;
-                                effectCreateEffectInternal.E = 0.5f;
-                                effectCreateEffectInternal.W = 60.0f;
-                                effectCreateEffectInternal.V = 60.0f;
-                                effectCreateEffectInternal.G = 0.9f;
-                                effectCreateEffectInternal.F = 1.2f;
-                                effectCreateEffectInternal.as = false;
-                                effectCreateEffectInternal.P = 0.0f;
-                                effectCreateEffectInternal.Q = 0.0f;
+                                effectCreateEffectInternal.alpha = 0.5f;
+                                effectCreateEffectInternal.lifeMax = 60.0f;
+                                effectCreateEffectInternal.lifeTimer = 60.0f;
+                                effectCreateEffectInternal.scaleFrom = 0.9f;
+                                effectCreateEffectInternal.scaleTo = 1.2f;
+                                effectCreateEffectInternal.shadow = false;
+                                effectCreateEffectInternal.velocityX = 0.0f;
+                                effectCreateEffectInternal.velocityY = 0.0f;
                             }
                         }
                         if (this.damageEffectTimer > 7.0f) {
                             this.damageEffectTimer = 0.0f;
                             Effect effectCreateEffectInternal2 = gameEngine.effectManager.createEffectInternal(this.posX, this.posY, this.posZ, EffectType.custom, false, EffectQuality.verylow);
                             if (effectCreateEffectInternal2 != null) {
-                                EffectEmitter.b(effectCreateEffectInternal2, true);
-                                effectCreateEffectInternal2.I = this.posX;
-                                effectCreateEffectInternal2.J = this.posY;
-                                effectCreateEffectInternal2.K = this.posZ;
-                                effectCreateEffectInternal2.P += Utility.randomFloatInRange(-0.1f, 0.1f) + this.velocityX;
-                                effectCreateEffectInternal2.Q += Utility.randomFloatInRange(-0.1f, 0.1f) + this.velocityY;
-                                effectCreateEffectInternal2.I += Utility.randomFloatInRange(-4.0f, 4.0f);
-                                effectCreateEffectInternal2.J += Utility.randomFloatInRange(-4.0f, 4.0f);
+                                EffectEmitter.setupAlternateFireEffect(effectCreateEffectInternal2, true);
+                                effectCreateEffectInternal2.posX = this.posX;
+                                effectCreateEffectInternal2.posY = this.posY;
+                                effectCreateEffectInternal2.posZ = this.posZ;
+                                effectCreateEffectInternal2.velocityX += Utility.randomFloatInRange(-0.1f, 0.1f) + this.velocityX;
+                                effectCreateEffectInternal2.velocityY += Utility.randomFloatInRange(-0.1f, 0.1f) + this.velocityY;
+                                effectCreateEffectInternal2.posX += Utility.randomFloatInRange(-4.0f, 4.0f);
+                                effectCreateEffectInternal2.posY += Utility.randomFloatInRange(-4.0f, 4.0f);
                             }
                         }
                     }
@@ -1718,8 +1718,8 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
                     if (this.t > 30.0f) {
                         this.t = 0.0f;
                         if (isVisibleOnScreen() && (effectCreateSmokeEffect = GameEngine.getInstance().effectManager.createSmokeEffect(this.posX, this.posY, this.posZ, this.rotationSpeed)) != null) {
-                            effectCreateSmokeEffect.P = 0.0f;
-                            effectCreateSmokeEffect.Q = -0.1f;
+                            effectCreateSmokeEffect.velocityX = 0.0f;
+                            effectCreateSmokeEffect.velocityY = -0.1f;
                         }
                     }
                 }
@@ -1901,8 +1901,8 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
                             }
                             Effect effectCreateMuzzleFlash = gameEngine2.effectManager.createMuzzleFlash(this.posX + (Utility.fastCos(this.rotationSpeed + 180.0f + f7) * (this.radius - 1.0f)), this.posY + (Utility.fastSin(this.rotationSpeed + 180.0f + f7) * (this.radius - 1.0f)), this.posZ, f8 + Utility.randomFloatInRange(-7.0f, 7.0f), 0);
                             if (effectCreateMuzzleFlash != null) {
-                                effectCreateMuzzleFlash.P += Utility.randomFloatInRange(-0.15f, 0.15f);
-                                effectCreateMuzzleFlash.Q += Utility.randomFloatInRange(-0.15f, 0.15f);
+                                effectCreateMuzzleFlash.velocityX += Utility.randomFloatInRange(-0.15f, 0.15f);
+                                effectCreateMuzzleFlash.velocityY += Utility.randomFloatInRange(-0.15f, 0.15f);
                             }
                             i4++;
                         }
@@ -2024,24 +2024,24 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
                             this.damageEffectTimer2 = 0.0f;
                             Effect effectCreateEffectInternal3 = gameEngine2.effectManager.createEffectInternal(this.posX + Utility.randomFloatInRange(-this.radius, this.radius), this.posY + Utility.randomFloatInRange(-this.radius, this.radius), this.posZ, EffectType.custom, false, EffectQuality.high);
                             if (effectCreateEffectInternal3 != null) {
-                                effectCreateEffectInternal3.aq = 0;
-                                effectCreateEffectInternal3.ap = 0;
-                                effectCreateEffectInternal3.ar = (short) 2;
+                                effectCreateEffectInternal3.stripIndex = 0;
+                                effectCreateEffectInternal3.frameIndex = 0;
+                                effectCreateEffectInternal3.drawLayer = (short) 2;
                                 effectCreateEffectInternal3.fadeIn = true;
                                 effectCreateEffectInternal3.fadeOut = true;
                                 effectCreateEffectInternal3.fadeDuration = 40.0f;
-                                effectCreateEffectInternal3.an = true;
-                                effectCreateEffectInternal3.P = 0.1f;
-                                effectCreateEffectInternal3.R = 0.0f;
+                                effectCreateEffectInternal3.isCentered = true;
+                                effectCreateEffectInternal3.velocityX = 0.1f;
+                                effectCreateEffectInternal3.velocityZ = 0.0f;
                                 effectCreateEffectInternal3.useGravity = true;
-                                effectCreateEffectInternal3.E = 0.4f;
-                                effectCreateEffectInternal3.W = 380.0f;
-                                effectCreateEffectInternal3.V = effectCreateEffectInternal3.W;
-                                effectCreateEffectInternal3.G = 0.8f;
-                                effectCreateEffectInternal3.F = 1.7f;
-                                effectCreateEffectInternal3.as = false;
-                                effectCreateEffectInternal3.P += Utility.randomFloatInRange(-0.04f, 0.04f);
-                                effectCreateEffectInternal3.Q += Utility.randomFloatInRange(-0.04f, 0.04f);
+                                effectCreateEffectInternal3.alpha = 0.4f;
+                                effectCreateEffectInternal3.lifeMax = 380.0f;
+                                effectCreateEffectInternal3.lifeTimer = effectCreateEffectInternal3.lifeMax;
+                                effectCreateEffectInternal3.scaleFrom = 0.8f;
+                                effectCreateEffectInternal3.scaleTo = 1.7f;
+                                effectCreateEffectInternal3.shadow = false;
+                                effectCreateEffectInternal3.velocityX += Utility.randomFloatInRange(-0.04f, 0.04f);
+                                effectCreateEffectInternal3.velocityY += Utility.randomFloatInRange(-0.04f, 0.04f);
                             }
                         }
                     }
@@ -2061,10 +2061,10 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
                     this.frameAnimationDelay = 0.0f;
                 }
                 if (z5 && (effectCreateSmallExplosion = gameEngine2.effectManager.createSmallExplosion(this.posX, this.posY, this.posZ, 0)) != null) {
-                    effectCreateSmallExplosion.G = 0.8f;
-                    effectCreateSmallExplosion.F = 1.4f;
-                    effectCreateSmallExplosion.V = 60.0f;
-                    effectCreateSmallExplosion.W = effectCreateSmallExplosion.V;
+                    effectCreateSmallExplosion.scaleFrom = 0.8f;
+                    effectCreateSmallExplosion.scaleTo = 1.4f;
+                    effectCreateSmallExplosion.lifeTimer = 60.0f;
+                    effectCreateSmallExplosion.lifeMax = effectCreateSmallExplosion.lifeTimer;
                 }
             }
         }
@@ -4291,7 +4291,7 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
                     }
                     String str2 = "autoTrigger fired on: " + getUnitDebugName() + " details: " + customUnitCondition.logicBoolean.getDebugDetails(this);
                     GameEngine.log(str2);
-                    gameEngine.gameUI.warLogDisplay.a(str2, 2000);
+                    gameEngine.gameUI.warLogDisplay.logMessage(str2, 2000);
                 }
                 ec.x = this.posX;
                 ec.y = this.posY;

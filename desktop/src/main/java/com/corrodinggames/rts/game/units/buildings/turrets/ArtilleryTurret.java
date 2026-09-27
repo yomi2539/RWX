@@ -87,8 +87,8 @@ class ArtilleryTurret extends TurretImplementation {
         gameEngine.effectManager.createLightEffect(projectileA, -1118482);
         Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(pointFC.x, pointFC.y, this.turretFactory.posZ, -1118482);
         if (effectCreateLightEffect != null) {
-            effectCreateLightEffect.V = 15.0f;
-            effectCreateLightEffect.W = effectCreateLightEffect.V;
+            effectCreateLightEffect.lifeTimer = 15.0f;
+            effectCreateLightEffect.lifeMax = effectCreateLightEffect.lifeTimer;
         }
     }
 

@@ -1438,7 +1438,7 @@ public final class SlickGraphicsEngine implements GraphicsEngine {
 
     @Override // com.corrodinggames.rts.gameFramework.graphics.GraphicsEngine
     public void a(GraphicsOperation graphicsOperation) {
-        graphicsOperation.a(this);
+        graphicsOperation.draw(this);
     }
 
     @Override // com.corrodinggames.rts.gameFramework.graphics.GraphicsEngine

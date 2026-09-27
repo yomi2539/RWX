@@ -63,7 +63,7 @@ public class SetRallyAction extends AbstractUnitAction {
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction
     /* JADX INFO: renamed from: j */
     public Texture getIconTexture() {
-        return GameEngine.getInstance().gameUI.bj;
+        return GameEngine.getInstance().gameUI.iconRallyTexture;
     }
 
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction

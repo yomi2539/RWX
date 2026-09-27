@@ -408,7 +408,7 @@ public final class AIController extends PlayerTeam {
         gameOutputStream.writeInt(this.aiBehaviors.size);
         for (int i2 = 0; i2 < this.aiBehaviors.size; i2++) {
             AIBehavior aIBehavior = (AIBehavior) this.aiBehaviors.get(i2);
-            gameOutputStream.writeEnumOrdinal(aIBehavior.a());
+            gameOutputStream.writeEnumOrdinal(aIBehavior.getBehaviorType());
             aIBehavior.a(gameOutputStream);
         }
         gameOutputStream.writeMagicShort();
@@ -507,8 +507,8 @@ public final class AIController extends PlayerTeam {
             this.aiBehaviors.clear();
             int i4 = gameInputStream.readInt();
             for (int i5 = 0; i5 < i4; i5++) {
-                AIBehavior a = ((AIBehaviorType) gameInputStream.readEnumOrdinalOrNull(AIBehaviorType.class)).getA();
-                a.a(gameInputStream);
+                AIBehavior a = ((AIBehaviorType) gameInputStream.readEnumOrdinalOrNull(AIBehaviorType.class)).createBehavior();
+                a.readFromInputStream(gameInputStream);
                 addAIBehavior(a);
             }
             gameInputStream.a("ai-c e");
@@ -552,7 +552,7 @@ public final class AIController extends PlayerTeam {
             if (aIStrategyNode instanceof BaseZone) {
                 BaseZone baseZone = (BaseZone) aIStrategyNode;
                 this.baseCount++;
-                if (baseZone.u() >= 2) {
+                if (baseZone.getNumberOfExtractors() >= 2) {
                     this.advancedBaseCount++;
                 }
                 if (baseZone.hasResources) {
@@ -564,8 +564,8 @@ public final class AIController extends PlayerTeam {
                 if (!unitGroup.isActive) {
                     if (unitGroup.isReadyToAct) {
                         this.attackGroupCount++;
-                        if (!unitGroup.isEngaging && !unitGroup.d()) {
-                            if (unitGroup.B) {
+                        if (!unitGroup.isEngaging && !unitGroup.isFull()) {
+                            if (unitGroup.isSeaGroup) {
                                 this.airAttackGroupCount++;
                             } else {
                                 this.landAttackGroupCount++;
@@ -573,16 +573,16 @@ public final class AIController extends PlayerTeam {
                         }
                     } else {
                         this.builderGroupCount++;
-                        if (unitGroup.d()) {
+                        if (unitGroup.isFull()) {
                             this.waterBuilderGroupCount++;
                         }
-                        this.totalBuilderUnits += unitGroup.l();
+                        this.totalBuilderUnits += unitGroup.getUnitCount();
                     }
                 }
             }
             if (aIStrategyNode instanceof TransporterGroup) {
                 this.transporterGroupCount++;
-                if (((AIUnitGroupBase) aIStrategyNode).l() > 0) {
+                if (((AIUnitGroupBase) aIStrategyNode).getUnitCount() > 0) {
                     this.activeTransporterGroupCount++;
                 }
             }
@@ -1001,7 +1001,7 @@ public final class AIController extends PlayerTeam {
     /* JADX INFO: renamed from: a */
     public int applyAIBuilder(UnitType unitType, boolean z, UnitFilterMode unitFilterMode) {
         boolean zJ = unitType.isBuildingUnit();
-        Integer numA = this.buildPreferenceCache.a(zJ, unitType, z);
+        Integer numA = this.buildPreferenceCache.getCachedCount(zJ, unitType, z);
         if (numA != null) {
             return numA.intValue();
         }
@@ -1026,7 +1026,7 @@ public final class AIController extends PlayerTeam {
                 }
             }
         }
-        this.buildPreferenceCache.a(zJ, unitType, z, Integer.valueOf(iH));
+        this.buildPreferenceCache.putCachedCount(zJ, unitType, z, Integer.valueOf(iH));
         return iH;
     }
 
@@ -1035,7 +1035,7 @@ public final class AIController extends PlayerTeam {
         int size = 0;
         for (AIStrategyNode aIStrategyNode : this.activeStrategies) {
             if (aIStrategyNode instanceof UnitGroup) {
-                size += ((UnitGroup) aIStrategyNode).G.size();
+                size += ((UnitGroup) aIStrategyNode).unitsNeedingTransport.size();
             }
         }
         return size;
@@ -1171,31 +1171,31 @@ public final class AIController extends PlayerTeam {
                     if (unitGroup.requiresTarget) {
                         str3 = str3 + "\nVIP Mode";
                     }
-                    String str6 = (((str3 + "\n" + (unitGroup.b() ? "Defensive Type" : "Attack Type")) + "\nUnits: " + unitGroup.F.size() + " / " + unitGroup.maxUnits) + "\nStagingForAttack: " + unitGroup.isDefending) + "\nAttackDelay: " + unitGroup.l;
+                    String str6 = (((str3 + "\n" + (unitGroup.isDefensive() ? "Defensive Type" : "Attack Type")) + "\nUnits: " + unitGroup.units.size() + " / " + unitGroup.maxUnits) + "\nStagingForAttack: " + unitGroup.isDefending) + "\nAttackDelay: " + unitGroup.attackDelay;
                     if (unitGroup.defendDuration != 0.0f) {
                         str6 = str6 + "\nStagingTimer: " + unitGroup.defendDuration;
                     }
                     String str7 = str6 + "\nStagingTargetFound: " + unitGroup.isInCombat;
-                    if (unitGroup.o != 0.0f) {
-                        str7 = str7 + "\nattackingFor: " + unitGroup.o;
+                    if (unitGroup.attackingDuration != 0.0f) {
+                        str7 = str7 + "\nattackingFor: " + unitGroup.attackingDuration;
                     }
-                    str3 = str7 + "\ncommonMovement: " + unitGroup.i().name();
-                    if (unitGroup.B) {
+                    str3 = str7 + "\ncommonMovement: " + unitGroup.getCommonMovementType().name();
+                    if (unitGroup.isSeaGroup) {
                         str3 = str3 + " (seaGroup)";
                     }
-                    if (unitGroup.G.size() > 0) {
-                        str3 = str3 + "\nunitsNeedingTransport:" + unitGroup.G.size();
+                    if (unitGroup.unitsNeedingTransport.size() > 0) {
+                        str3 = str3 + "\nunitsNeedingTransport:" + unitGroup.unitsNeedingTransport.size();
                     }
                     if (unitGroup.groupName != null) {
                         str3 = str3 + "\nlast action:" + unitGroup.groupName;
                     }
                     if (!unitGroup.isEngaging && !unitGroup.isDefending) {
-                        str3 = str3 + "\nnext move:" + ((int) secondsToMinutes(unitGroup.n)) + "s";
+                        str3 = str3 + "\nnext move:" + ((int) secondsToMinutes(unitGroup.nextMoveTimer)) + "s";
                     }
                 }
                 if (aIStrategyNode instanceof TransporterGroup) {
                     TransporterGroup transporterGroup = (TransporterGroup) aIStrategyNode;
-                    str3 = ((str3 + "\nUnitsWanted: " + transporterGroup.capacity) + "\nunits: " + transporterGroup.F.size()) + "\nreadyToMoveOut: " + transporterGroup.isWaitingForUnits;
+                    str3 = ((str3 + "\nUnitsWanted: " + transporterGroup.capacity) + "\nunits: " + transporterGroup.units.size()) + "\nreadyToMoveOut: " + transporterGroup.isWaitingForUnits;
                     if (transporterGroup.unitGroup != null) {
                         str3 = str3 + "\nCurrentlyHelping: " + transporterGroup.unitGroup.strategyId;
                     }
@@ -1338,8 +1338,8 @@ public final class AIController extends PlayerTeam {
                         break;
                     }
                     BaseZone baseZone3 = baseZone;
-                    baseZone3.b(baseZone3.resourceScore);
-                    baseZone3.d(baseZone3.resourceScore);
+                    baseZone3.updateZone(baseZone3.resourceScore);
+                    baseZone3.updateZoneStrategy(baseZone3.resourceScore);
                     baseZone3.resourceScore = 0.0f;
                 }
                 this.resourceMultiplierNormal = 0.0f;
@@ -1479,10 +1479,10 @@ public final class AIController extends PlayerTeam {
         boolean z;
         BaseUnit randomIdleUnit;
         GameEngine gameEngine = GameEngine.getInstance();
-        this.buildPreferenceCache.b();
+        this.buildPreferenceCache.clearBuildingCaches();
         Iterator it = this.aiBehaviors.iterator();
         while (it.hasNext()) {
-            ((AIBehavior) it.next()).b(secondsToMilliseconds(f), this);
+            ((AIBehavior) it.next()).updateCore(secondsToMilliseconds(f), this);
         }
         int i = 0;
         BaseUnit[] baseUnitArrA = BaseUnit.bE.a();
@@ -1525,7 +1525,7 @@ public final class AIController extends PlayerTeam {
                     commandNewCommandForTeam.setAttackMode(attackModeForUnit);
                 }
                 if (orderableUnit2.canUnitAttack() && orderableUnit2.isExperimental() && orderableUnit2.aB == null && isEligibleUnitForRandomSelection(orderableUnit2)) {
-                    UnitGroup.a(this, orderableUnit2);
+                    UnitGroup.createHuntGroup(this, orderableUnit2);
                 }
             }
         }
@@ -1597,7 +1597,7 @@ public final class AIController extends PlayerTeam {
             if (baseUnit3.team == this && (baseUnit3 instanceof OrderableUnit)) {
                 OrderableUnit orderableUnit3 = (OrderableUnit) baseUnit3;
                 if (!baseUnit3.bI()) {
-                    if (orderableUnit3.aB != null && orderableUnit3.aB.b()) {
+                    if (orderableUnit3.aB != null && orderableUnit3.aB.isDefensive()) {
                         this.unitCount++;
                     } else if (isCombatCustomUnit(orderableUnit3) && !orderableUnit3.isActive) {
                         if (orderableUnit3.getMovementType() == UnitMovementType.WATER) {
@@ -1645,7 +1645,7 @@ public final class AIController extends PlayerTeam {
                                 }
                             }
                             if (reusableList.size() > 0) {
-                                issueUnitAction(orderableUnit4, (AbstractUnitAction) AIUnitActionUtils.a(reusableList));
+                                issueUnitAction(orderableUnit4, (AbstractUnitAction) AIUnitActionUtils.getRandomElement(reusableList));
                             }
                         }
                     }
@@ -1746,7 +1746,7 @@ public final class AIController extends PlayerTeam {
         }
         for (AIStrategyNode aIStrategyNode3 : this.strategyNodes) {
             if (aIStrategyNode3 instanceof AIUnitGroupBase) {
-                ((AIUnitGroupBase) aIStrategyNode3).b(f);
+                ((AIUnitGroupBase) aIStrategyNode3).updateCore(f);
             }
         }
     }
@@ -1779,7 +1779,7 @@ public final class AIController extends PlayerTeam {
     public void checkZoneIntegrity() {
         for (AIStrategyNode aIStrategyNode : this.strategyNodes) {
             if (aIStrategyNode instanceof BaseZone) {
-                ((BaseZone) aIStrategyNode).t();
+                ((BaseZone) aIStrategyNode).fixOverlaps();
             }
         }
         for (AIStrategyNode aIStrategyNode2 : this.strategyNodes) {
@@ -1816,9 +1816,10 @@ public final class AIController extends PlayerTeam {
     }
 
     @Override // com.corrodinggames.rts.game.PlayerTeam
-    public void a(OrderableUnit orderableUnit) {
+    /* JADX INFO: renamed from: a */
+    public void onUnitBuilt(OrderableUnit orderableUnit) {
         if (orderableUnit.team == this) {
-            this.buildPreferenceCache.a(orderableUnit);
+            this.buildPreferenceCache.invalidateBuiltUnit(orderableUnit);
         }
     }
 
@@ -1828,14 +1829,14 @@ public final class AIController extends PlayerTeam {
         UnitCommand currentWaypoint;
         BaseZone baseZoneFindNearestZoneForUnit;
         GameEngine gameEngine = GameEngine.getInstance();
-        this.buildPreferenceCache.a();
+        this.buildPreferenceCache.clearUnitCountCaches();
         Iterator it = this.aiBehaviors.iterator();
         while (it.hasNext()) {
-            ((AIBehavior) it.next()).a(secondsToMilliseconds(f), this);
+            ((AIBehavior) it.next()).updateAI(secondsToMilliseconds(f), this);
         }
         for (AIStrategyNode aIStrategyNode : this.strategyNodes) {
             if (aIStrategyNode instanceof AIUnitGroupBase) {
-                ((AIUnitGroupBase) aIStrategyNode).c(f);
+                ((AIUnitGroupBase) aIStrategyNode).updateAI(f);
             }
         }
         if (this.avoidDamageZone != null) {
@@ -2023,7 +2024,7 @@ public final class AIController extends PlayerTeam {
                 if (isInsaneDifficulty()) {
                     unitGroup.maxUnits = 10;
                 }
-                unitGroup.k();
+                unitGroup.selectNewPosition();
                 this.mapHeight++;
             }
             if ((this.waterBuilderGroupCount >= i7 || this.totalBuilderUnits > 6) && this.landAttackGroupCount < 1 && z2) {
@@ -2042,22 +2043,22 @@ public final class AIController extends PlayerTeam {
                         }
                     }
                 }
-                unitGroup2.k();
+                unitGroup2.selectNewPosition();
                 this.mapWidth++;
             }
             if (isPathfindingOverloaded() && this.airAttackGroupCount < 1 && z2) {
                 UnitGroup unitGroup3 = new UnitGroup(this, true);
-                unitGroup3.B = true;
+                unitGroup3.isSeaGroup = true;
                 unitGroup3.maxUnits = 5;
                 if (isInsaneDifficulty()) {
                     unitGroup3.maxUnits = 10;
                 }
-                unitGroup3.k();
+                unitGroup3.selectNewPosition();
             }
             if (isAttackBlockedByConditions() && this.transporterGroupCount < 3) {
                 TransporterGroup transporterGroup = new TransporterGroup(this);
                 transporterGroup.capacity = 1;
-                transporterGroup.f();
+                transporterGroup.selectNewPosition();
             }
         }
         if (this.isTeamObserver) {
@@ -2292,7 +2293,8 @@ public final class AIController extends PlayerTeam {
     }
 
     @Override // com.corrodinggames.rts.game.PlayerTeam
-    public void T() {
+    /* JADX INFO: renamed from: T */
+    public void onTeamActivated() {
         if (this.enableScouting && countAllUnits() != 0) {
             GameEngine.log("waking up AI");
             this.enableScouting = false;
@@ -2300,7 +2302,8 @@ public final class AIController extends PlayerTeam {
     }
 
     @Override // com.corrodinggames.rts.game.PlayerTeam
-    public void d(BaseUnit baseUnit) {
+    /* JADX INFO: renamed from: d */
+    public void onUnitRemoved(BaseUnit baseUnit) {
         if (!(baseUnit instanceof OrderableUnit)) {
             return;
         }
@@ -2311,7 +2314,7 @@ public final class AIController extends PlayerTeam {
             orderableUnit.aC = null;
         }
         if (orderableUnit.aB != null) {
-            orderableUnit.aB.b(orderableUnit);
+            orderableUnit.aB.removeUnit(orderableUnit);
             orderableUnit.aB = null;
         }
         onUnitPostUpdate(orderableUnit);
@@ -2320,7 +2323,7 @@ public final class AIController extends PlayerTeam {
     /* JADX INFO: renamed from: a */
     public void processAIVariable(OrderableUnit orderableUnit, UnitPrice unitPrice, boolean z) {
         if (orderableUnit.aC != null) {
-            orderableUnit.aC.a(orderableUnit, unitPrice, z);
+            orderableUnit.aC.recordBuiltFactoryUnit(orderableUnit, unitPrice, z);
         }
     }
 
@@ -2347,7 +2350,7 @@ public final class AIController extends PlayerTeam {
         if (!this.aiBehaviors.contains(aIBehavior)) {
             this.aiBehaviors.add(aIBehavior);
         } else {
-            c("Skipping add of component: " + aIBehavior.a().name());
+            c("Skipping add of component: " + aIBehavior.getBehaviorType().name());
         }
     }
 }

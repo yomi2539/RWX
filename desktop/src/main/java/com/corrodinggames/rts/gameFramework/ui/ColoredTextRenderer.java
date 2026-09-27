@@ -6,6 +6,7 @@ import android.graphics.Paint;
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/gameFramework/f/ag.class */
 public class ColoredTextRenderer extends TextRenderer {
     public Paint paint;
+    /* JADX INFO: renamed from: b */
     public int color;
     final /* synthetic */ TextRenderQueue c;
 
@@ -27,7 +28,8 @@ public class ColoredTextRenderer extends TextRenderer {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.TextRenderer
-    public Paint b(Paint paint) {
+    /* JADX INFO: renamed from: b */
+    public Paint resolvePaint(Paint paint) {
         if (this.paint == null) {
             if (this.color != 0) {
                 TextRenderQueue.coloredTextPaint.a(paint);
@@ -46,7 +48,8 @@ public class ColoredTextRenderer extends TextRenderer {
 
     @Override // com.corrodinggames.rts.gameFramework.ui.TextRenderer
     /* JADX INFO: renamed from: a, reason: merged with bridge method [inline-methods] */
-    public ColoredTextRenderer b(String str) {
+    /* JADX INFO: renamed from: b */
+    public ColoredTextRenderer withText(String str) {
         return new ColoredTextRenderer(this.c, str, this.paint, this.color);
     }
 }

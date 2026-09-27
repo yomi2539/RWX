@@ -173,7 +173,7 @@ public class ConfigurableCustomAction extends UnitAction {
                 return true;
             }
             if (z) {
-                return LagHidingManager.a(this.enabledCondition, (OrderableUnit) baseUnit);
+                return LagHidingManager.readLogicBooleanWithSnapshot(this.enabledCondition, (OrderableUnit) baseUnit);
             }
             return this.enabledCondition.read((OrderableUnit) baseUnit);
         }

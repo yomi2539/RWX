@@ -177,7 +177,7 @@ public abstract class AIStrategyNode extends Serializable {
                                         fRandomFloatInRange += Utility.randomFloatInRange(-150.0f, 150.0f);
                                     }
                                     tempPointList.clear();
-                                    gameEngine.gameUI.a(orderableUnit, f2, f3, fRandomFloatInRange, fRandomFloatInRange2, false, tempPointList, (BaseUnit) null);
+                                    gameEngine.gameUI.drawUnitMovePreview(orderableUnit, f2, f3, fRandomFloatInRange, fRandomFloatInRange2, false, tempPointList, (BaseUnit) null);
                                     if (tempPointList.size() > 0) {
                                         PointF pointF2 = (PointF) tempPointList.get(0);
                                         pointF.a(pointF2.x, pointF2.y);

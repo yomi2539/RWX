@@ -85,12 +85,12 @@ public class FactoryQueueManager {
     public BaseUnit a(Projectile projectile, float f, boolean z, float f2) {
         AbstractUnitAction abstractUnitActionA = this.a.validateActionId(projectile.j);
         if (abstractUnitActionA == null) {
-            NetworkEngine.a("specialAction=null on completeQueueItem for item.uIndex:" + projectile.j + " id:" + this.a.objectId, true);
+            NetworkEngine.reportDesyncVerbose("specialAction=null on completeQueueItem for item.uIndex:" + projectile.j + " id:" + this.a.objectId, true);
             return null;
         }
         UnitType unitType = abstractUnitActionA.getUnitType();
         if (unitType == null) {
-            NetworkEngine.a("unitType=null on completeQueueItem for item.uIndex:" + projectile.j + " id:" + this.a.objectId, false);
+            NetworkEngine.reportDesyncVerbose("unitType=null on completeQueueItem for item.uIndex:" + projectile.j + " id:" + this.a.objectId, false);
             return null;
         }
         return a(unitType, f, z, f2);
@@ -138,7 +138,7 @@ public class FactoryQueueManager {
         a(baseUnitA, f, z);
         GameEngine gameEngine = GameEngine.getInstance();
         if (baseUnitA.team == gameEngine.playerTeam) {
-            gameEngine.gameUI.warLogDisplay.a(baseUnitA);
+            gameEngine.gameUI.warLogDisplay.logUnitCreated(baseUnitA);
         }
         return baseUnitA;
     }

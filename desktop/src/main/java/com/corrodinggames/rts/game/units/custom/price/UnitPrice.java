@@ -479,7 +479,7 @@ public class UnitPrice extends PriceCondition implements Comparable<UnitPrice> {
     public String a(boolean z, boolean z2, int i, boolean z3) {
         TextRenderQueue textRenderQueue = new TextRenderQueue();
         a(textRenderQueue, z, z2, i, z3);
-        return textRenderQueue.a();
+        return textRenderQueue.getText();
     }
 
     public void a(TextRenderQueue textRenderQueue, boolean z, boolean z2, int i, boolean z3, BaseUnit baseUnit, int i2) {
@@ -503,31 +503,31 @@ public class UnitPrice extends PriceCondition implements Comparable<UnitPrice> {
             if (baseUnit != null && baseUnit.team.credits < this.b) {
                 i4 = i2;
             }
-            textRenderQueue.a("$" + this.b + str, i4);
+            textRenderQueue.addColoredTextWithColor("$" + this.b + str, i4);
             i3 = 0 + 1;
         }
         if (z2) {
             if (this.c > 0.0f && i3 < i) {
-                textRenderQueue.b(Utility.padString(this.c) + " energy" + str);
+                textRenderQueue.addText(Utility.padString(this.c) + " energy" + str);
                 i3++;
             }
             if (this.d > 0.0f && i3 < i) {
-                textRenderQueue.b(Utility.padString(this.d) + " hp" + str);
+                textRenderQueue.addText(Utility.padString(this.d) + " hp" + str);
                 i3++;
             }
             if (this.e > 0.0f && i3 < i) {
-                textRenderQueue.b(Utility.padString(this.e) + " shield" + str);
+                textRenderQueue.addText(Utility.padString(this.e) + " shield" + str);
                 i3++;
             }
             if (this.f > 0 && i3 < i) {
-                textRenderQueue.b(Utility.padString(this.f) + " ammo" + str);
+                textRenderQueue.addText(Utility.padString(this.f) + " ammo" + str);
                 i3++;
             }
         }
         if (!this.k.c()) {
             this.k.a(textRenderQueue, z, z2, i - i3, z3, false, baseUnit, i2);
         }
-        textRenderQueue.a(str);
+        textRenderQueue.trimLastTextSuffix(str);
     }
 
     public UnitPrice i(BaseUnit baseUnit) {
@@ -655,7 +655,7 @@ public class UnitPrice extends PriceCondition implements Comparable<UnitPrice> {
             return false;
         }
         if (z) {
-            return LagHidingManager.c(baseUnit, this);
+            return LagHidingManager.canAffordWithSnapshots(baseUnit, this);
         }
         return b(baseUnit);
     }
@@ -664,7 +664,7 @@ public class UnitPrice extends PriceCondition implements Comparable<UnitPrice> {
         baseUnit.team.energy -= (double) this.b;
         baseUnit.team.teamUnitCount = 0;
         if (z) {
-            LagHidingManager.a(baseUnit, this);
+            LagHidingManager.addResourcesToSnapshot(baseUnit, this);
         }
     }
 
@@ -672,7 +672,7 @@ public class UnitPrice extends PriceCondition implements Comparable<UnitPrice> {
         baseUnit.team.energy += (double) this.b;
         baseUnit.team.teamUnitCount = 0;
         if (z) {
-            LagHidingManager.b(baseUnit, this);
+            LagHidingManager.removeResourcesFromSnapshot(baseUnit, this);
         }
     }
 

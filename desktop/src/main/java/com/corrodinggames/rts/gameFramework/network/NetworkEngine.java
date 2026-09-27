@@ -424,13 +424,9 @@ public final class NetworkEngine {
         return strReplace;
     }
 
-    /* JADX INFO: renamed from: a */
-    public void applyChangedSetup(float f, String str) {
-        if (f < 0.1d) {
-            a("setCurrentStepRate:" + f + " is too small, source:" + str, true);
-        } else {
-            this.currentStepRate = f;
-        }
+    /* JADX INFO: renamed from: g */
+    public static void reportDesync(String str) {
+        reportDesyncVerbose(str, false);
     }
 
     /* JADX INFO: renamed from: c */
@@ -1398,15 +1394,13 @@ public final class NetworkEngine {
         }
     }
 
-    public static void reportDesync(String str) {
-        a(str, false);
+    /* JADX INFO: renamed from: h */
+    public static void reportDesyncImportant(String str) {
+        reportDesyncVerbose(str, true);
     }
 
-    public static void h(String str) {
-        a(str, true);
-    }
-
-    public static void a(String str, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public static void reportDesyncVerbose(String str, boolean z) {
         String str2;
         NetworkEngine networkEngine = GameEngine.getInstance().networkEngine;
         String str3 = "desync:" + str;
@@ -1428,6 +1422,15 @@ public final class NetworkEngine {
                 str2 = "-i " + str2;
             }
             networkEngine.sendChatMessage(str2);
+        }
+    }
+
+    /* JADX INFO: renamed from: a */
+    public void applyChangedSetup(float f, String str) {
+        if (f < 0.1d) {
+            reportDesyncVerbose("setCurrentStepRate:" + f + " is too small, source:" + str, true);
+        } else {
+            this.currentStepRate = f;
         }
     }
 
@@ -2045,7 +2048,7 @@ public final class NetworkEngine {
                 float f = gameInputStream5.readFloat();
                 float f2 = gameInputStream5.readFloat();
                 if (!this.isServer && f < 0.1d) {
-                    a("resync packet with setCurrentStepRate:" + f + " is too small", true);
+                    reportDesyncVerbose("resync packet with setCurrentStepRate:" + f + " is too small", true);
                 }
                 NetworkConnection networkConnection4 = packet.connection;
                 if (networkConnection4.isRelayLinked) {
@@ -2081,7 +2084,7 @@ public final class NetworkEngine {
                         this.lastSyncedTick = this.nextBlockingFrame + 1;
                         this.stateChecksum.totalChecksum = 0L;
                         if (f < 0.1d) {
-                            a("resync setCurrentStepRate:" + f + " is too small", true);
+                            reportDesyncVerbose("resync setCurrentStepRate:" + f + " is too small", true);
                         }
                         applyChangedSetup(f, "rsync");
                         this.J = f2;
@@ -2133,7 +2136,7 @@ public final class NetworkEngine {
     }
 
     public void J() {
-        GameEngine.getInstance().gameUI.interfaceRenderer.m();
+        GameEngine.getInstance().gameUI.interfaceRenderer.quitToMenu();
     }
 
     public void closeBattleroom() {
@@ -3479,37 +3482,37 @@ public final class NetworkEngine {
 
     public void showReconnectDialog() {
         final GameEngine gameEngine = GameEngine.getInstance();
-        final MenuDialog menuDialogA = MenuDialog.a(Locale.get("menus.ingame.multiplayerReconnect.message", new Object[0]), false);
-        menuDialogA.a(Locale.get("menus.ingame.resume", new Object[0]), new UIEventHandler() { // from class: com.corrodinggames.rts.gameFramework.j.ad.3
+        final MenuDialog menuDialogA = MenuDialog.create(Locale.get("menus.ingame.multiplayerReconnect.message", new Object[0]), false);
+        menuDialogA.addButton(Locale.get("menus.ingame.resume", new Object[0]), new UIEventHandler() { // from class: com.corrodinggames.rts.gameFramework.j.ad.3
             @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIEventHandler
-            public boolean a(UIEvent uIEvent) {
-                menuDialogA.i();
+            public boolean handleEvent(UIEvent uIEvent) {
+                menuDialogA.removeFromParent();
                 return true;
             }
         });
-        menuDialogA.a(Locale.get("menus.ingame.reconnect", new Object[0]), new UIEventHandler() { // from class: com.corrodinggames.rts.gameFramework.j.ad.4
+        menuDialogA.addButton(Locale.get("menus.ingame.reconnect", new Object[0]), new UIEventHandler() { // from class: com.corrodinggames.rts.gameFramework.j.ad.4
             @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIEventHandler
-            public boolean a(UIEvent uIEvent)  {
-                menuDialogA.i();
+            public boolean handleEvent(UIEvent uIEvent) {
+                menuDialogA.removeFromParent();
                 NetworkEngine.this.reconnectToServer();
                 return true;
             }
         });
-        menuDialogA.a(Locale.get("menus.ingame.disconnect", new Object[0]), new UIEventHandler() { // from class: com.corrodinggames.rts.gameFramework.j.ad.5
+        menuDialogA.addButton(Locale.get("menus.ingame.disconnect", new Object[0]), new UIEventHandler() { // from class: com.corrodinggames.rts.gameFramework.j.ad.5
             @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIEventHandler
-            public boolean a(UIEvent uIEvent) {
-                menuDialogA.i();
+            public boolean handleEvent(UIEvent uIEvent) {
+                menuDialogA.removeFromParent();
                 gameEngine.queueGameThreadTask(new Runnable() { // from class: com.corrodinggames.rts.gameFramework.j.ad.5.1
                     @Override // java.lang.Runnable
                     public void run() {
                         NetworkEngine.this.disconnectNetworking("already disconnected");
-                        gameEngine.gameUI.interfaceRenderer.l();
+                        gameEngine.gameUI.interfaceRenderer.restartMission();
                     }
                 });
                 return true;
             }
         });
-        gameEngine.gameUI.a(menuDialogA);
+        gameEngine.gameUI.centerAndShowDialog(menuDialogA);
         this.reconnectDialogShown = true;
     }
 

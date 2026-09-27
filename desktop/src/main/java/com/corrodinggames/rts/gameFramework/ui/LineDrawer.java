@@ -41,7 +41,8 @@ public class LineDrawer extends GraphicsOperation {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.graphics.GraphicsOperation
-    public void a(GraphicsEngine graphicsEngine) {
+    /* JADX INFO: renamed from: a */
+    public void draw(GraphicsEngine graphicsEngine) {
         if (!this.drawAsPoints) {
             graphicsEngine.a(this.vertices, 0, this.vertexIndex, this.paint);
         } else {

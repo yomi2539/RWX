@@ -311,19 +311,19 @@ public class ResourceExtractor extends FactoryWithQueue {
         S(0);
         this.isAlive = false;
         gameEngine.soundEngine.playSound(SoundEngine.buildingExplodeSound, 0.8f, this.posX, this.posY);
-        EffectEmitter.a(this.posX, this.posY).startColorOverride = -6684775;
-        EffectEmitter effectEmitterB = EffectEmitter.b(this.posX, this.posY);
+        EffectEmitter.createDefaultFireEmitter(this.posX, this.posY).startColorOverride = -6684775;
+        EffectEmitter effectEmitterB = EffectEmitter.createAlternateFireEmitter(this.posX, this.posY);
         effectEmitterB.duration = 500.0f;
         effectEmitterB.startColorOverride = -6684775;
         gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
         Effect effectCreateSmallExplosion = gameEngine.effectManager.createSmallExplosion(this.posX, this.posY, this.posZ, -1127220);
         if (effectCreateSmallExplosion != null) {
-            effectCreateSmallExplosion.G = 0.15f;
-            effectCreateSmallExplosion.F = 1.0f;
-            effectCreateSmallExplosion.ar = (short) 2;
-            effectCreateSmallExplosion.V = 35.0f;
-            effectCreateSmallExplosion.W = effectCreateSmallExplosion.V;
-            effectCreateSmallExplosion.U = 0.0f;
+            effectCreateSmallExplosion.scaleFrom = 0.15f;
+            effectCreateSmallExplosion.scaleTo = 1.0f;
+            effectCreateSmallExplosion.drawLayer = (short) 2;
+            effectCreateSmallExplosion.lifeTimer = 35.0f;
+            effectCreateSmallExplosion.lifeMax = effectCreateSmallExplosion.lifeTimer;
+            effectCreateSmallExplosion.delayedStartTimer = 0.0f;
             effectCreateSmallExplosion.startColor = -13378253;
         }
         bo();

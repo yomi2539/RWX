@@ -374,18 +374,18 @@ public abstract class AbstractUnitAction implements Comparable<AbstractUnitActio
         String displayTextForUnitWithQueueCount;
         Paint paint3 = textRenderQueue.currentPaint;
         if (paint != null) {
-            textRenderQueue.a(paint);
+            textRenderQueue.setCurrentPaint(paint);
         }
         if (shouldShowDisplayText() && (displayTextForUnitWithQueueCount = getDisplayTextForUnitWithQueueCount(baseUnit)) != null && !displayTextForUnitWithQueueCount.equals(VariableScope.nullOrMissingString)) {
-            textRenderQueue.b(displayTextForUnitWithQueueCount);
+            textRenderQueue.addText(displayTextForUnitWithQueueCount);
         }
         if (paint != null) {
-            textRenderQueue.a(paint3);
+            textRenderQueue.setCurrentPaint(paint3);
         }
         ActionDisplayType actionDisplayTypeIsAlsoSelected = getActionDisplayType();
         UnitPrice displayText = getPrice();
         if (!displayText.c() && actionDisplayTypeIsAlsoSelected != ActionDisplayType.infoOnlyStockpile) {
-            textRenderQueue.b(" (");
+            textRenderQueue.addText(" (");
             BaseUnit baseUnit2 = null;
             int iE = 0;
             if (paint2 != null) {
@@ -393,25 +393,25 @@ public abstract class AbstractUnitAction implements Comparable<AbstractUnitActio
                 iE = paint2.e();
             }
             displayText.a(textRenderQueue, false, true, 5, true, baseUnit2, iE);
-            textRenderQueue.b(")");
+            textRenderQueue.addText(")");
         }
         UnitPrice additionalCost = getAdditionalCost();
         if (additionalCost != null && !additionalCost.c() && actionDisplayTypeIsAlsoSelected != ActionDisplayType.infoOnlyStockpile) {
-            textRenderQueue.b(" (");
+            textRenderQueue.addText(" (");
             additionalCost.a(textRenderQueue, false, true, 5, true, null, 0);
-            textRenderQueue.b(")");
+            textRenderQueue.addText(")");
         }
     }
 
     /* JADX INFO: renamed from: a */
     public void onPurchase(BaseUnit baseUnit, TextRenderQueue textRenderQueue) {
-        String strA = GameInterfaceRenderer.a(this, false);
+        String strA = GameInterfaceRenderer.isUnitOnScreen(this, false);
         if (strA != null && !VariableScope.nullOrMissingString.equals(strA)) {
-            textRenderQueue.b("\n" + strA.trim());
+            textRenderQueue.addText("\n" + strA.trim());
         }
         String producedUnitType = getDescriptionForUnit(baseUnit);
         if (producedUnitType != null && !VariableScope.nullOrMissingString.equals(producedUnitType)) {
-            textRenderQueue.b("\n" + producedUnitType.trim());
+            textRenderQueue.addText("\n" + producedUnitType.trim());
         }
     }
 
@@ -427,7 +427,7 @@ public abstract class AbstractUnitAction implements Comparable<AbstractUnitActio
     /* JADX INFO: renamed from: j */
     public Texture getIconTexture() {
         if (getActionDisplayType() == ActionDisplayType.upgrade) {
-            return GameEngine.getInstance().gameUI.bk;
+            return GameEngine.getInstance().gameUI.iconUpgradeTexture;
         }
         return null;
     }

@@ -388,7 +388,7 @@ public class AmphibiousJet extends AirUnit {
                 float f4 = this.rotationSpeed + i;
                 Effect effectCreateSmokeEffect = gameEngine.effectManager.createSmokeEffect((float) (((double) this.posX) + (Math.cos(Math.toRadians(f4)) * (-5.0d))), (float) (((double) this.posY) + (Math.sin(Math.toRadians(f4)) * (-5.0d))), 0.0f, f4);
                 if (effectCreateSmokeEffect != null) {
-                    effectCreateSmokeEffect.ar = (short) 2;
+                    effectCreateSmokeEffect.drawLayer = (short) 2;
                     effectCreateSmokeEffect.fadeOut = true;
                     effectCreateSmokeEffect.fadeDuration = 7.0f;
                 }

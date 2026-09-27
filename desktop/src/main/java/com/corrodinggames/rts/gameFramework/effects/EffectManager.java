@@ -30,7 +30,8 @@ public final class EffectManager {
     /* JADX INFO: renamed from: l */
     public Texture texture;
 
-    public static final Rect p = new Rect();
+    /* JADX INFO: renamed from: p */
+    public static final Rect unusedRect = new Rect();
 
     /* JADX INFO: renamed from: s */
     public static SpriteSheet[] effectTemplates;
@@ -46,7 +47,8 @@ public final class EffectManager {
 
     /* JADX INFO: renamed from: o */
     public static final Rect rect = new Rect();
-    public static final Paint r = new Paint();
+    /* JADX INFO: renamed from: r */
+    public static final Paint unusedPaint = new Paint();
 
     /* JADX INFO: renamed from: q */
     public static final Paint paint = new Paint();
@@ -92,9 +94,9 @@ public final class EffectManager {
             return;
         }
         effect.parentObject = gameObject;
-        effect.I -= gameObject.posX;
-        effect.J -= gameObject.posY;
-        effect.K -= gameObject.posZ;
+        effect.posX -= gameObject.posX;
+        effect.posY -= gameObject.posY;
+        effect.posZ -= gameObject.posZ;
     }
 
     /* JADX INFO: renamed from: a */
@@ -143,8 +145,8 @@ public final class EffectManager {
         for (int i = 0; i < 7; i++) {
             Effect effectCreateSmallExplosion = createSmallExplosion(f + Utility.randomFloatInRange(-20.0f, 20.0f), f2 + Utility.randomFloatInRange(-20.0f, 20.0f), f3);
             if (effectCreateSmallExplosion != null) {
-                effectCreateSmallExplosion.U = f4 + Utility.randomFloatInRange(0.0f, f5);
-                effectCreateSmallExplosion.aj = Utility.randomFloatInRange(0.3f, 0.6f);
+                effectCreateSmallExplosion.delayedStartTimer = f4 + Utility.randomFloatInRange(0.0f, f5);
+                effectCreateSmallExplosion.animateFrameSpeed = Utility.randomFloatInRange(0.3f, 0.6f);
             }
         }
     }
@@ -171,7 +173,7 @@ public final class EffectManager {
             return null;
         }
         for (Effect effect2 : effectArr) {
-            if ((!z || !effect2.isActive) && (effectQuality == null || effect2.q.isLowerThan(effectQuality))) {
+            if ((!z || !effect2.isActive) && (effectQuality == null || effect2.priority.isLowerThan(effectQuality))) {
                 return effect2;
             }
         }
@@ -183,20 +185,20 @@ public final class EffectManager {
         setOnlyOnScreen();
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.high);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.aq = 1;
-            effectCreateEffectInternal.ae = true;
-            effectCreateEffectInternal.ak = 0.0f;
-            effectCreateEffectInternal.aj = 0.5f;
-            effectCreateEffectInternal.ag = 12;
-            effectCreateEffectInternal.ap = 0;
-            effectCreateEffectInternal.V = 35.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V - 10.0f;
+            effectCreateEffectInternal.stripIndex = 1;
+            effectCreateEffectInternal.animateFrames = true;
+            effectCreateEffectInternal.currentFrame = 0.0f;
+            effectCreateEffectInternal.animateFrameSpeed = 0.5f;
+            effectCreateEffectInternal.animateFrameEnd = 12;
+            effectCreateEffectInternal.frameIndex = 0;
+            effectCreateEffectInternal.lifeTimer = 35.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer - 10.0f;
             effectCreateEffectInternal.fadeIn = true;
-            effectCreateEffectInternal.E = 0.7f;
-            effectCreateEffectInternal.Y = random(-180.0f, 180.0f);
+            effectCreateEffectInternal.alpha = 0.7f;
+            effectCreateEffectInternal.rotation = random(-180.0f, 180.0f);
             float fRandom = random(0.8f, 1.0f);
-            effectCreateEffectInternal.G = fRandom;
-            effectCreateEffectInternal.F = fRandom;
+            effectCreateEffectInternal.scaleFrom = fRandom;
+            effectCreateEffectInternal.scaleTo = fRandom;
         }
         return effectCreateEffectInternal;
     }
@@ -206,18 +208,18 @@ public final class EffectManager {
         setOnlyOnScreen();
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.high);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.aq = 13;
-            effectCreateEffectInternal.ae = true;
-            effectCreateEffectInternal.ak = 3.0f;
-            effectCreateEffectInternal.aj = 0.5f;
-            effectCreateEffectInternal.ag = 7;
-            effectCreateEffectInternal.ap = 0;
-            effectCreateEffectInternal.V = 35.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V - 10.0f;
+            effectCreateEffectInternal.stripIndex = 13;
+            effectCreateEffectInternal.animateFrames = true;
+            effectCreateEffectInternal.currentFrame = 3.0f;
+            effectCreateEffectInternal.animateFrameSpeed = 0.5f;
+            effectCreateEffectInternal.animateFrameEnd = 7;
+            effectCreateEffectInternal.frameIndex = 0;
+            effectCreateEffectInternal.lifeTimer = 35.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer - 10.0f;
             effectCreateEffectInternal.fadeIn = true;
-            effectCreateEffectInternal.E = 1.0f;
-            effectCreateEffectInternal.G = 0.5f;
-            effectCreateEffectInternal.F = 0.5f;
+            effectCreateEffectInternal.alpha = 1.0f;
+            effectCreateEffectInternal.scaleFrom = 0.5f;
+            effectCreateEffectInternal.scaleTo = 0.5f;
         }
         return effectCreateEffectInternal;
     }
@@ -245,15 +247,15 @@ public final class EffectManager {
         }
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, true, EffectQuality.high);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.an = false;
-            effectCreateEffectInternal.V = 5.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+            effectCreateEffectInternal.isCentered = false;
+            effectCreateEffectInternal.lifeTimer = 5.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
             effectCreateEffectInternal.fadeIn = true;
-            effectCreateEffectInternal.E = 1.0f;
-            effectCreateEffectInternal.L = true;
-            effectCreateEffectInternal.M = f4;
-            effectCreateEffectInternal.N = f5;
-            effectCreateEffectInternal.O = f6;
+            effectCreateEffectInternal.alpha = 1.0f;
+            effectCreateEffectInternal.isLaser = true;
+            effectCreateEffectInternal.laserTargetX = f4;
+            effectCreateEffectInternal.laserTargetY = f5;
+            effectCreateEffectInternal.laserTargetZ = f6;
         }
         return effectCreateEffectInternal;
     }
@@ -263,26 +265,26 @@ public final class EffectManager {
         setOnlyOnScreen();
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.high);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.g = Effect.j;
-            effectCreateEffectInternal.ae = true;
+            effectCreateEffectInternal.effectKind = Effect.KIND_FLAME;
+            effectCreateEffectInternal.animateFrames = true;
             if (i2 == 1) {
-                effectCreateEffectInternal.aq = 3;
-                effectCreateEffectInternal.ak = 1.0f;
-                effectCreateEffectInternal.aj = 0.4f;
-                effectCreateEffectInternal.ag = 4;
+                effectCreateEffectInternal.stripIndex = 3;
+                effectCreateEffectInternal.currentFrame = 1.0f;
+                effectCreateEffectInternal.animateFrameSpeed = 0.4f;
+                effectCreateEffectInternal.animateFrameEnd = 4;
             } else {
-                effectCreateEffectInternal.aq = 3;
-                effectCreateEffectInternal.ak = 0.0f;
-                effectCreateEffectInternal.aj = 0.5f;
-                effectCreateEffectInternal.ag = 3;
+                effectCreateEffectInternal.stripIndex = 3;
+                effectCreateEffectInternal.currentFrame = 0.0f;
+                effectCreateEffectInternal.animateFrameSpeed = 0.5f;
+                effectCreateEffectInternal.animateFrameEnd = 3;
             }
-            effectCreateEffectInternal.Y = f4;
-            effectCreateEffectInternal.ap = 0;
-            effectCreateEffectInternal.V = 20.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+            effectCreateEffectInternal.rotation = f4;
+            effectCreateEffectInternal.frameIndex = 0;
+            effectCreateEffectInternal.lifeTimer = 20.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
             effectCreateEffectInternal.fadeIn = false;
             if (i != 0) {
-                effectCreateEffectInternal.B = new LightingColorFilter(i, 0);
+                effectCreateEffectInternal.lightingColorFilter = new LightingColorFilter(i, 0);
             }
         }
         return effectCreateEffectInternal;
@@ -292,21 +294,21 @@ public final class EffectManager {
     public Effect createMuzzleFlash(float f, float f2, float f3, float f4, int i) {
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.verylow);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.aq = 4;
-            effectCreateEffectInternal.g = Effect.i;
-            effectCreateEffectInternal.ap = Utility.getRandomIntInRange(0, 2);
-            effectCreateEffectInternal.Y = f4;
-            effectCreateEffectInternal.an = true;
-            effectCreateEffectInternal.P = Utility.fastCos(f4) * 0.15f;
-            effectCreateEffectInternal.Q = Utility.fastSin(f4) * 0.15f;
-            effectCreateEffectInternal.V = 30.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+            effectCreateEffectInternal.stripIndex = 4;
+            effectCreateEffectInternal.effectKind = Effect.KIND_MUZZLE_FLASH;
+            effectCreateEffectInternal.frameIndex = Utility.getRandomIntInRange(0, 2);
+            effectCreateEffectInternal.rotation = f4;
+            effectCreateEffectInternal.isCentered = true;
+            effectCreateEffectInternal.velocityX = Utility.fastCos(f4) * 0.15f;
+            effectCreateEffectInternal.velocityY = Utility.fastSin(f4) * 0.15f;
+            effectCreateEffectInternal.lifeTimer = 30.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
             effectCreateEffectInternal.fadeIn = true;
-            effectCreateEffectInternal.ar = (short) 1;
-            effectCreateEffectInternal.G = 0.8f;
-            effectCreateEffectInternal.F = 2.3f;
+            effectCreateEffectInternal.drawLayer = (short) 1;
+            effectCreateEffectInternal.scaleFrom = 0.8f;
+            effectCreateEffectInternal.scaleTo = 2.3f;
             if (i != 0) {
-                effectCreateEffectInternal.B = new LightingColorFilter(i, 0);
+                effectCreateEffectInternal.lightingColorFilter = new LightingColorFilter(i, 0);
             }
         }
         return effectCreateEffectInternal;
@@ -322,13 +324,13 @@ public final class EffectManager {
         setForceHighQuality();
         Effect effectCreateLightEffectInternal = createLightEffectInternal(gameObject.posX, gameObject.posY, gameObject.posZ, i);
         if (effectCreateLightEffectInternal != null) {
-            effectCreateLightEffectInternal.I = 0.0f;
-            effectCreateLightEffectInternal.J = 0.0f;
-            effectCreateLightEffectInternal.K = 0.0f;
-            effectCreateLightEffectInternal.V = 400.0f;
-            effectCreateLightEffectInternal.W = effectCreateLightEffectInternal.V;
-            effectCreateLightEffectInternal.E = 0.3f;
-            effectCreateLightEffectInternal.G = f;
+            effectCreateLightEffectInternal.posX = 0.0f;
+            effectCreateLightEffectInternal.posY = 0.0f;
+            effectCreateLightEffectInternal.posZ = 0.0f;
+            effectCreateLightEffectInternal.lifeTimer = 400.0f;
+            effectCreateLightEffectInternal.lifeMax = effectCreateLightEffectInternal.lifeTimer;
+            effectCreateLightEffectInternal.alpha = 0.3f;
+            effectCreateLightEffectInternal.scaleFrom = f;
             effectCreateLightEffectInternal.parentObject = gameObject;
         }
         return effectCreateLightEffectInternal;
@@ -346,18 +348,18 @@ public final class EffectManager {
     public Effect createLightEffectInternal(float f, float f2, float f3, int i) {
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, true, EffectQuality.low);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.e = false;
-            effectCreateEffectInternal.g = Effect.h;
-            effectCreateEffectInternal.aq = 2;
-            effectCreateEffectInternal.V = 10.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+            effectCreateEffectInternal.showInFog = false;
+            effectCreateEffectInternal.effectKind = Effect.KIND_LIGHT;
+            effectCreateEffectInternal.stripIndex = 2;
+            effectCreateEffectInternal.lifeTimer = 10.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
             effectCreateEffectInternal.fadeIn = true;
-            effectCreateEffectInternal.E = 0.5f;
-            effectCreateEffectInternal.ar = (short) 2;
-            effectCreateEffectInternal.d = true;
+            effectCreateEffectInternal.alpha = 0.5f;
+            effectCreateEffectInternal.drawLayer = (short) 2;
+            effectCreateEffectInternal.isLight = true;
             if (i != 0) {
                 effectCreateEffectInternal.startColor = i;
-                effectCreateEffectInternal.B = new LightingColorFilter(i, 0);
+                effectCreateEffectInternal.lightingColorFilter = new LightingColorFilter(i, 0);
             }
         }
         return effectCreateEffectInternal;
@@ -368,19 +370,19 @@ public final class EffectManager {
         setOnlyOnScreen();
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.low);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.g = Effect.l;
-            effectCreateEffectInternal.aq = 0;
-            effectCreateEffectInternal.ap = 13;
-            effectCreateEffectInternal.ar = (short) 1;
+            effectCreateEffectInternal.effectKind = Effect.KIND_SMOKE;
+            effectCreateEffectInternal.stripIndex = 0;
+            effectCreateEffectInternal.frameIndex = 13;
+            effectCreateEffectInternal.drawLayer = (short) 1;
             effectCreateEffectInternal.fadeIn = true;
-            effectCreateEffectInternal.E = 0.8f;
-            effectCreateEffectInternal.W = 80.0f;
-            effectCreateEffectInternal.V = effectCreateEffectInternal.W;
-            effectCreateEffectInternal.Y = Utility.randomFloatInRange(-180.0f, 180.0f);
-            effectCreateEffectInternal.G = Utility.randomFloatInRange(0.6f, 0.8f);
-            effectCreateEffectInternal.F = 1.5f;
-            effectCreateEffectInternal.P = (Utility.fastCos(f4) * 0.13f * Utility.randomFloatInRange(1.0f, 1.5f)) + Utility.randomFloatInRange(-0.01f, 0.01f);
-            effectCreateEffectInternal.Q = (Utility.fastSin(f4) * 0.13f * Utility.randomFloatInRange(1.0f, 1.5f)) + Utility.randomFloatInRange(-0.01f, 0.01f);
+            effectCreateEffectInternal.alpha = 0.8f;
+            effectCreateEffectInternal.lifeMax = 80.0f;
+            effectCreateEffectInternal.lifeTimer = effectCreateEffectInternal.lifeMax;
+            effectCreateEffectInternal.rotation = Utility.randomFloatInRange(-180.0f, 180.0f);
+            effectCreateEffectInternal.scaleFrom = Utility.randomFloatInRange(0.6f, 0.8f);
+            effectCreateEffectInternal.scaleTo = 1.5f;
+            effectCreateEffectInternal.velocityX = (Utility.fastCos(f4) * 0.13f * Utility.randomFloatInRange(1.0f, 1.5f)) + Utility.randomFloatInRange(-0.01f, 0.01f);
+            effectCreateEffectInternal.velocityY = (Utility.fastSin(f4) * 0.13f * Utility.randomFloatInRange(1.0f, 1.5f)) + Utility.randomFloatInRange(-0.01f, 0.01f);
         }
         return effectCreateEffectInternal;
     }
@@ -389,22 +391,22 @@ public final class EffectManager {
     public Effect createRedLaserEffect(float f, float f2, float f3, int i, float f4, float f5) {
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.high);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.g = Effect.l;
-            effectCreateEffectInternal.aq = 6;
-            effectCreateEffectInternal.V = 120.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+            effectCreateEffectInternal.effectKind = Effect.KIND_SMOKE;
+            effectCreateEffectInternal.stripIndex = 6;
+            effectCreateEffectInternal.lifeTimer = 120.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
             effectCreateEffectInternal.fadeIn = true;
-            effectCreateEffectInternal.G = 0.2f;
-            effectCreateEffectInternal.F = 0.9f;
-            effectCreateEffectInternal.ar = (short) 1;
-            effectCreateEffectInternal.E = 0.5f;
-            effectCreateEffectInternal.P = f4;
-            effectCreateEffectInternal.Q = f5;
+            effectCreateEffectInternal.scaleFrom = 0.2f;
+            effectCreateEffectInternal.scaleTo = 0.9f;
+            effectCreateEffectInternal.drawLayer = (short) 1;
+            effectCreateEffectInternal.alpha = 0.5f;
+            effectCreateEffectInternal.velocityX = f4;
+            effectCreateEffectInternal.velocityY = f5;
             if (i != 0) {
                 i = Color.a(255, 0, 0, 200);
             }
             if (i != 0) {
-                effectCreateEffectInternal.B = new LightingColorFilter(i, 0);
+                effectCreateEffectInternal.lightingColorFilter = new LightingColorFilter(i, 0);
             }
         }
         return effectCreateEffectInternal;
@@ -417,7 +419,7 @@ public final class EffectManager {
             float f7 = f6 + i2;
             Effect effectCreateSmokeEffect = createSmokeEffect(f + (Utility.fastCos(f7) * (-5.0f)), f2 + (Utility.fastSin(f7) * (-5.0f)), 0.0f, f7);
             if (effectCreateSmokeEffect != null) {
-                effectCreateSmokeEffect.ar = (short) 2;
+                effectCreateSmokeEffect.drawLayer = (short) 2;
                 effectCreateSmokeEffect.fadeOut = true;
                 effectCreateSmokeEffect.fadeDuration = 7.0f;
             }
@@ -428,7 +430,7 @@ public final class EffectManager {
     public Effect createSmallExplosion(float f, float f2, float f3, int i) {
         Effect effectCreateSmallExplosionInternal = createSmallExplosionInternal(f, f2, f3, i);
         if (effectCreateSmallExplosionInternal != null) {
-            effectCreateSmallExplosionInternal.aq = 11;
+            effectCreateSmallExplosionInternal.stripIndex = 11;
         }
         return effectCreateSmallExplosionInternal;
     }
@@ -438,15 +440,15 @@ public final class EffectManager {
         setOnlyOnScreen();
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.high);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.aq = 6;
-            effectCreateEffectInternal.V = 30.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+            effectCreateEffectInternal.stripIndex = 6;
+            effectCreateEffectInternal.lifeTimer = 30.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
             effectCreateEffectInternal.fadeIn = true;
-            effectCreateEffectInternal.G = 0.2f;
-            effectCreateEffectInternal.F = 1.3f;
-            effectCreateEffectInternal.ar = (short) 1;
+            effectCreateEffectInternal.scaleFrom = 0.2f;
+            effectCreateEffectInternal.scaleTo = 1.3f;
+            effectCreateEffectInternal.drawLayer = (short) 1;
             if (i != 0) {
-                effectCreateEffectInternal.B = new LightingColorFilter(i, 0);
+                effectCreateEffectInternal.lightingColorFilter = new LightingColorFilter(i, 0);
             }
         }
         return effectCreateEffectInternal;
@@ -456,9 +458,9 @@ public final class EffectManager {
     public Effect createBloodEffect(float f, float f2, float f3) {
         Effect effectCreateBloodEffectInternal = createBloodEffectInternal(f, f2, f3, 0.3f, 0.7f);
         if (effectCreateBloodEffectInternal != null) {
-            effectCreateBloodEffectInternal.aq = 14;
-            effectCreateBloodEffectInternal.ap = Utility.getRandomIntInRange(0, 5);
-            effectCreateBloodEffectInternal.w = 0.5f;
+            effectCreateBloodEffectInternal.stripIndex = 14;
+            effectCreateBloodEffectInternal.frameIndex = Utility.getRandomIntInRange(0, 5);
+            effectCreateBloodEffectInternal.physicsGravity = 0.5f;
         }
         return effectCreateBloodEffectInternal;
     }
@@ -476,25 +478,25 @@ public final class EffectManager {
         setForceHighQuality();
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.high);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.g = Effect.m;
-            effectCreateEffectInternal.aq = 12;
-            effectCreateEffectInternal.ap = Utility.getRandomIntInRange(0, 7);
-            effectCreateEffectInternal.V = Utility.randomFloatInRange(400.0f, 800.0f);
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V - 150.0f;
+            effectCreateEffectInternal.effectKind = Effect.KIND_BLOOD;
+            effectCreateEffectInternal.stripIndex = 12;
+            effectCreateEffectInternal.frameIndex = Utility.getRandomIntInRange(0, 7);
+            effectCreateEffectInternal.lifeTimer = Utility.randomFloatInRange(400.0f, 800.0f);
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer - 150.0f;
             effectCreateEffectInternal.fadeIn = true;
             float fRandomFloatInRange = Utility.randomFloatInRange(0.6f, 1.0f);
-            effectCreateEffectInternal.G = fRandomFloatInRange;
-            effectCreateEffectInternal.F = fRandomFloatInRange;
-            effectCreateEffectInternal.ar = (short) 2;
+            effectCreateEffectInternal.scaleFrom = fRandomFloatInRange;
+            effectCreateEffectInternal.scaleTo = fRandomFloatInRange;
+            effectCreateEffectInternal.drawLayer = (short) 2;
             effectCreateEffectInternal.useBounce = true;
-            effectCreateEffectInternal.as = true;
+            effectCreateEffectInternal.shadow = true;
             float fRandomFloatInRange2 = Utility.randomFloatInRange(-180.0f, 180.0f);
             float fRandomFloatInRange3 = Utility.randomFloatInRange(0.4f, 1.2f) * f4;
-            effectCreateEffectInternal.P = Utility.fastCos(fRandomFloatInRange2) * fRandomFloatInRange3;
-            effectCreateEffectInternal.Q = Utility.fastSin(fRandomFloatInRange2) * fRandomFloatInRange3;
-            effectCreateEffectInternal.R = Utility.randomFloatInRange(0.6f, 2.7f) * f5;
-            effectCreateEffectInternal.Y = Utility.randomFloatInRange(-180.0f, 180.0f);
-            effectCreateEffectInternal.K += 1.0f;
+            effectCreateEffectInternal.velocityX = Utility.fastCos(fRandomFloatInRange2) * fRandomFloatInRange3;
+            effectCreateEffectInternal.velocityY = Utility.fastSin(fRandomFloatInRange2) * fRandomFloatInRange3;
+            effectCreateEffectInternal.velocityZ = Utility.randomFloatInRange(0.6f, 2.7f) * f5;
+            effectCreateEffectInternal.rotation = Utility.randomFloatInRange(-180.0f, 180.0f);
+            effectCreateEffectInternal.posZ += 1.0f;
         }
         return effectCreateEffectInternal;
     }
@@ -503,28 +505,28 @@ public final class EffectManager {
     public Effect createShockwaveEffect(float f, float f2, float f3) {
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.low);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.aq = 8;
-            effectCreateEffectInternal.V = 480.0f;
-            effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+            effectCreateEffectInternal.stripIndex = 8;
+            effectCreateEffectInternal.lifeTimer = 480.0f;
+            effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
             effectCreateEffectInternal.fadeIn = false;
-            effectCreateEffectInternal.ar = (short) 1;
-            effectCreateEffectInternal.ae = true;
-            effectCreateEffectInternal.ak = 0.0f;
-            effectCreateEffectInternal.G = 0.5f;
-            effectCreateEffectInternal.G = 1.0f;
+            effectCreateEffectInternal.drawLayer = (short) 1;
+            effectCreateEffectInternal.animateFrames = true;
+            effectCreateEffectInternal.currentFrame = 0.0f;
+            effectCreateEffectInternal.scaleFrom = 0.5f;
+            effectCreateEffectInternal.scaleFrom = 1.0f;
             int randomIntInRange = Utility.getRandomIntInRange(0, 100);
             if (randomIntInRange > 80) {
-                effectCreateEffectInternal.aj = Utility.randomFloatInRange(0.1f, 0.15f);
-                effectCreateEffectInternal.ag = 15;
+                effectCreateEffectInternal.animateFrameSpeed = Utility.randomFloatInRange(0.1f, 0.15f);
+                effectCreateEffectInternal.animateFrameEnd = 15;
             } else if (randomIntInRange > 60) {
-                effectCreateEffectInternal.aj = Utility.randomFloatInRange(0.06f, 0.16f);
-                effectCreateEffectInternal.ah = true;
-                effectCreateEffectInternal.ag = 6;
+                effectCreateEffectInternal.animateFrameSpeed = Utility.randomFloatInRange(0.06f, 0.16f);
+                effectCreateEffectInternal.animateFramePingPong = true;
+                effectCreateEffectInternal.animateFrameEnd = 6;
                 effectCreateEffectInternal.fadeIn = true;
             } else {
-                effectCreateEffectInternal.aj = Utility.randomFloatInRange(0.06f, 0.16f);
-                effectCreateEffectInternal.ah = true;
-                effectCreateEffectInternal.ag = 3;
+                effectCreateEffectInternal.animateFrameSpeed = Utility.randomFloatInRange(0.06f, 0.16f);
+                effectCreateEffectInternal.animateFramePingPong = true;
+                effectCreateEffectInternal.animateFrameEnd = 3;
                 effectCreateEffectInternal.fadeIn = true;
             }
         }
@@ -550,7 +552,7 @@ public final class EffectManager {
     public Effect createEffect(float f, float f2, float f3, EffectType effectType, boolean z, EffectQuality effectQuality) {
         Effect effectCreateEffectInternal = createEffectInternal(f, f2, f3, effectType, z, effectQuality);
         if (effectCreateEffectInternal != null) {
-            effectCreateEffectInternal.p = true;
+            effectCreateEffectInternal.isUiEffect = true;
         }
         return effectCreateEffectInternal;
     }
@@ -588,58 +590,58 @@ public final class EffectManager {
             return null;
         }
         newEffect.free();
-        newEffect.q = effectQuality;
-        newEffect.aq = 0;
-        newEffect.an = true;
-        newEffect.I = f;
-        newEffect.J = f2;
-        newEffect.K = f3;
-        newEffect.E = 1.0f;
+        newEffect.priority = effectQuality;
+        newEffect.stripIndex = 0;
+        newEffect.isCentered = true;
+        newEffect.posX = f;
+        newEffect.posY = f2;
+        newEffect.posZ = f3;
+        newEffect.alpha = 1.0f;
         if (effectType == EffectType.hitGround || effectType == EffectType.playerLand || effectType == EffectType.playerJump) {
-            newEffect.ap = 7;
-            newEffect.V = 12.0f;
+            newEffect.frameIndex = 7;
+            newEffect.lifeTimer = 12.0f;
             newEffect.fadeIn = true;
-            newEffect.Q = -0.3f;
-            newEffect.E = 0.7f;
+            newEffect.velocityY = -0.3f;
+            newEffect.alpha = 0.7f;
             if (effectType == EffectType.playerJump) {
-                newEffect.ap = 3;
-                newEffect.Q = -0.7f;
-                newEffect.V = 24.0f;
-                newEffect.E = 0.7f;
+                newEffect.frameIndex = 3;
+                newEffect.velocityY = -0.7f;
+                newEffect.lifeTimer = 24.0f;
+                newEffect.alpha = 0.7f;
             }
             if (effectType == EffectType.playerLand) {
-                newEffect.ap = 4;
-                newEffect.V = 15.0f;
-                newEffect.E = 0.4f;
+                newEffect.frameIndex = 4;
+                newEffect.lifeTimer = 15.0f;
+                newEffect.alpha = 0.4f;
             }
         }
         if (effectType == EffectType.teleport) {
-            newEffect.ap = 1;
-            newEffect.V = 25.0f;
+            newEffect.frameIndex = 1;
+            newEffect.lifeTimer = 25.0f;
             newEffect.fadeIn = true;
         }
         if (effectType == EffectType.gemCollect) {
-            newEffect.ap = 5;
-            newEffect.V = 42.0f;
+            newEffect.frameIndex = 5;
+            newEffect.lifeTimer = 42.0f;
             newEffect.fadeIn = true;
-            newEffect.Q = 0.1f;
-            newEffect.E = 2.0f;
+            newEffect.velocityY = 0.1f;
+            newEffect.alpha = 2.0f;
         }
         if (effectType == EffectType.keyDoorOpen) {
-            newEffect.ap = 6;
-            newEffect.V = 39.0f;
+            newEffect.frameIndex = 6;
+            newEffect.lifeTimer = 39.0f;
             newEffect.fadeIn = true;
-            newEffect.Q = 0.1f;
-            newEffect.E = 2.0f;
+            newEffect.velocityY = 0.1f;
+            newEffect.alpha = 2.0f;
         }
         if (effectType == EffectType.blood) {
-            newEffect.ap = 14;
-            newEffect.V = 39.0f;
+            newEffect.frameIndex = 14;
+            newEffect.lifeTimer = 39.0f;
             newEffect.fadeIn = true;
-            newEffect.Q = 0.1f;
-            newEffect.E = 0.7f;
+            newEffect.velocityY = 0.1f;
+            newEffect.alpha = 0.7f;
         }
-        newEffect.W = newEffect.V;
+        newEffect.lifeMax = newEffect.lifeTimer;
         return newEffect;
     }
 
@@ -656,204 +658,204 @@ public final class EffectManager {
         }
         effectTemplates = new SpriteSheet[20];
         SpriteSheet spriteSheet = new SpriteSheet();
-        spriteSheet.b = 25;
-        spriteSheet.c = 25;
-        spriteSheet.d = 1;
-        spriteSheet.e = 1;
-        spriteSheet.f = 26;
-        spriteSheet.g = 26;
-        spriteSheet.i = gameEngine.renderGraphicsEngine.a(R.drawable.effects, true);
-        spriteSheet.a = "effects";
+        spriteSheet.frameWidth = 25;
+        spriteSheet.frameHeight = 25;
+        spriteSheet.offsetX = 1;
+        spriteSheet.offsetY = 1;
+        spriteSheet.stepX = 26;
+        spriteSheet.stepY = 26;
+        spriteSheet.texture = gameEngine.renderGraphicsEngine.a(R.drawable.effects, true);
+        spriteSheet.name = "effects";
         spriteSheet.createOutline();
         effectTemplates[0] = spriteSheet;
         SpriteSheet spriteSheet2 = new SpriteSheet();
-        spriteSheet2.b = 39;
-        spriteSheet2.c = 40;
-        spriteSheet2.d = 1;
-        spriteSheet2.e = 1;
-        spriteSheet2.f = 40;
-        spriteSheet2.g = 41;
-        spriteSheet2.i = gameEngine.renderGraphicsEngine.a(R.drawable.explode_big, true);
-        spriteSheet2.a = "explode_big";
+        spriteSheet2.frameWidth = 39;
+        spriteSheet2.frameHeight = 40;
+        spriteSheet2.offsetX = 1;
+        spriteSheet2.offsetY = 1;
+        spriteSheet2.stepX = 40;
+        spriteSheet2.stepY = 41;
+        spriteSheet2.texture = gameEngine.renderGraphicsEngine.a(R.drawable.explode_big, true);
+        spriteSheet2.name = "explode_big";
         effectTemplates[1] = spriteSheet2;
         SpriteSheet spriteSheet3 = new SpriteSheet();
-        spriteSheet3.k = true;
-        spriteSheet3.i = gameEngine.renderGraphicsEngine.a(R.drawable.light_50, true);
-        spriteSheet3.a = "light_50";
+        spriteSheet3.singleFrame = true;
+        spriteSheet3.texture = gameEngine.renderGraphicsEngine.a(R.drawable.light_50, true);
+        spriteSheet3.name = "light_50";
         effectTemplates[2] = spriteSheet3;
         SpriteSheet spriteSheet4 = new SpriteSheet();
-        spriteSheet4.b = 20;
-        spriteSheet4.c = 25;
-        spriteSheet4.d = 0;
-        spriteSheet4.e = 0;
-        spriteSheet4.f = 20;
-        spriteSheet4.g = 25;
-        spriteSheet4.i = gameEngine.renderGraphicsEngine.a(R.drawable.flame, true);
-        spriteSheet4.a = "flame";
+        spriteSheet4.frameWidth = 20;
+        spriteSheet4.frameHeight = 25;
+        spriteSheet4.offsetX = 0;
+        spriteSheet4.offsetY = 0;
+        spriteSheet4.stepX = 20;
+        spriteSheet4.stepY = 25;
+        spriteSheet4.texture = gameEngine.renderGraphicsEngine.a(R.drawable.flame, true);
+        spriteSheet4.name = "flame";
         effectTemplates[3] = spriteSheet4;
         SpriteSheet spriteSheet5 = new SpriteSheet();
-        spriteSheet5.b = 20;
-        spriteSheet5.c = 25;
-        spriteSheet5.d = 0;
-        spriteSheet5.e = 0;
-        spriteSheet5.f = spriteSheet5.b;
-        spriteSheet5.g = spriteSheet5.c;
-        spriteSheet5.i = gameEngine.renderGraphicsEngine.a(R.drawable.dust, true);
-        spriteSheet5.a = "dust";
+        spriteSheet5.frameWidth = 20;
+        spriteSheet5.frameHeight = 25;
+        spriteSheet5.offsetX = 0;
+        spriteSheet5.offsetY = 0;
+        spriteSheet5.stepX = spriteSheet5.frameWidth;
+        spriteSheet5.stepY = spriteSheet5.frameHeight;
+        spriteSheet5.texture = gameEngine.renderGraphicsEngine.a(R.drawable.dust, true);
+        spriteSheet5.name = "dust";
         effectTemplates[4] = spriteSheet5;
         SpriteSheet spriteSheet6 = new SpriteSheet();
-        spriteSheet6.b = 50;
-        spriteSheet6.c = 40;
-        spriteSheet6.d = 0;
-        spriteSheet6.e = 0;
-        spriteSheet6.f = spriteSheet6.b;
-        spriteSheet6.g = spriteSheet6.c;
-        spriteSheet6.i = gameEngine.renderGraphicsEngine.a(R.drawable.smoke_black, true);
-        spriteSheet6.a = "smoke_black";
+        spriteSheet6.frameWidth = 50;
+        spriteSheet6.frameHeight = 40;
+        spriteSheet6.offsetX = 0;
+        spriteSheet6.offsetY = 0;
+        spriteSheet6.stepX = spriteSheet6.frameWidth;
+        spriteSheet6.stepY = spriteSheet6.frameHeight;
+        spriteSheet6.texture = gameEngine.renderGraphicsEngine.a(R.drawable.smoke_black, true);
+        spriteSheet6.name = "smoke_black";
         spriteSheet6.createOutline();
         effectTemplates[5] = spriteSheet6;
         SpriteSheet spriteSheet7 = new SpriteSheet();
-        spriteSheet7.b = 50;
-        spriteSheet7.c = 50;
-        spriteSheet7.d = 0;
-        spriteSheet7.e = 0;
-        spriteSheet7.f = spriteSheet7.b;
-        spriteSheet7.g = spriteSheet7.c;
-        spriteSheet7.i = gameEngine.renderGraphicsEngine.a(R.drawable.shockwave, true);
-        spriteSheet7.a = "shockwave";
+        spriteSheet7.frameWidth = 50;
+        spriteSheet7.frameHeight = 50;
+        spriteSheet7.offsetX = 0;
+        spriteSheet7.offsetY = 0;
+        spriteSheet7.stepX = spriteSheet7.frameWidth;
+        spriteSheet7.stepY = spriteSheet7.frameHeight;
+        spriteSheet7.texture = gameEngine.renderGraphicsEngine.a(R.drawable.shockwave, true);
+        spriteSheet7.name = "shockwave";
         effectTemplates[6] = spriteSheet7;
         SpriteSheet spriteSheet8 = new SpriteSheet();
-        spriteSheet8.b = 20;
-        spriteSheet8.c = 20;
-        spriteSheet8.d = 0;
-        spriteSheet8.e = 0;
-        spriteSheet8.f = spriteSheet8.b;
-        spriteSheet8.g = spriteSheet8.c;
-        spriteSheet8.i = gameEngine.renderGraphicsEngine.a(R.drawable.fire, true);
-        spriteSheet8.a = "fire";
+        spriteSheet8.frameWidth = 20;
+        spriteSheet8.frameHeight = 20;
+        spriteSheet8.offsetX = 0;
+        spriteSheet8.offsetY = 0;
+        spriteSheet8.stepX = spriteSheet8.frameWidth;
+        spriteSheet8.stepY = spriteSheet8.frameHeight;
+        spriteSheet8.texture = gameEngine.renderGraphicsEngine.a(R.drawable.fire, true);
+        spriteSheet8.name = "fire";
         effectTemplates[7] = spriteSheet8;
         SpriteSheet spriteSheet9 = new SpriteSheet();
-        spriteSheet9.b = 20;
-        spriteSheet9.c = 30;
-        spriteSheet9.f = spriteSheet9.b + 2;
-        spriteSheet9.g = spriteSheet9.c;
-        spriteSheet9.i = gameEngine.renderGraphicsEngine.a(R.drawable.lava_bubble, true);
-        spriteSheet9.a = "lava_bubble";
+        spriteSheet9.frameWidth = 20;
+        spriteSheet9.frameHeight = 30;
+        spriteSheet9.stepX = spriteSheet9.frameWidth + 2;
+        spriteSheet9.stepY = spriteSheet9.frameHeight;
+        spriteSheet9.texture = gameEngine.renderGraphicsEngine.a(R.drawable.lava_bubble, true);
+        spriteSheet9.name = "lava_bubble";
         effectTemplates[8] = spriteSheet9;
         SpriteSheet spriteSheet10 = new SpriteSheet();
-        spriteSheet10.b = 28;
-        spriteSheet10.c = 28;
-        spriteSheet10.d = 0;
-        spriteSheet10.e = 0;
-        spriteSheet10.f = spriteSheet10.b + 1;
-        spriteSheet10.g = spriteSheet10.c + 1;
-        spriteSheet10.i = gameEngine.renderGraphicsEngine.a(R.drawable.effects2, true);
-        spriteSheet10.a = "effects2";
+        spriteSheet10.frameWidth = 28;
+        spriteSheet10.frameHeight = 28;
+        spriteSheet10.offsetX = 0;
+        spriteSheet10.offsetY = 0;
+        spriteSheet10.stepX = spriteSheet10.frameWidth + 1;
+        spriteSheet10.stepY = spriteSheet10.frameHeight + 1;
+        spriteSheet10.texture = gameEngine.renderGraphicsEngine.a(R.drawable.effects2, true);
+        spriteSheet10.name = "effects2";
         effectTemplates[9] = spriteSheet10;
         SpriteSheet spriteSheet11 = new SpriteSheet();
-        spriteSheet11.b = 20;
-        spriteSheet11.c = 25;
-        spriteSheet11.d = 0;
-        spriteSheet11.e = 0;
-        spriteSheet11.f = 20;
-        spriteSheet11.g = 25;
-        spriteSheet11.i = gameEngine.renderGraphicsEngine.a(R.drawable.plasma_shot, true);
-        spriteSheet11.a = "plasma_shot";
+        spriteSheet11.frameWidth = 20;
+        spriteSheet11.frameHeight = 25;
+        spriteSheet11.offsetX = 0;
+        spriteSheet11.offsetY = 0;
+        spriteSheet11.stepX = 20;
+        spriteSheet11.stepY = 25;
+        spriteSheet11.texture = gameEngine.renderGraphicsEngine.a(R.drawable.plasma_shot, true);
+        spriteSheet11.name = "plasma_shot";
         effectTemplates[10] = spriteSheet11;
         SpriteSheet spriteSheet12 = new SpriteSheet();
-        spriteSheet12.b = 104;
-        spriteSheet12.c = 104;
-        spriteSheet12.d = 0;
-        spriteSheet12.e = 0;
-        spriteSheet12.f = spriteSheet12.b;
-        spriteSheet12.g = spriteSheet12.c;
-        spriteSheet12.i = gameEngine.renderGraphicsEngine.a(R.drawable.shockwave_large, true);
-        spriteSheet12.a = "shockwave_large";
+        spriteSheet12.frameWidth = 104;
+        spriteSheet12.frameHeight = 104;
+        spriteSheet12.offsetX = 0;
+        spriteSheet12.offsetY = 0;
+        spriteSheet12.stepX = spriteSheet12.frameWidth;
+        spriteSheet12.stepY = spriteSheet12.frameHeight;
+        spriteSheet12.texture = gameEngine.renderGraphicsEngine.a(R.drawable.shockwave_large, true);
+        spriteSheet12.name = "shockwave_large";
         effectTemplates[11] = spriteSheet12;
         SpriteSheet spriteSheet13 = new SpriteSheet();
-        spriteSheet13.b = 20;
-        spriteSheet13.c = 20;
-        spriteSheet13.d = 0;
-        spriteSheet13.e = 0;
-        spriteSheet13.f = spriteSheet13.b;
-        spriteSheet13.g = spriteSheet13.c;
-        spriteSheet13.i = gameEngine.renderGraphicsEngine.a(R.drawable.explode_bits, true);
-        spriteSheet13.a = "explode_bits";
+        spriteSheet13.frameWidth = 20;
+        spriteSheet13.frameHeight = 20;
+        spriteSheet13.offsetX = 0;
+        spriteSheet13.offsetY = 0;
+        spriteSheet13.stepX = spriteSheet13.frameWidth;
+        spriteSheet13.stepY = spriteSheet13.frameHeight;
+        spriteSheet13.texture = gameEngine.renderGraphicsEngine.a(R.drawable.explode_bits, true);
+        spriteSheet13.name = "explode_bits";
         spriteSheet13.createOutline();
         effectTemplates[12] = spriteSheet13;
         SpriteSheet spriteSheet14 = new SpriteSheet();
-        spriteSheet14.b = 39;
-        spriteSheet14.c = 40;
-        spriteSheet14.d = 1;
-        spriteSheet14.e = 1;
-        spriteSheet14.f = 40;
-        spriteSheet14.g = 41;
-        spriteSheet14.i = gameEngine.renderGraphicsEngine.a(R.drawable.explode_big2, true);
-        spriteSheet14.a = "explode_big2";
+        spriteSheet14.frameWidth = 39;
+        spriteSheet14.frameHeight = 40;
+        spriteSheet14.offsetX = 1;
+        spriteSheet14.offsetY = 1;
+        spriteSheet14.stepX = 40;
+        spriteSheet14.stepY = 41;
+        spriteSheet14.texture = gameEngine.renderGraphicsEngine.a(R.drawable.explode_big2, true);
+        spriteSheet14.name = "explode_big2";
         effectTemplates[13] = spriteSheet14;
         SpriteSheet spriteSheet15 = new SpriteSheet();
-        spriteSheet15.b = 20;
-        spriteSheet15.c = 20;
-        spriteSheet15.d = 0;
-        spriteSheet15.e = 0;
-        spriteSheet15.f = spriteSheet15.b;
-        spriteSheet15.g = spriteSheet15.c;
-        spriteSheet15.i = gameEngine.renderGraphicsEngine.a(R.drawable.explode_bits_bug, true);
-        spriteSheet15.a = "explode_bits_bug";
+        spriteSheet15.frameWidth = 20;
+        spriteSheet15.frameHeight = 20;
+        spriteSheet15.offsetX = 0;
+        spriteSheet15.offsetY = 0;
+        spriteSheet15.stepX = spriteSheet15.frameWidth;
+        spriteSheet15.stepY = spriteSheet15.frameHeight;
+        spriteSheet15.texture = gameEngine.renderGraphicsEngine.a(R.drawable.explode_bits_bug, true);
+        spriteSheet15.name = "explode_bits_bug";
         spriteSheet15.createOutline();
         effectTemplates[14] = spriteSheet15;
         SpriteSheet spriteSheet16 = new SpriteSheet();
-        spriteSheet16.b = 20;
-        spriteSheet16.c = 20;
-        spriteSheet16.d = 0;
-        spriteSheet16.e = 0;
-        spriteSheet16.f = spriteSheet16.b;
-        spriteSheet16.g = spriteSheet16.c;
-        spriteSheet16.i = gameEngine.renderGraphicsEngine.a(R.drawable.projectiles, true);
-        spriteSheet16.a = "projectiles";
+        spriteSheet16.frameWidth = 20;
+        spriteSheet16.frameHeight = 20;
+        spriteSheet16.offsetX = 0;
+        spriteSheet16.offsetY = 0;
+        spriteSheet16.stepX = spriteSheet16.frameWidth;
+        spriteSheet16.stepY = spriteSheet16.frameHeight;
+        spriteSheet16.texture = gameEngine.renderGraphicsEngine.a(R.drawable.projectiles, true);
+        spriteSheet16.name = "projectiles";
         spriteSheet16.createOutline();
         effectTemplates[15] = spriteSheet16;
         SpriteSheet spriteSheet17 = new SpriteSheet();
-        spriteSheet17.b = 20;
-        spriteSheet17.c = 20;
-        spriteSheet17.d = 0;
-        spriteSheet17.e = 0;
-        spriteSheet17.f = spriteSheet17.b;
-        spriteSheet17.g = spriteSheet17.c;
-        spriteSheet17.i = gameEngine.renderGraphicsEngine.a(R.drawable.projectiles2, true);
-        spriteSheet17.a = "projectiles2";
+        spriteSheet17.frameWidth = 20;
+        spriteSheet17.frameHeight = 20;
+        spriteSheet17.offsetX = 0;
+        spriteSheet17.offsetY = 0;
+        spriteSheet17.stepX = spriteSheet17.frameWidth;
+        spriteSheet17.stepY = spriteSheet17.frameHeight;
+        spriteSheet17.texture = gameEngine.renderGraphicsEngine.a(R.drawable.projectiles2, true);
+        spriteSheet17.name = "projectiles2";
         spriteSheet17.createOutline();
         effectTemplates[16] = spriteSheet17;
         SpriteSheet spriteSheet18 = new SpriteSheet();
-        spriteSheet18.b = 30;
-        spriteSheet18.c = 30;
-        spriteSheet18.d = 0;
-        spriteSheet18.e = 0;
-        spriteSheet18.f = spriteSheet18.b + 1;
-        spriteSheet18.g = spriteSheet18.c + 1;
-        spriteSheet18.i = gameEngine.renderGraphicsEngine.a(R.drawable.effects3, true);
-        spriteSheet18.a = "effects3";
+        spriteSheet18.frameWidth = 30;
+        spriteSheet18.frameHeight = 30;
+        spriteSheet18.offsetX = 0;
+        spriteSheet18.offsetY = 0;
+        spriteSheet18.stepX = spriteSheet18.frameWidth + 1;
+        spriteSheet18.stepY = spriteSheet18.frameHeight + 1;
+        spriteSheet18.texture = gameEngine.renderGraphicsEngine.a(R.drawable.effects3, true);
+        spriteSheet18.name = "effects3";
         effectTemplates[17] = spriteSheet18;
         SpriteSheet spriteSheet19 = new SpriteSheet();
-        spriteSheet19.b = 50;
-        spriteSheet19.c = 40;
-        spriteSheet19.d = 0;
-        spriteSheet19.e = 0;
-        spriteSheet19.f = spriteSheet19.b;
-        spriteSheet19.g = spriteSheet19.c;
-        spriteSheet19.i = gameEngine.renderGraphicsEngine.a(R.drawable.smoke_white, true);
-        spriteSheet19.a = "smoke_white";
+        spriteSheet19.frameWidth = 50;
+        spriteSheet19.frameHeight = 40;
+        spriteSheet19.offsetX = 0;
+        spriteSheet19.offsetY = 0;
+        spriteSheet19.stepX = spriteSheet19.frameWidth;
+        spriteSheet19.stepY = spriteSheet19.frameHeight;
+        spriteSheet19.texture = gameEngine.renderGraphicsEngine.a(R.drawable.smoke_white, true);
+        spriteSheet19.name = "smoke_white";
         spriteSheet19.createOutline();
         effectTemplates[18] = spriteSheet19;
         SpriteSheet spriteSheet20 = new SpriteSheet();
-        spriteSheet20.b = 56;
-        spriteSheet20.c = 56;
-        spriteSheet20.d = 0;
-        spriteSheet20.e = 0;
-        spriteSheet20.f = spriteSheet20.b;
-        spriteSheet20.g = spriteSheet20.c;
-        spriteSheet20.i = gameEngine.renderGraphicsEngine.a(R.drawable.shockwave2, true);
-        spriteSheet20.a = "shockwave2";
+        spriteSheet20.frameWidth = 56;
+        spriteSheet20.frameHeight = 56;
+        spriteSheet20.offsetX = 0;
+        spriteSheet20.offsetY = 0;
+        spriteSheet20.stepX = spriteSheet20.frameWidth;
+        spriteSheet20.stepY = spriteSheet20.frameHeight;
+        spriteSheet20.texture = gameEngine.renderGraphicsEngine.a(R.drawable.shockwave2, true);
+        spriteSheet20.name = "shockwave2";
         spriteSheet20.createOutline();
         effectTemplates[19] = spriteSheet20;
         if (GameEngine.isPC()) {
@@ -879,7 +881,7 @@ public final class EffectManager {
     public int findEffectTemplateIndex(String str) {
         for (int i = 0; i < effectTemplates.length; i++) {
             if (effectTemplates[i] != null) {
-                if (effectTemplates[i].a != null && effectTemplates[i].a.equalsIgnoreCase(str)) {
+                if (effectTemplates[i].name != null && effectTemplates[i].name.equalsIgnoreCase(str)) {
                     return i;
                 }
                 if ((VariableScope.nullOrMissingString + i).equals(str)) {
@@ -896,7 +898,7 @@ public final class EffectManager {
         Effect[] effectArr = effects;
         for (int i = 0; i < nextFreeEffect; i++) {
             Effect effect = effectArr[i];
-            if (effect.isActive && !effect.p) {
+            if (effect.isActive && !effect.isUiEffect) {
                 effect.draw(f);
             }
         }
@@ -929,13 +931,13 @@ public final class EffectManager {
         for (int i3 = 0; i3 < nextFreeEffect; i3++) {
             Effect effect = effects[i3];
             if (effect.isActive) {
-                if (!this.activeEffectLayerFlags[effect.ar]) {
-                    this.activeEffectLayerFlags[effect.ar] = true;
+                if (!this.activeEffectLayerFlags[effect.drawLayer]) {
+                    this.activeEffectLayerFlags[effect.drawLayer] = true;
                 }
-                if (effect.p) {
+                if (effect.isUiEffect) {
                     effect.draw(f);
                 }
-                if (effect.as && effect.update(gameEngine, true)) {
+                if (effect.shadow && effect.update(gameEngine, true)) {
                     i++;
                 }
             }
@@ -953,7 +955,7 @@ public final class EffectManager {
         Effect[] effectArr = effects;
         for (int i3 = 0; i3 < nextFreeEffect; i3++) {
             Effect effect = effectArr[i3];
-            if (effect.isActive && effect.ar == i && effect.update(gameEngine, false)) {
+            if (effect.isActive && effect.drawLayer == i && effect.update(gameEngine, false)) {
                 i2++;
             }
         }

@@ -113,7 +113,7 @@ public class PingMapAction extends AbstractUnitAction {
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction
     /* JADX INFO: renamed from: j */
     public Texture getIconTexture() {
-        return EffectManager.effectTemplates[9].i;
+        return EffectManager.effectTemplates[9].texture;
     }
 
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction

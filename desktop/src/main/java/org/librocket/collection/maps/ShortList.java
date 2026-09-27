@@ -7,7 +7,7 @@ import org.librocket.collection.sets.ShortListIterator;
 /* JADX INFO: renamed from: org.a.a.d.d */
 /* JADX INFO: loaded from: game-lib.jar:org/a/a/d/d.class */
 public interface ShortList extends ShortCollection, LongList {
-    @Override // org.librocket.collection.collections.ShortCollection, java.util.Collection, java.lang.Iterable, org.librocket.collection.iterators.LongIterable
+    @Override // org.librocket.collection.collections.ShortCollection, java.util.Collection, java.lang.Iterable, org.librocket.collection.iterators.ShortIterable
     /* JADX INFO: renamed from: a */
     ShortIterator iterator();
 

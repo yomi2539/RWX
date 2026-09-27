@@ -68,7 +68,7 @@ public class PatrolAction extends AbstractUnitAction {
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction
     /* JADX INFO: renamed from: l */
     public float getBuildSpeed() {
-        if (!GameUI.bP) {
+        if (!GameUI.showModernActionIcons) {
             return 0.6f;
         }
         return 0.5f;

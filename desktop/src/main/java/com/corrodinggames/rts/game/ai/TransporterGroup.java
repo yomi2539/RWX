@@ -20,12 +20,16 @@ import java.util.Iterator;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.a.n */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/a/n.class */
 public class TransporterGroup extends AIUnitGroupBase {
-    boolean a;
-    int b;
-    int c;
+    /* JADX INFO: renamed from: a */
+    boolean unusedFlag1;
+    /* JADX INFO: renamed from: b */
+    int unusedInt1;
+    /* JADX INFO: renamed from: c */
+    int unusedInt2;
     /* JADX INFO: renamed from: d */
     BaseZone zone;
-    float e;
+    /* JADX INFO: renamed from: e */
+    float unusedFloat1;
     /* JADX INFO: renamed from: f */
     float repositionTimer;
     /* JADX INFO: renamed from: g */
@@ -44,8 +48,10 @@ public class TransporterGroup extends AIUnitGroupBase {
     AIUnitGroupBase unitGroup;
     /* JADX INFO: renamed from: n */
     OrderableUnit transportUnit;
-    float o;
-    boolean p;
+    /* JADX INFO: renamed from: o */
+    float deliveryTimer;
+    /* JADX INFO: renamed from: p */
+    boolean isUnloading;
     /* JADX INFO: renamed from: q */
     boolean isWaitingForUnits;
     /* JADX INFO: renamed from: r */
@@ -55,20 +61,20 @@ public class TransporterGroup extends AIUnitGroupBase {
 
     public TransporterGroup(AIController aIController) {
         super(aIController);
-        this.e = 100.0f;
+        this.unusedFloat1 = 100.0f;
         this.repositionTimer = 4000.0f;
         this.pickupSearchTimer = 100.0f;
-        this.o = 0.0f;
-        this.p = false;
+        this.deliveryTimer = 0.0f;
+        this.isUnloading = false;
     }
 
     @Override // com.corrodinggames.rts.game.ai.AIStrategyNode, com.corrodinggames.rts.gameFramework.Serializable
     public void a(GameOutputStream gameOutputStream) throws IOException {
-        gameOutputStream.writeBoolean(this.a);
-        gameOutputStream.writeInt(this.b);
-        gameOutputStream.writeInt(this.c);
-        gameOutputStream.writeInt(this.F.size());
-        Iterator it = this.F.iterator();
+        gameOutputStream.writeBoolean(this.unusedFlag1);
+        gameOutputStream.writeInt(this.unusedInt1);
+        gameOutputStream.writeInt(this.unusedInt2);
+        gameOutputStream.writeInt(this.units.size());
+        Iterator it = this.units.iterator();
         while (it.hasNext()) {
             gameOutputStream.writeOrderableUnit((OrderableUnit) it.next());
         }
@@ -76,8 +82,8 @@ public class TransporterGroup extends AIUnitGroupBase {
         gameOutputStream.writeInt(this.aiController.filterUnitAndCommand(this.unitGroup));
         gameOutputStream.writeBoolean(this.isWaitingForUnits);
         gameOutputStream.writeOrderableUnit(this.transportUnit);
-        gameOutputStream.writeFloat(this.o);
-        gameOutputStream.writeBoolean(this.p);
+        gameOutputStream.writeFloat(this.deliveryTimer);
+        gameOutputStream.writeBoolean(this.isUnloading);
         gameOutputStream.writeFloat(this.waitPosX);
         gameOutputStream.writeFloat(this.waitPosY);
         super.a(gameOutputStream);
@@ -86,10 +92,10 @@ public class TransporterGroup extends AIUnitGroupBase {
     @Override // com.corrodinggames.rts.game.ai.AIStrategyNode
     /* JADX INFO: renamed from: a */
     public void readFromInputStream(GameInputStream gameInputStream) throws IOException {
-        this.a = gameInputStream.readBoolean();
-        this.b = gameInputStream.readInt();
-        this.c = gameInputStream.readInt();
-        q();
+        this.unusedFlag1 = gameInputStream.readBoolean();
+        this.unusedInt1 = gameInputStream.readInt();
+        this.unusedInt2 = gameInputStream.readInt();
+        clearUnits();
         int i = gameInputStream.readInt();
         for (int i2 = 0; i2 < i; i2++) {
             OrderableUnit unitEntity = gameInputStream.readOrderableUnit();
@@ -97,7 +103,7 @@ public class TransporterGroup extends AIUnitGroupBase {
                 if (!this.aiController.isNonCombatCustomUnit(unitEntity)) {
                     GameEngine.logColored("TransporterGroup:readIn: Unit is not transporterUnit");
                 } else {
-                    a(unitEntity);
+                    addUnit(unitEntity);
                 }
             }
         }
@@ -112,8 +118,8 @@ public class TransporterGroup extends AIUnitGroupBase {
             this.transportUnit = gameInputStream.readOrderableUnit();
         }
         if (b >= 4) {
-            this.o = gameInputStream.readFloat();
-            this.p = gameInputStream.readBoolean();
+            this.deliveryTimer = gameInputStream.readFloat();
+            this.isUnloading = gameInputStream.readBoolean();
         }
         if (b >= 5) {
             this.waitPosX = gameInputStream.readFloat();
@@ -122,38 +128,41 @@ public class TransporterGroup extends AIUnitGroupBase {
         super.readFromInputStream(gameInputStream);
     }
 
-    public void c() {
+    /* JADX INFO: renamed from: c */
+    public void recruitTransportUnits() {
         for (BaseUnit baseUnit : BaseUnit.bE) {
-            if (!baseUnit.isDead && baseUnit.team == this.aiController && this.capacity > this.F.size() && (baseUnit instanceof OrderableUnit)) {
+            if (!baseUnit.isDead && baseUnit.team == this.aiController && this.capacity > this.units.size() && (baseUnit instanceof OrderableUnit)) {
                 OrderableUnit orderableUnit = (OrderableUnit) baseUnit;
                 if (!orderableUnit.isAIUnit && orderableUnit.aB == null && this.aiController.isNonCombatCustomUnit(orderableUnit) && this.aiController.isEligibleUnitForRandomSelection(orderableUnit)) {
-                    a(orderableUnit);
+                    addUnit(orderableUnit);
                 }
             }
         }
     }
 
-    public boolean d() {
+    /* JADX INFO: renamed from: d */
+    public boolean hasAssignedGroup() {
         return this.unitGroup != null;
     }
 
     /* JADX WARN: Multi-variable type inference failed */
     @Override // com.corrodinggames.rts.game.ai.AIUnitGroupBase
-    public void c(float f) {
+    /* JADX INFO: renamed from: c */
+    public void updateAI(float f) {
         GameEngine gameEngine = GameEngine.getInstance();
         this.updateTimer += f;
-        n();
-        if (this.capacity <= this.F.size()) {
+        removeDeadUnits();
+        if (this.capacity <= this.units.size()) {
         }
         this.requestTimer = Utility.moveTowardsZero(this.requestTimer, f);
         this.commandTimer = Utility.moveTowardsZero(this.commandTimer, f);
         this.retryTimer = Utility.moveTowardsZero(this.retryTimer, f);
-        if (!d() && !this.isWaitingForUnits && this.capacity > this.F.size() && this.requestTimer == 0.0f) {
+        if (!hasAssignedGroup() && !this.isWaitingForUnits && this.capacity > this.units.size() && this.requestTimer == 0.0f) {
             this.requestTimer = 300.0f;
-            c();
+            recruitTransportUnits();
         }
-        if (!d() && this.F.size() != 0) {
-            if (!d()) {
+        if (!hasAssignedGroup() && this.units.size() != 0) {
+            if (!hasAssignedGroup()) {
                 this.repositionTimer = Utility.moveTowardsZero(this.repositionTimer, f);
                 if (this.repositionTimer == 0.0f) {
                     this.repositionTimer = 4000.0f;
@@ -167,7 +176,7 @@ public class TransporterGroup extends AIUnitGroupBase {
             if (this.commandTimer == 0.0f) {
                 this.commandTimer = 400.0f;
                 Command commandNewCommandForTeam = gameEngine.commandController.newCommandForTeam(this.aiController);
-                for (OrderableUnit orderableUnit : this.F) {
+                for (OrderableUnit orderableUnit : this.units) {
                     if (getDistanceSqToUnit(orderableUnit) > 28900.0f && !orderableUnit.isAttackCommandActive()) {
                         commandNewCommandForTeam.addUnitToCommand(orderableUnit);
                     } else if (((TransportUnitInterface) orderableUnit).getTransportedUnitCount() != 0) {
@@ -184,10 +193,10 @@ public class TransporterGroup extends AIUnitGroupBase {
                 if (this.pickupSearchTimer == 0.0f) {
                     this.pickupSearchTimer = 100.0f;
                     if (Utility.getRandomIntInRange(0, 100) < 80) {
-                        a(f, true);
+                        findGroupNeedingTransport(f, true);
                     }
                     if (this.unitGroup == null) {
-                        a(f, false);
+                        findGroupNeedingTransport(f, false);
                     }
                 }
             }
@@ -197,7 +206,7 @@ public class TransporterGroup extends AIUnitGroupBase {
         }
         if (!this.isWaitingForUnits) {
             if (this.unitGroup != null) {
-                ArrayList<OrderableUnit> arrayList = this.unitGroup.G;
+                ArrayList<OrderableUnit> arrayList = this.unitGroup.unitsNeedingTransport;
                 if (this.transportUnit != null && (this.transportUnit.isDead || this.transportUnit.transportContainer != null || this.transportUnit.parentEntity != null)) {
                     arrayList.remove(this.transportUnit);
                     this.transportUnit = null;
@@ -205,7 +214,7 @@ public class TransporterGroup extends AIUnitGroupBase {
                 if (this.transportUnit == null) {
                     for (OrderableUnit orderableUnit2 : arrayList) {
                         if (orderableUnit2.transportContainer == null) {
-                            Iterator it = this.F.iterator();
+                            Iterator it = this.units.iterator();
                             while (true) {
                                 if (it.hasNext()) {
                                     if (((OrderableUnit) it.next()).d((BaseUnit) orderableUnit2, false)) {
@@ -230,7 +239,7 @@ public class TransporterGroup extends AIUnitGroupBase {
                     if (this.commandTimer == 0.0f) {
                         this.commandTimer = 400.0f;
                         Command commandNewCommandForTeam3 = gameEngine.commandController.newCommandForTeam(this.aiController);
-                        Iterator it2 = this.F.iterator();
+                        Iterator it2 = this.units.iterator();
                         while (it2.hasNext()) {
                             commandNewCommandForTeam3.addUnitToCommand((OrderableUnit) it2.next());
                         }
@@ -239,7 +248,7 @@ public class TransporterGroup extends AIUnitGroupBase {
                     if (this.retryTimer == 0.0f) {
                         this.retryTimer = 80.0f;
                         for (OrderableUnit orderableUnit3 : arrayList) {
-                            Iterator<OrderableUnit> it3 = this.F.iterator();
+                            Iterator<OrderableUnit> it3 = this.units.iterator();
                             while (true) {
                                 if (it3.hasNext()) {
                                     OrderableUnit orderableUnit4 = it3.next();
@@ -253,7 +262,7 @@ public class TransporterGroup extends AIUnitGroupBase {
                             }
                         }
                         boolean z = false;
-                        Iterator it4 = this.F.iterator();
+                        Iterator it4 = this.units.iterator();
                         while (it4.hasNext()) {
                             if (((OrderableUnit) it4.next()).d((BaseUnit) this.transportUnit, false)) {
                                 z = true;
@@ -266,17 +275,17 @@ public class TransporterGroup extends AIUnitGroupBase {
                 }
             }
         } else if (this.unitGroup == null) {
-            e();
+            completeDelivery();
         } else {
             if (this.commandTimer == 0.0f) {
                 this.commandTimer = 400.0f;
                 float fRandomFloatInRange = this.unitGroup.posX + Utility.randomFloatInRange(-40.0f, 40.0f);
                 float fRandomFloatInRange2 = this.unitGroup.posY + Utility.randomFloatInRange(-40.0f, 40.0f);
-                if (this.o > 600.0f) {
+                if (this.deliveryTimer > 600.0f) {
                     fRandomFloatInRange += Utility.randomFloatInRange(-300.0f, 300.0f);
                     fRandomFloatInRange2 += Utility.randomFloatInRange(-300.0f, 300.0f);
                 }
-                if (this.o > 1200.0f) {
+                if (this.deliveryTimer > 1200.0f) {
                     fRandomFloatInRange += Utility.randomFloatInRange(-300.0f, 300.0f);
                     fRandomFloatInRange2 += Utility.randomFloatInRange(-300.0f, 300.0f);
                 }
@@ -298,7 +307,7 @@ public class TransporterGroup extends AIUnitGroupBase {
                     this.waitPosX = fRandomFloatInRange;
                     this.waitPosY = fRandomFloatInRange2;
                     Command commandNewCommandForTeam5 = gameEngine.commandController.newCommandForTeam(this.aiController);
-                    for (OrderableUnit orderableUnit5 : this.F) {
+                    for (OrderableUnit orderableUnit5 : this.units) {
                         if (((TransportUnitInterface) orderableUnit5).getTransportedUnitCount() == 0) {
                             Command commandNewCommandForTeam6 = gameEngine.commandController.newCommandForTeam(this.aiController);
                             commandNewCommandForTeam6.addUnitToCommand(orderableUnit5);
@@ -312,9 +321,9 @@ public class TransporterGroup extends AIUnitGroupBase {
             }
             if (this.retryTimer == 0.0f) {
                 this.retryTimer = 100.0f;
-                for (OrderableUnit orderableUnit6 : this.F) {
+                for (OrderableUnit orderableUnit6 : this.units) {
                     if (Utility.distanceSq(orderableUnit6.posX, orderableUnit6.posY, this.waitPosX, this.waitPosY) < 6400.0f) {
-                        this.p = true;
+                        this.isUnloading = true;
                         ActionId actionIdCp2 = orderableUnit6.getUnloadActionId();
                         Command commandNewCommandForTeam7 = gameEngine.commandController.newCommandForTeam(this.aiController);
                         commandNewCommandForTeam7.addUnitToCommand(orderableUnit6);
@@ -322,40 +331,42 @@ public class TransporterGroup extends AIUnitGroupBase {
                     }
                 }
             }
-            if (this.p) {
-                this.unitGroup.o();
-                this.o += f;
+            if (this.isUnloading) {
+                this.unitGroup.pruneUnitsNeedingTransport();
+                this.deliveryTimer += f;
             }
             boolean z2 = false;
-            for (OrderableUnit orderableUnit7 : this.F) {
+            for (OrderableUnit orderableUnit7 : this.units) {
                 if (!orderableUnit7.isDead && ((TransportUnitInterface) orderableUnit7).getTransportedUnitCount() != 0) {
                     z2 = true;
                 }
             }
-            if (!z2 || this.o > 1700.0f) {
-                e();
+            if (!z2 || this.deliveryTimer > 1700.0f) {
+                completeDelivery();
             }
         }
-        if (this.updateTimer > 1500.0f && this.F.size() == 0) {
+        if (this.updateTimer > 1500.0f && this.units.size() == 0) {
             destroy();
         }
     }
 
-    public void e() {
+    /* JADX INFO: renamed from: e */
+    public void completeDelivery() {
         this.isWaitingForUnits = false;
         this.unitGroup = null;
-        this.o = 0.0f;
+        this.deliveryTimer = 0.0f;
         this.commandTimer = 0.0f;
         this.retryTimer = 0.0f;
-        this.p = false;
-        f();
+        this.isUnloading = false;
+        selectNewPosition();
     }
 
-    public void a(float f, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public void findGroupNeedingTransport(float f, boolean z) {
         for (AIStrategyNode aIStrategyNode : this.aiController.activeStrategies) {
             if ((aIStrategyNode instanceof AIUnitGroupBase) && !(aIStrategyNode instanceof TransporterGroup) && (!z || (aIStrategyNode instanceof RallyGroup))) {
                 AIUnitGroupBase aIUnitGroupBase = (AIUnitGroupBase) aIStrategyNode;
-                if (aIUnitGroupBase.G.size() != 0 && !aIUnitGroupBase.m()) {
+                if (aIUnitGroupBase.unitsNeedingTransport.size() != 0 && !aIUnitGroupBase.isAssignedToTransporter()) {
                     this.unitGroup = aIUnitGroupBase;
                     this.transportUnit = null;
                     return;
@@ -364,7 +375,8 @@ public class TransporterGroup extends AIUnitGroupBase {
         }
     }
 
-    public BaseZone a(boolean z) {
+    /* JADX INFO: renamed from: a */
+    public BaseZone findBaseZone(boolean z) {
         BaseZone baseZone = null;
         for (AIStrategyNode aIStrategyNode : this.aiController.activeStrategies) {
             if (aIStrategyNode instanceof BaseZone) {
@@ -384,12 +396,13 @@ public class TransporterGroup extends AIUnitGroupBase {
         return baseZone;
     }
 
-    public void f() {
+    /* JADX INFO: renamed from: f */
+    public void selectNewPosition() {
         PointF randomTilePosition = null;
         if (1 != 0) {
-            this.zone = a(true);
+            this.zone = findBaseZone(true);
             if (this.zone == null) {
-                this.zone = a(false);
+                this.zone = findBaseZone(false);
             }
             if (this.zone != null) {
                 randomTilePosition = this.zone.getRandomPointInside();

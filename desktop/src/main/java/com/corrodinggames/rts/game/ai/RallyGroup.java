@@ -21,14 +21,14 @@ public class RallyGroup extends AIUnitGroupBase {
 
     @Override // com.corrodinggames.rts.game.ai.AIStrategyNode, com.corrodinggames.rts.gameFramework.Serializable
     public void a(GameOutputStream gameOutputStream) throws IOException {
-        gameOutputStream.writeInt(this.F.size());
-        Iterator it = this.F.iterator();
+        gameOutputStream.writeInt(this.units.size());
+        Iterator it = this.units.iterator();
         while (it.hasNext()) {
             gameOutputStream.writeOrderableUnit((OrderableUnit) it.next());
         }
         gameOutputStream.writeByte(1);
-        gameOutputStream.writeInt(this.G.size());
-        Iterator it2 = this.G.iterator();
+        gameOutputStream.writeInt(this.unitsNeedingTransport.size());
+        Iterator it2 = this.unitsNeedingTransport.iterator();
         while (it2.hasNext()) {
             gameOutputStream.writeOrderableUnit((OrderableUnit) it2.next());
         }
@@ -39,21 +39,21 @@ public class RallyGroup extends AIUnitGroupBase {
     @Override // com.corrodinggames.rts.game.ai.AIStrategyNode
     /* JADX INFO: renamed from: a */
     public void readFromInputStream(GameInputStream gameInputStream) throws IOException {
-        q();
+        clearUnits();
         int i = gameInputStream.readInt();
         for (int i2 = 0; i2 < i; i2++) {
             OrderableUnit unitEntity = gameInputStream.readOrderableUnit();
             if (unitEntity != null) {
-                a(unitEntity);
+                addUnit(unitEntity);
             }
         }
         if (gameInputStream.readByte() >= 1) {
-            this.G.clear();
+            this.unitsNeedingTransport.clear();
             int i3 = gameInputStream.readInt();
             for (int i4 = 0; i4 < i3; i4++) {
                 OrderableUnit unitEntity2 = gameInputStream.readOrderableUnit();
                 if (unitEntity2 != null) {
-                    this.G.add(unitEntity2);
+                    this.unitsNeedingTransport.add(unitEntity2);
                 }
             }
             this.lifetime = gameInputStream.readFloat();
@@ -62,12 +62,13 @@ public class RallyGroup extends AIUnitGroupBase {
     }
 
     @Override // com.corrodinggames.rts.game.ai.AIUnitGroupBase
-    public void c(float f) {
-        n();
-        if (!m()) {
+    /* JADX INFO: renamed from: c */
+    public void updateAI(float f) {
+        removeDeadUnits();
+        if (!isAssignedToTransporter()) {
             this.lifetime += f;
         }
-        Iterator it = this.F.iterator();
+        Iterator it = this.units.iterator();
         while (it.hasNext()) {
             OrderableUnit orderableUnit = (OrderableUnit) it.next();
             if (getDistanceSqToUnit((BaseUnit) orderableUnit) < 3600.0f && orderableUnit.transportContainer == null) {
@@ -77,13 +78,14 @@ public class RallyGroup extends AIUnitGroupBase {
                 it.remove();
             }
         }
-        if (this.F.size() == 0 || this.lifetime > 5000.0f) {
+        if (this.units.size() == 0 || this.lifetime > 5000.0f) {
             destroy();
         }
     }
 
-    public void c(OrderableUnit orderableUnit) {
-        a(orderableUnit);
-        this.G.add(orderableUnit);
+    /* JADX INFO: renamed from: c */
+    public void addUnitNeedingTransport(OrderableUnit orderableUnit) {
+        addUnit(orderableUnit);
+        this.unitsNeedingTransport.add(orderableUnit);
     }
 }

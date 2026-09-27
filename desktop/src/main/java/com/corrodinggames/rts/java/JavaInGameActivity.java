@@ -15,11 +15,15 @@ public class JavaInGameActivity extends InGameActivity {
         onSelectMenuOption(i);
     }
 
-    private void e(String str) {
+    @Override // com.corrodinggames.rts.appFramework.InGameActivity
+    /* JADX INFO: renamed from: e */
+    public void showSaveGameDialog(String str) {
         ScriptEngine.getInstance().getRoot().makeSaveGamePopup(str);
     }
 
-    private void f(String str) {
+    @Override // com.corrodinggames.rts.appFramework.InGameActivity
+    /* JADX INFO: renamed from: f */
+    public void showExportMapDialog(String str) {
         ScriptEngine.getInstance().getRoot().makeExportMapGamePopup(str);
     }
 
@@ -62,7 +66,7 @@ public class JavaInGameActivity extends InGameActivity {
                 }
                 break;
             case 12:
-                e(null);
+                showSaveGameDialog(null);
                 break;
             case 13:
                 ScriptEngine.getInstance().addScriptToQueue("makeSendMessagePopup();");
@@ -83,7 +87,7 @@ public class JavaInGameActivity extends InGameActivity {
                 ScriptEngine.getInstance().addScriptToQueue("mp.reinviteAsk();");
                 break;
             case 18:
-                f(null);
+                showExportMapDialog(null);
                 break;
             case 19:
                 ScriptEngine.getInstance().addScriptToQueue("mp.surrenderPrompt();");

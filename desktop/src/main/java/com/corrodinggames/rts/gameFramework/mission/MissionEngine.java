@@ -577,7 +577,7 @@ public class MissionEngine extends Serializable {
                     if (mapTrigger.C) {
                         final SpriteSheet spriteSheet = EffectManager.effectTemplates[9];
                         spriteSheet.drawSprite(2, n, n2, mapTrigger.B);
-                        n2 -= spriteSheet.c - 2;
+                        n2 -= spriteSheet.frameHeight - 2;
                     }
                     if (mapTrigger.text == null) {
                         continue;

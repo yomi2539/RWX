@@ -281,7 +281,7 @@ public class BaseZone extends AIStrategyNode {
 
     /* JADX INFO: renamed from: a */
     public boolean hasBuilderFor(UnitType unitType) {
-        if (a(unitType, false, true) != null) {
+        if (findFactoryForUnitType(unitType, false, true) != null) {
             return true;
         }
         return false;
@@ -500,7 +500,7 @@ public class BaseZone extends AIStrategyNode {
             BaseUnit baseUnit = baseUnitArrA[i2];
             if (baseUnit.team == this.aiController && (baseUnit instanceof OrderableUnit)) {
                 OrderableUnit orderableUnit = (OrderableUnit) baseUnit;
-                if (a(orderableUnit, false) && !orderableUnit.isActive && orderableUnit.aB == null && this.aiController.isCombatCustomUnit(orderableUnit) && this.aiController.isEligibleUnitForRandomSelection(orderableUnit)) {
+                if (belongsToZoneUnit(orderableUnit, false) && !orderableUnit.isActive && orderableUnit.aB == null && this.aiController.isCombatCustomUnit(orderableUnit) && this.aiController.isEligibleUnitForRandomSelection(orderableUnit)) {
                     i++;
                 }
             }
@@ -552,7 +552,8 @@ public class BaseZone extends AIStrategyNode {
         return i;
     }
 
-    public void i() {
+    /* JADX INFO: renamed from: i */
+    public void commandUnitsToAttackClosestEnemy() {
         GameEngine gameEngine = GameEngine.getInstance();
         BaseUnit closestEnemyUnit = getClosestEnemyUnit();
         if (closestEnemyUnit != null) {
@@ -580,10 +581,11 @@ public class BaseZone extends AIStrategyNode {
 
     /* JADX INFO: renamed from: a */
     public boolean countUnitsForStrategy(BaseUnit baseUnit) {
-        return a(baseUnit, false);
+        return belongsToZone(baseUnit, false);
     }
 
-    public boolean a(BaseUnit baseUnit, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public boolean belongsToZone(BaseUnit baseUnit, boolean z) {
         if ((baseUnit instanceof OrderableUnit) && ((OrderableUnit) baseUnit).aC == this) {
             if (!z || isUnitInside(baseUnit)) {
                 return true;
@@ -593,7 +595,8 @@ public class BaseZone extends AIStrategyNode {
         return false;
     }
 
-    public boolean a(OrderableUnit orderableUnit, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public boolean belongsToZoneUnit(OrderableUnit orderableUnit, boolean z) {
         if (orderableUnit.aC == this) {
             if (!z || isUnitInside(orderableUnit)) {
                 return true;
@@ -603,10 +606,11 @@ public class BaseZone extends AIStrategyNode {
         return false;
     }
 
-    public int j() {
+    /* JADX INFO: renamed from: j */
+    public int countEnemyUnitsInsideZone() {
         int i = 0;
-        for (Object o : k()) {
-            BaseUnit baseUnit=(BaseUnit) o;
+        for (Object zoneUnit : getUnitsInZoneIterator()) {
+            BaseUnit baseUnit=(BaseUnit) zoneUnit;
             if (this.aiController != baseUnit.team && baseUnit.team.c(this.aiController) && (baseUnit instanceof OrderableUnit) && isUnitInside(baseUnit)) {
                 i++;
             }
@@ -614,24 +618,28 @@ public class BaseZone extends AIStrategyNode {
         return i;
     }
 
-    public UnitListIterator k() {
+    /* JADX INFO: renamed from: k */
+    public UnitListIterator getUnitsInZoneIterator() {
         return GameEngine.getInstance().unitSpatialIndex.b(this.posX, this.posY, this.radius);
     }
 
-    private OrderableUnit x() {
-        return a((UnitType) null, (PointF) null, true);
+    /* JADX INFO: renamed from: x */
+    private OrderableUnit findIdleCombatUnit() {
+        return findBuilderForUnitType((UnitType) null, (PointF) null, true);
     }
 
-    private OrderableUnit y() {
+    /* JADX INFO: renamed from: y */
+    private OrderableUnit findAvailableBuilder() {
         return findAvailableBuilderForUnitType(null);
     }
 
     /* JADX INFO: renamed from: f */
     private OrderableUnit findAvailableBuilderForUnitType(UnitType unitType) {
-        return a(unitType, (PointF) null, false);
+        return findBuilderForUnitType(unitType, (PointF) null, false);
     }
 
-    private OrderableUnit a(UnitType unitType, PointF pointF, boolean z) {
+    /* JADX INFO: renamed from: a */
+    private OrderableUnit findBuilderForUnitType(UnitType unitType, PointF pointF, boolean z) {
         if (this.numberOfCombatUnits == 0) {
             return null;
         }
@@ -648,7 +656,7 @@ public class BaseZone extends AIStrategyNode {
             BaseUnit baseUnit = baseUnitArrA[i];
             if (baseUnit.team == this.aiController && countUnitsForStrategy(baseUnit) && baseUnit.transportContainer == null && baseUnit.canUnitAttack() && (baseUnit instanceof OrderableUnit) && this.aiController.isEligibleUnitForRandomSelection(baseUnit)) {
                 OrderableUnit orderableUnit2 = (OrderableUnit) baseUnit;
-                if (AIUnitActionUtils.a(orderableUnit2) && (!z || orderableUnit2.I())) {
+                if (AIUnitActionUtils.isIdleOrReclaiming(orderableUnit2) && (!z || orderableUnit2.I())) {
                     this.lastTimeBuilt++;
                     if (unitType == null || orderableUnit2.canUseActionForUnitType(unitType, true)) {
                         boolean z2 = false;
@@ -680,7 +688,8 @@ public class BaseZone extends AIStrategyNode {
     }
 
 
-    private OrderableUnit a(BaseUnit am, PointF pointF, boolean boolean3) {
+    /* JADX INFO: renamed from: a */
+    private OrderableUnit findHarvesterForBuildTarget(BaseUnit am, PointF pointF, boolean boolean3) {
         if (this.numberOfIdleCombatUnits == 0) {
             return null;
         } else {
@@ -696,12 +705,12 @@ public class BaseZone extends AIStrategyNode {
                     UnitType var11 = var10.r();
                     if (var11.n() && var10 instanceof OrderableUnit && this.aiController.isEligibleUnitForRandomSelection(var10)) {
                         OrderableUnit var12 = (OrderableUnit)var10;
-                        boolean var13 = AIUnitActionUtils.b(var12);
+                        boolean var13 = AIUnitActionUtils.isIdle(var12);
                         if (var13 && (!boolean3 || var12.I()) && (am == null || var12.h(am, true))) {
                             boolean var14 = false;
                             if (var11 instanceof CustomUnitConfig) {
                                 CustomUnitConfig var15 = (CustomUnitConfig)var11;
-                                if (var15.onlyUseAsHarvester_ifBaseHasUnitTagged != null && !this.a(var15.onlyUseAsHarvester_ifBaseHasUnitTagged)) {
+                                if (var15.onlyUseAsHarvester_ifBaseHasUnitTagged != null && !this.hasUnitWithAnimationTag(var15.onlyUseAsHarvester_ifBaseHasUnitTagged)) {
                                     continue;
                                 }
                             }
@@ -751,7 +760,7 @@ public class BaseZone extends AIStrategyNode {
         } else {
             pointFE = findBuildLocation(unitType);
         }
-        if (pointFE == null || (orderableUnitA = a(unitType, pointFE, false)) == null) {
+        if (pointFE == null || (orderableUnitA = findBuilderForUnitType(unitType, pointFE, false)) == null) {
             return false;
         }
         if (unitType == UnitTypeEnum.seaFactory) {
@@ -788,7 +797,8 @@ public class BaseZone extends AIStrategyNode {
         return true;
     }
 
-    private boolean z() {
+    /* JADX INFO: renamed from: z */
+    private boolean hasUnitWithHighPriorityAction() {
         BaseUnit[] baseUnitArrA = BaseUnit.bE.a();
         int size = BaseUnit.bE.size();
         for (int i = 0; i < size; i++) {
@@ -800,7 +810,8 @@ public class BaseZone extends AIStrategyNode {
         return false;
     }
 
-    public boolean a(AnimationSet animationSet) {
+    /* JADX INFO: renamed from: a */
+    public boolean hasUnitWithAnimationTag(AnimationSet animationSet) {
         AnimationSet unitCombatAnimation;
         BaseUnit[] baseUnitArrA = this.unitsInZone.a();
         int size = this.unitsInZone.size();
@@ -824,7 +835,8 @@ public class BaseZone extends AIStrategyNode {
     	at jadx.core.dex.visitors.typeinference.FixTypesVisitor.applyFieldType(FixTypesVisitor.java:309)
     	at jadx.core.dex.visitors.typeinference.FixTypesVisitor.visit(FixTypesVisitor.java:94)
      */
-    private OrderableUnit a(UnitType unitType, boolean z, boolean z2) {
+    /* JADX INFO: renamed from: a */
+    private OrderableUnit findFactoryForUnitType(UnitType unitType, boolean z, boolean z2) {
         BaseUnit[] baseUnitArrA = this.unitsInZone.a();
         int size = this.unitsInZone.size();
         for (int i = 0; i < size; i++) {
@@ -833,7 +845,7 @@ public class BaseZone extends AIStrategyNode {
                 OrderableUnit orderableUnit = (OrderableUnit) fireUnit;
                 FactoryQueueInterface factoryQueueInterface = (FactoryQueueInterface) fireUnit;
                 AbstractUnitAction unitAction = fireUnit.getUnitAction(unitType);
-                if (unitAction != null && ((factoryQueueInterface.dy() || !z) && !unitAction.isAiDisabled(fireUnit) && unitAction.b(orderableUnit) && unitAction.canAfford((BaseUnit) orderableUnit, false) && ((!(fireUnit instanceof CommandCenter) || unitType.m() || u() <= 2 || this.isUnderAttack || !z) && (!z2 || orderableUnit.aD)))) {
+                if (unitAction != null && ((factoryQueueInterface.dy() || !z) && !unitAction.isAiDisabled(fireUnit) && unitAction.b(orderableUnit) && unitAction.canAfford((BaseUnit) orderableUnit, false) && ((!(fireUnit instanceof CommandCenter) || unitType.m() || getNumberOfExtractors() <= 2 || this.isUnderAttack || !z) && (!z2 || orderableUnit.aD)))) {
                     return orderableUnit;
                 }
             }
@@ -841,26 +853,29 @@ public class BaseZone extends AIStrategyNode {
         return null;
     }
 
-    private boolean a(UnitBuildStrategy unitBuildStrategy, boolean z) {
+    /* JADX INFO: renamed from: a */
+    private boolean tryBuildFromStrategy(UnitBuildStrategy unitBuildStrategy, boolean z) {
         Iterator it = unitBuildStrategy.getShuffledUnits().iterator();
         while (it.hasNext()) {
-            if (a(((UnitBuildPriority) it.next()).unitType, z)) {
+            if (buildUnit(((UnitBuildPriority) it.next()).unitType, z)) {
                 return true;
             }
         }
         return false;
     }
 
-    private boolean a(UnitType unitType, boolean z) {
-        return a(unitType, z, 1);
+    /* JADX INFO: renamed from: a */
+    private boolean buildUnit(UnitType unitType, boolean z) {
+        return buildUnit(unitType, z, 1);
     }
 
-    private boolean a(UnitType unitType, boolean z, int i) {
+    /* JADX INFO: renamed from: a */
+    private boolean buildUnit(UnitType unitType, boolean z, int i) {
         if (i < 1) {
             GameEngine.log("AI", "buildUnit: quantity cannot be < 1");
             return false;
         }
-        OrderableUnit orderableUnitA = a(unitType, true, z);
+        OrderableUnit orderableUnitA = findFactoryForUnitType(unitType, true, z);
         if (orderableUnitA == null) {
         }
         if (orderableUnitA == null) {
@@ -894,7 +909,7 @@ public class BaseZone extends AIStrategyNode {
         return true;
     }
 
-    BaseZone l() {
+    BaseZone findNearestSupportZone() {
         BaseZone baseZone;
         float f = -1.0f;
         BaseZone baseZone2 = null;
@@ -910,11 +925,12 @@ public class BaseZone extends AIStrategyNode {
         return baseZone2;
     }
 
-    public void m() {
+    /* JADX INFO: renamed from: m */
+    public void requestReinforcement() {
         OrderableUnit orderableUnitX;
         GameEngine gameEngine = GameEngine.getInstance();
-        BaseZone baseZoneL = l();
-        if (baseZoneL != null && baseZoneL.getNumberOfCombatUnits() > 1 && (orderableUnitX = baseZoneL.x()) != null) {
+        BaseZone baseZoneL = findNearestSupportZone();
+        if (baseZoneL != null && baseZoneL.getNumberOfCombatUnits() > 1 && (orderableUnitX = baseZoneL.findIdleCombatUnit()) != null) {
             PointF pointFW = getRandomPointInside();
             if (GameViewUtils.a(orderableUnitX, pointFW.x, pointFW.y)) {
                 boolean zIsPathPossibleForUnit = this.aiController.isPathPossibleForUnit(orderableUnitX, pointFW.x, pointFW.y);
@@ -931,18 +947,18 @@ public class BaseZone extends AIStrategyNode {
                     if (!zIsPathPossibleForUnit) {
                         boolean z = true;
                         if (orderableUnitX.aB != null) {
-                            if (!orderableUnitX.aB.a()) {
-                                orderableUnitX.aB.b(orderableUnitX);
+                            if (!orderableUnitX.aB.isActive()) {
+                                orderableUnitX.aB.removeUnit(orderableUnitX);
                             } else {
                                 z = false;
-                                if (!orderableUnitX.aB.G.contains(orderableUnitX)) {
-                                    orderableUnitX.aB.G.add(orderableUnitX);
+                                if (!orderableUnitX.aB.unitsNeedingTransport.contains(orderableUnitX)) {
+                                    orderableUnitX.aB.unitsNeedingTransport.add(orderableUnitX);
                                 }
                             }
                         }
                         if (z) {
                             RallyGroup rallyGroup = new RallyGroup(this.aiController);
-                            rallyGroup.c(orderableUnitX);
+                            rallyGroup.addUnitNeedingTransport(orderableUnitX);
                             rallyGroup.posX = pointFW.x;
                             rallyGroup.posY = pointFW.y;
                         }
@@ -959,14 +975,15 @@ public class BaseZone extends AIStrategyNode {
         int size = BaseUnit.bE.size();
         for (int i = 0; i < size; i++) {
             BaseUnit baseUnit = baseUnitArrA[i];
-            if (baseUnit.team == this.aiController && a(baseUnit, true) && baseUnit.bI() && (baseUnit.currentHealth < baseUnit.maxHealth - 1.0f || baseUnit.buildProgress < 1.0f)) {
+            if (baseUnit.team == this.aiController && belongsToZone(baseUnit, true) && baseUnit.bI() && (baseUnit.currentHealth < baseUnit.maxHealth - 1.0f || baseUnit.buildProgress < 1.0f)) {
                 return baseUnit;
             }
         }
         return null;
     }
 
-    public void n() {
+    /* JADX INFO: renamed from: n */
+    public void buildRecommendedHarvesters() {
         GameEngine.getInstance();
         if (this.buildingsInZone.size() == 0 || this.isUnderAttack) {
             return;
@@ -1011,23 +1028,25 @@ public class BaseZone extends AIStrategyNode {
                 if (var2.whenUsingAsHarvester_recommendedInEachBase != -1 && var3 >= var2.whenUsingAsHarvester_recommendedInEachBase) {
                     return false;
                 } else {
-                    return var2.whenUsingAsHarvester_recommendedGlobal != -1 && var4 >= var2.whenUsingAsHarvester_recommendedGlobal ? false : this.a(var2, true);
+                    return var2.whenUsingAsHarvester_recommendedGlobal != -1 && var4 >= var2.whenUsingAsHarvester_recommendedGlobal ? false : this.buildUnit(var2, true);
                 }
             }
         }
     }
-    public void o() {
+    /* JADX INFO: renamed from: o */
+    public void sendHarvesterToReclaim() {
         BaseUnit baseUnitR;
-        if (this.buildingsInZone.size() != 0 && (baseUnitR = r()) != null) {
+        if (this.buildingsInZone.size() != 0 && (baseUnitR = getRandomBuilding()) != null) {
             this.tempPoint2.a(baseUnitR.posX, baseUnitR.posY);
-            OrderableUnit orderableUnitA = a(baseUnitR, this.tempPoint2, true);
+            OrderableUnit orderableUnitA = findHarvesterForBuildTarget(baseUnitR, this.tempPoint2, true);
             if (orderableUnitA != null) {
-                a(orderableUnitA, baseUnitR);
+                issueReclaimCommand(orderableUnitA, baseUnitR);
             }
         }
     }
 
-    public void q() {
+    /* JADX INFO: renamed from: q */
+    public void retargetHarvestersToBetterBuilding() {
         OrderableUnit orderableUnit;
         UnitCommand currentWaypoint;
         BaseUnit targetUnit;
@@ -1037,14 +1056,15 @@ public class BaseZone extends AIStrategyNode {
             for (int i = 0; i < size; i++) {
                 BaseUnit baseUnit = baseUnitArrA[i];
                 if (baseUnit.team == this.aiController && countUnitsForStrategy(baseUnit) && baseUnit.transportContainer == null && baseUnit.r().n() && (baseUnit instanceof OrderableUnit) && this.aiController.isEligibleUnitForRandomSelection(baseUnit) && Utility.randomFloatInRange(0.0f, 1.0f) <= 0.3d && (currentWaypoint = (orderableUnit = (OrderableUnit) baseUnit).getCurrentWaypoint()) != null && currentWaypoint.getCommandType() == UnitCommandType.reclaim && (targetUnit = currentWaypoint.getTargetUnit()) != null && targetUnit.getResourceRate() > 0.0f && !this.lastBuiltCustomUnit2.c(targetUnit.getBuildPrice())) {
-                    a(orderableUnit, r());
+                    issueReclaimCommand(orderableUnit, getRandomBuilding());
                     return;
                 }
             }
         }
     }
 
-    public BaseUnit r() {
+    /* JADX INFO: renamed from: r */
+    public BaseUnit getRandomBuilding() {
         BaseUnit baseUnit = null;
         for (int i = 0; i < 20; i++) {
             baseUnit = this.buildingsInZone.get(Utility.getRandomIntInRange(0, this.buildingsInZone.size() - 1));
@@ -1055,7 +1075,8 @@ public class BaseZone extends AIStrategyNode {
         return baseUnit;
     }
 
-    public void a(OrderableUnit orderableUnit, BaseUnit baseUnit) {
+    /* JADX INFO: renamed from: a */
+    public void issueReclaimCommand(OrderableUnit orderableUnit, BaseUnit baseUnit) {
         GameEngine gameEngine = GameEngine.getInstance();
         if (orderableUnit.g(baseUnit, true)) {
             Command commandNewCommandForTeam = gameEngine.commandController.newCommandForTeam(this.aiController);
@@ -1064,12 +1085,13 @@ public class BaseZone extends AIStrategyNode {
         }
     }
 
-    public void s() {
+    /* JADX INFO: renamed from: s */
+    public void repairDamagedBuildings() {
         GameEngine gameEngine = GameEngine.getInstance();
         BaseUnit baseUnitM112A = findRepairTarget();
         if (baseUnitM112A != null) {
             this.tempPoint2.a(baseUnitM112A.posX, baseUnitM112A.posY);
-            OrderableUnit orderableUnitA = a((UnitType) null, this.tempPoint2, true);
+            OrderableUnit orderableUnitA = findBuilderForUnitType((UnitType) null, this.tempPoint2, true);
             if (orderableUnitA != null && orderableUnitA.canRepairTarget(baseUnitM112A) && baseUnitM112A.e(orderableUnitA) < 2) {
                 Command commandNewCommandForTeam = gameEngine.commandController.newCommandForTeam(this.aiController);
                 commandNewCommandForTeam.addUnitToCommand(orderableUnitA);
@@ -1078,29 +1100,30 @@ public class BaseZone extends AIStrategyNode {
         }
     }
 
-    public void b(float f) {
+    /* JADX INFO: renamed from: b */
+    public void updateZone(float f) {
         refreshUnitCounts(f);
         int i = this.numberOfFactories;
         int i2 = this.numberOfExtractors;
         updateUnitsInZone();
-        this.hasResources = z();
+        this.hasResources = hasUnitWithHighPriorityAction();
         if (this.hasResources) {
             this.hasLandAccess = true;
         }
         if (i >= 1) {
-            s();
+            repairDamagedBuildings();
         }
         if (this.isPrimary && this.numberOfExtractors > 0) {
-            n();
-            q();
-            o();
+            buildRecommendedHarvesters();
+            retargetHarvestersToBetterBuilding();
+            sendHarvesterToReclaim();
         }
         if (i < 2 && this.landUnitsScore == 0.0f) {
             this.landUnitsScore = 300.0f;
             int iShouldWriteForUnitType = this.aiController.countUnitsForBuildStrategyWithFilter(this.aiController.fabricatorUnitBuildStrategy, UnitFilterMode.include);
             if (!this.isUnderAttack || iShouldWriteForUnitType <= 2) {
                 boolean z = Utility.getRandomIntInRange(0, 100) < 5;
-                if (!z && a(this.aiController.fabricatorUnitBuildStrategy, true)) {
+                if (!z && tryBuildFromStrategy(this.aiController.fabricatorUnitBuildStrategy, true)) {
                     this.isInitialized = false;
                     this.landUnitsScore = 900.0f;
                 } else {
@@ -1108,12 +1131,12 @@ public class BaseZone extends AIStrategyNode {
                         this.isInitialized = true;
                     }
                     if (!this.isUnderAttack && this.lastTimeReclaimed == 0.0f && i < 1 && this.updateTimer == 0.0f) {
-                        m();
+                        requestReinforcement();
                     }
                 }
             }
         }
-        int iJ = j();
+        int iJ = countEnemyUnitsInsideZone();
         if (i == 0 && i2 == 0) {
             this.waterUnitsScore += f;
             if (iJ > 2) {
@@ -1134,10 +1157,11 @@ public class BaseZone extends AIStrategyNode {
                 this.stage = BaseZoneStage.Active;
             }
         }
-        t();
+        fixOverlaps();
     }
 
-    public void t() {
+    /* JADX INFO: renamed from: t */
+    public void fixOverlaps() {
         if (this.stage == null) {
             GameEngine.logErrorColored("fixOverlaps: this.state==null");
             GameEngine.logErrorColored("id:" + this.strategyId);
@@ -1156,7 +1180,7 @@ public class BaseZone extends AIStrategyNode {
                 if (Utility.distanceSq(this.posX, this.posY, baseZone.posX, baseZone.posY) < 400.0f) {
                     if (baseZone.stage == null) {
                         GameEngine.logErrorColored("fixOverlaps: targetBase.state==null");
-                    } else if (baseZone.stage.a() < this.stage.a()) {
+                    } else if (baseZone.stage.getOrdinal() < this.stage.getOrdinal()) {
                         baseZone.destroy();
                     } else {
                         destroy();
@@ -1166,7 +1190,8 @@ public class BaseZone extends AIStrategyNode {
         }
     }
 
-    public int u() {
+    /* JADX INFO: renamed from: u */
+    public int getNumberOfExtractors() {
         return this.numberOfExtractors;
     }
 
@@ -1189,7 +1214,7 @@ public class BaseZone extends AIStrategyNode {
         this.numberOfCombatUnits = 0;
         this.isPrimary = false;
         this.buildingsInZone.clear();
-        for (Object o : k()) {
+        for (Object o : getUnitsInZoneIterator()) {
             BaseUnit baseUnit=(BaseUnit) o;
             if (baseUnit.getResourceRate() > 0.0f && isUnitInside(baseUnit)) {
                 this.isPrimary = true;
@@ -1202,14 +1227,14 @@ public class BaseZone extends AIStrategyNode {
             BaseUnit fireUnit = baseUnitArrA[i];
             if (fireUnit.team == this.aiController && (fireUnit instanceof OrderableUnit)) {
                 OrderableUnit orderableUnit = (OrderableUnit) fireUnit;
-                if (a(orderableUnit, false) && fireUnit.isAlive() && this.aiController.isEligibleUnitForRandomSelection(fireUnit) && !fireUnit.u()) {
+                if (belongsToZoneUnit(orderableUnit, false) && fireUnit.isAlive() && this.aiController.isEligibleUnitForRandomSelection(fireUnit) && !fireUnit.u()) {
                     UnitType unitTypeR = fireUnit.r();
                     if (unitTypeR.isBuildingUnit()) {
                         this.numberOfExtractors++;
                     }
                     if (unitTypeR.m()) {
                         this.numberOfFactories++;
-                        if (AIUnitActionUtils.a(orderableUnit)) {
+                        if (AIUnitActionUtils.isIdleOrReclaiming(orderableUnit)) {
                             this.numberOfCombatUnits++;
                         }
                     }
@@ -1224,7 +1249,8 @@ public class BaseZone extends AIStrategyNode {
         }
     }
 
-    public void d(float f) {
+    /* JADX INFO: renamed from: d */
+    public void updateZoneStrategy(float f) {
         UnitType bestBuildingToBuild;
         this.isUnderAttack = hasEnemyUnits();
         this.isContested = this.isUnderAttack;
@@ -1245,7 +1271,7 @@ public class BaseZone extends AIStrategyNode {
         if (this.isUnderAttack && this.airUnitsScore == 0.0f) {
             this.airUnitsScore = 100 + (this.strategyId % 15);
             if (!this.aiController.isAggressive) {
-                i();
+                commandUnitsToAttackClosestEnemy();
             }
         }
         if (this.defensiveScore <= 0.0f) {
@@ -1259,7 +1285,7 @@ public class BaseZone extends AIStrategyNode {
             if (this.lastFoundBuildingPriority < 0.08d) {
                 this.defensiveScore += 180.0f;
             }
-            if ((y() != null) && (bestBuildingToBuild = getBestBuildingToBuild()) != null && ((this.lastFoundBuildingPriority > 0.8d || this.aiController.hasCredits(1300.0d)) && ((this.lastFoundBuildingPriority > 0.4d || this.aiController.hasCredits(1700.0d)) && ((this.lastFoundBuildingPriority > 0.2d || this.aiController.hasCredits(2100.0d)) && ((this.lastFoundBuildingPriority > 0.1d || this.aiController.hasCredits(2800.0d)) && ((this.lastFoundBuildingPriority > 0.05d || this.aiController.hasCredits(3100.0d)) && (this.lastFoundBuildingPriority > 0.01d || this.aiController.hasCredits(4800.0d)))))))) {
+            if ((findAvailableBuilder() != null) && (bestBuildingToBuild = getBestBuildingToBuild()) != null && ((this.lastFoundBuildingPriority > 0.8d || this.aiController.hasCredits(1300.0d)) && ((this.lastFoundBuildingPriority > 0.4d || this.aiController.hasCredits(1700.0d)) && ((this.lastFoundBuildingPriority > 0.2d || this.aiController.hasCredits(2100.0d)) && ((this.lastFoundBuildingPriority > 0.1d || this.aiController.hasCredits(2800.0d)) && ((this.lastFoundBuildingPriority > 0.05d || this.aiController.hasCredits(3100.0d)) && (this.lastFoundBuildingPriority > 0.01d || this.aiController.hasCredits(4800.0d)))))))) {
                 this.numberOfLandUnits++;
                 if (!tryBuildUnit(bestBuildingToBuild)) {
                     this.defensiveScore -= 120.0f;
@@ -1267,7 +1293,7 @@ public class BaseZone extends AIStrategyNode {
                 }
             }
         }
-        float fU = u() / 3.0f;
+        float fU = getNumberOfExtractors() / 3.0f;
         if (fU < 1.0f) {
             fU = 1.0f;
         }
@@ -1312,14 +1338,15 @@ public class BaseZone extends AIStrategyNode {
             this.reclaimScore = 3.5f;
         }
         for (int i = 0; i < 12; i++) {
-            v();
+            tryBuildCombatUnits();
             if (this.reclaimScore < 3.0f) {
                 return;
             }
         }
     }
 
-    public void a(ArrayList arrayList, UnitBuildStrategy unitBuildStrategy, UnitMovementType unitMovementType, int i) {
+    /* JADX INFO: renamed from: a */
+    public void addRandomUnitTypesForBuild(ArrayList arrayList, UnitBuildStrategy unitBuildStrategy, UnitMovementType unitMovementType, int i) {
         this.rallyPoints.clear();
         for (int i2 = 0; i2 < i; i2++) {
             UnitType randomUnitTypeByMovement = unitBuildStrategy.getRandomUnitTypeByMovement(unitMovementType);
@@ -1330,7 +1357,8 @@ public class BaseZone extends AIStrategyNode {
         arrayList.addAll(this.rallyPoints);
     }
 
-    public void v() {
+    /* JADX INFO: renamed from: v */
+    public void tryBuildCombatUnits() {
         UnitMovementType unitMovementType;
         BaseUnit closestEnemyUnit;
         int iCountIdleCombatUnits = countIdleCombatUnits();
@@ -1364,21 +1392,21 @@ public class BaseZone extends AIStrategyNode {
         }
         if ((this.aiController.hasCredits(1300.0d) && this.reclaimScore >= 1.0f) || (this.aiController.hasCredits(300.0d) && this.reclaimScore >= 3.0f)) {
             if (this.aiController.isPathfindingOverloaded() && this.aiController.buildingCount < i && Utility.getRandomInt(100) < 35) {
-                a(arrayList, this.aiController.seaUnitBuildStrategy, null, 2);
+                addRandomUnitTypesForBuild(arrayList, this.aiController.seaUnitBuildStrategy, null, 2);
                 if (zA) {
                 }
             }
             if (iCountIdleCombatUnits < 3 && this.aiController.unitProductionTimer < i2) {
                 if (unitMovementType == UnitMovementType.LAND) {
-                    a(arrayList, this.aiController.builderUnitBuildStrategy, null, 4);
+                    addRandomUnitTypesForBuild(arrayList, this.aiController.builderUnitBuildStrategy, null, 4);
                     if (zA) {
                     }
                 } else if (unitMovementType == UnitMovementType.HOVER) {
-                    a(arrayList, this.aiController.landUnitBuildStrategy, null, 4);
+                    addRandomUnitTypesForBuild(arrayList, this.aiController.landUnitBuildStrategy, null, 4);
                     if (zA) {
                     }
                 } else {
-                    a(arrayList, this.aiController.airUnitBuildStrategy, null, 4);
+                    addRandomUnitTypesForBuild(arrayList, this.aiController.airUnitBuildStrategy, null, 4);
                     if (zA) {
                     }
                 }
@@ -1389,9 +1417,9 @@ public class BaseZone extends AIStrategyNode {
                 int iCountUnitsInGroups = this.aiController.countUnitsInGroups();
                 if ((this.aiController.hasCredits(1700.0d) || iCountUnitsInGroups > 10 || (this.aiController.attackCooldownTimer == 0 && iCountUnitsInGroups >= 1 && iShouldWriteForUnitType == 0)) && (iShouldWriteForUnitType2 < 3 || (iCountUnitsInGroups > 20 && iShouldWriteForUnitType2 < 5))) {
                     if (zShouldLaunchAttack && iShouldWriteForUnitType2 < 2) {
-                        a(arrayList, this.aiController.antiNukeUnitBuildStrategy, null, 2);
+                        addRandomUnitTypesForBuild(arrayList, this.aiController.antiNukeUnitBuildStrategy, null, 2);
                     } else {
-                        a(arrayList, this.aiController.antiNukeUnitBuildStrategy, UnitMovementType.AIR, 2);
+                        addRandomUnitTypesForBuild(arrayList, this.aiController.antiNukeUnitBuildStrategy, UnitMovementType.AIR, 2);
                     }
                 }
             }
@@ -1408,9 +1436,9 @@ public class BaseZone extends AIStrategyNode {
                 z = false;
             }
             if (z) {
-                if (a(unitType, false)) {
+                if (buildUnit(unitType, false)) {
                     this.numberOfWaterUnits++;
-                    this.aiController.buildPreferenceCache.a(unitType);
+                    this.aiController.buildPreferenceCache.invalidateUnitType(unitType);
                     this.reclaimScore -= 1.0f;
                     if (this.aiController.isNonCombatCustomUnit(baseUnitFindAttackDamageSource)) {
                         this.lastTimeAttackedByEnemy = 1000.0f;
@@ -1424,7 +1452,8 @@ public class BaseZone extends AIStrategyNode {
         }
     }
 
-    public void a(OrderableUnit orderableUnit, UnitPrice unitPrice, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public void recordBuiltFactoryUnit(OrderableUnit orderableUnit, UnitPrice unitPrice, boolean z) {
         this.lastBuiltFactoryType = orderableUnit.r();
         if (z) {
             this.lastBuiltFactoryCustomUnit = null;

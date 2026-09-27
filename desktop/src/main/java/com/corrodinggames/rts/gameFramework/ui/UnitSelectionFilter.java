@@ -10,54 +10,60 @@ import java.util.ArrayList;
 /* JADX INFO: renamed from: com.corrodinggames.rts.gameFramework.f.al */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/gameFramework/f/al.class */
 abstract class UnitSelectionFilter {
-    static UnitSelectionFilter a = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.1
+    /* JADX INFO: renamed from: a */
+    static UnitSelectionFilter attackUnits = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.1
         @Override // com.corrodinggames.rts.gameFramework.ui.UnitSelectionFilter
-        public boolean a(OrderableUnit orderableUnit) {
+        public boolean matches(OrderableUnit orderableUnit) {
             if (orderableUnit.canUnitAttack() && !orderableUnit.u() && orderableUnit.transportContainer == null && orderableUnit.hasNoCurrentWaypoint()) {
                 return true;
             }
             return false;
         }
     };
-    static UnitSelectionFilter b = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.2
+    /* JADX INFO: renamed from: b */
+    static UnitSelectionFilter attackUnitsIgnoreWaypoints = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.2
         @Override // com.corrodinggames.rts.gameFramework.ui.UnitSelectionFilter
-        public boolean a(OrderableUnit orderableUnit) {
+        public boolean matches(OrderableUnit orderableUnit) {
             if (orderableUnit.canUnitAttack() && !orderableUnit.u() && orderableUnit.transportContainer == null) {
                 return true;
             }
             return false;
         }
     };
-    static UnitSelectionFilter c = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.3
+    /* JADX INFO: renamed from: c */
+    static UnitSelectionFilter buildingUnits = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.3
         @Override // com.corrodinggames.rts.gameFramework.ui.UnitSelectionFilter
-        public boolean a(OrderableUnit orderableUnit) {
+        public boolean matches(OrderableUnit orderableUnit) {
             if (orderableUnit.r() != null && orderableUnit.r().p() && orderableUnit.transportContainer == null) {
                 return true;
             }
             return false;
         }
     };
-    static UnitSelectionFilter d = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.4
+    /* JADX INFO: renamed from: d */
+    static UnitSelectionFilter fabricatorUnits = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.4
         @Override // com.corrodinggames.rts.gameFramework.ui.UnitSelectionFilter
-        public boolean a(OrderableUnit orderableUnit) {
+        public boolean matches(OrderableUnit orderableUnit) {
             if (orderableUnit.r() == UnitTypeEnum.fabricator && orderableUnit.getUpgradeLevel() < 3 && orderableUnit.transportContainer == null) {
                 return true;
             }
             return false;
         }
     };
-    static UnitSelectionFilter e = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.5
+    /* JADX INFO: renamed from: e */
+    static UnitSelectionFilter landFactoryUnits = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.5
         @Override // com.corrodinggames.rts.gameFramework.ui.UnitSelectionFilter
-        public boolean a(OrderableUnit orderableUnit) {
+        public boolean matches(OrderableUnit orderableUnit) {
             if (orderableUnit.r() == UnitTypeEnum.landFactory && orderableUnit.transportContainer == null) {
                 return true;
             }
             return false;
         }
     };
-    static UnitSelectionFilter f = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.6
+    /* JADX INFO: renamed from: f */
+    static UnitSelectionFilter airFactoryUnits = new UnitSelectionFilter() { // from class: com.corrodinggames.rts.gameFramework.f.al.6
         @Override // com.corrodinggames.rts.gameFramework.ui.UnitSelectionFilter
-        public boolean a(OrderableUnit orderableUnit) {
+        public boolean matches(OrderableUnit orderableUnit) {
             if (orderableUnit.r() == UnitTypeEnum.airFactory && orderableUnit.transportContainer == null) {
                 return true;
             }
@@ -65,19 +71,15 @@ abstract class UnitSelectionFilter {
         }
     };
 
-    public abstract boolean a(OrderableUnit orderableUnit);
-
-    UnitSelectionFilter() {
-    }
-
-    public static void a(ArrayList arrayList, UnitSelectionFilter panelsVar, UnitSelectionFilter panelsVar2) {
+    /* JADX INFO: renamed from: a */
+    public static void selectMatchingUnits(ArrayList arrayList, UnitSelectionFilter filter, UnitSelectionFilter filter2) {
         GameEngine gameEngine = GameEngine.getInstance();
         if (gameEngine.gameUI.getSelectedUnitCount() != 1) {
             arrayList.clear();
         }
         OrderableUnit firstControllableSelectedUnit = gameEngine.gameUI.getFirstControllableSelectedUnit();
         if (firstControllableSelectedUnit != null) {
-            if (panelsVar.a(firstControllableSelectedUnit) || (panelsVar2 != null && panelsVar2.a(firstControllableSelectedUnit))) {
+            if (filter.matches(firstControllableSelectedUnit) || (filter2 != null && filter2.matches(firstControllableSelectedUnit))) {
                 if (!arrayList.contains(firstControllableSelectedUnit)) {
                     arrayList.add(firstControllableSelectedUnit);
                 }
@@ -85,18 +87,18 @@ abstract class UnitSelectionFilter {
                 arrayList.clear();
             }
         }
-        OrderableUnit orderableUnitA = a(arrayList, panelsVar);
-        if (orderableUnitA == null && panelsVar2 != null) {
-            orderableUnitA = a(arrayList, panelsVar2);
+        OrderableUnit orderableUnitA = findClosestMatchingUnit(arrayList, filter);
+        if (orderableUnitA == null && filter2 != null) {
+            orderableUnitA = findClosestMatchingUnit(arrayList, filter2);
         }
         if (orderableUnitA == null) {
             arrayList.clear();
             if (firstControllableSelectedUnit != null) {
                 arrayList.add(firstControllableSelectedUnit);
             }
-            orderableUnitA = a(arrayList, panelsVar);
-            if (orderableUnitA == null && panelsVar2 != null) {
-                orderableUnitA = a(arrayList, panelsVar2);
+            orderableUnitA = findClosestMatchingUnit(arrayList, filter);
+            if (orderableUnitA == null && filter2 != null) {
+                orderableUnitA = findClosestMatchingUnit(arrayList, filter2);
             }
         }
         if (orderableUnitA != null) {
@@ -107,14 +109,18 @@ abstract class UnitSelectionFilter {
         }
     }
 
-    public static OrderableUnit a(ArrayList arrayList, UnitSelectionFilter panelsVar) {
+    UnitSelectionFilter() {
+    }
+
+    /* JADX INFO: renamed from: a */
+    public static OrderableUnit findClosestMatchingUnit(ArrayList arrayList, UnitSelectionFilter filter) {
         GameEngine gameEngine = GameEngine.getInstance();
         OrderableUnit orderableUnit = null;
         float f2 = -1.0f;
         for (BaseUnit baseUnit : BaseUnit.bE) {
             if (baseUnit instanceof OrderableUnit) {
                 OrderableUnit orderableUnit2 = (OrderableUnit) baseUnit;
-                if (gameEngine.gameUI.canControlUnit(orderableUnit2) && panelsVar.a(orderableUnit2) && !arrayList.contains(orderableUnit2)) {
+                if (gameEngine.gameUI.canControlUnit(orderableUnit2) && filter.matches(orderableUnit2) && !arrayList.contains(orderableUnit2)) {
                     float fDistanceSq = Utility.distanceSq(gameEngine.viewpointX + gameEngine.halfVisibleWorldWidth, gameEngine.viewpointY + gameEngine.halfVisibleWorldHeight, orderableUnit2.posX, orderableUnit2.posY);
                     if (orderableUnit == null || fDistanceSq < f2) {
                         f2 = fDistanceSq;
@@ -125,4 +131,7 @@ abstract class UnitSelectionFilter {
         }
         return orderableUnit;
     }
+
+    /* JADX INFO: renamed from: a */
+    public abstract boolean matches(OrderableUnit orderableUnit);
 }

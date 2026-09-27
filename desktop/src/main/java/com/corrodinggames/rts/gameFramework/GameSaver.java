@@ -138,7 +138,7 @@ public class GameSaver {
         z2 = true;
         if (z2) {
             if (z) {
-                gameEngine.gameUI.warLogDisplay.a("Auto Saved", 1000);
+                gameEngine.gameUI.warLogDisplay.logMessage("Auto Saved", 1000);
             } else {
                 gameEngine.gameUI.messageManager.addMessage((String) null, "Game saved");
             }
@@ -207,7 +207,7 @@ public class GameSaver {
                     playerTeamK.writeBasicTeamState(gameOutputStream);
                 }
             }
-            if (!gameEngine.gameUI.e) {
+            if (!gameEngine.gameUI.unusedFlag2) {
             }
             gameOutputStream.writeDebugMessage("Section: unit shells");
             gameOutputStream.writeInt(GameObject.fastGameObjectList.size());

@@ -218,15 +218,15 @@ public class DamageZone extends DummyUnit {
                     gameEngine.tileMap.setCursorTileIndexFromTileIndex(gameEngine.tileMap.cursorTileX, gameEngine.tileMap.cursorTileY);
                     Effect effectCreateEffectInternal = gameEngine.effectManager.createEffectInternal(gameEngine.tileMap.cursorTileX + 10, (gameEngine.tileMap.cursorTileY - 10) + 10, 0.0f, EffectType.custom, true, EffectQuality.verylow);
                     if (effectCreateEffectInternal != null) {
-                        effectCreateEffectInternal.aq = 19;
-                        effectCreateEffectInternal.Y = Utility.randomFloatInRange(-180.0f, 180.0f);
+                        effectCreateEffectInternal.stripIndex = 19;
+                        effectCreateEffectInternal.rotation = Utility.randomFloatInRange(-180.0f, 180.0f);
                         effectCreateEffectInternal.fadeIn = true;
-                        effectCreateEffectInternal.ar = (short) 1;
-                        effectCreateEffectInternal.E = 0.7f;
-                        effectCreateEffectInternal.V = 30.0f;
-                        effectCreateEffectInternal.W = effectCreateEffectInternal.V;
-                        effectCreateEffectInternal.G = 0.2f;
-                        effectCreateEffectInternal.F = 1.2f;
+                        effectCreateEffectInternal.drawLayer = (short) 1;
+                        effectCreateEffectInternal.alpha = 0.7f;
+                        effectCreateEffectInternal.lifeTimer = 30.0f;
+                        effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
+                        effectCreateEffectInternal.scaleFrom = 0.2f;
+                        effectCreateEffectInternal.scaleTo = 1.2f;
                         effectCreateEffectInternal.startColor = Color.a(255, 173, 12, 12);
                     }
                 }

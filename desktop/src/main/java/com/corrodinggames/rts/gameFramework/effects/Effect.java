@@ -15,103 +15,171 @@ import java.io.IOException;
 /* JADX INFO: renamed from: com.corrodinggames.rts.gameFramework.d.e */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/gameFramework/d/e.class */
 public final class Effect {
-    private final EffectManager ay;
-        /* JADX INFO: renamed from: b */
-    public GameObject parentObject;
-        /* JADX INFO: renamed from: c */
-    public boolean ignoreParentZ;
-    public boolean d;
-    public int g;
-        /* JADX INFO: renamed from: o */
-    public boolean isActive;
-    public boolean p;
-        /* JADX INFO: renamed from: r */
-    public boolean fadeIn;
-        /* JADX INFO: renamed from: s */
-    public boolean fadeOut;
-        /* JADX INFO: renamed from: t */
-    public float fadeDuration;
-        /* JADX INFO: renamed from: u */
-    public boolean useGravity;
-        /* JADX INFO: renamed from: v */
-    public boolean useBounce;
-        /* JADX INFO: renamed from: x */
-    public int startColor;
-        /* JADX INFO: renamed from: y */
-    public int endColor;
-    public short A;
-    public float E;
-    public float F;
-    public float G;
-    public boolean H;
-    public float I;
-    public float J;
-    public float K;
-    public boolean L;
-    public float M;
-    public float N;
-    public float O;
-    public float P;
-    public float Q;
-    public float R;
-    public float S;
-    public float T;
-    public float U;
-    public float V;
-    public float W;
-    public float Y;
-    public float Z;
-    public String aa;
-    public Paint ab;
-    public float ac;
-    public float ad;
-    public boolean ae;
-    public int af;
-    public int ag;
-    public boolean ah;
-    public boolean ai;
-    public float aj;
-    public float ak;
-    public boolean al;
-    public boolean am;
-    public int ap;
-    public int aq;
-    public float au;
-    public int av;
-    public boolean aw;
-    public static int h = 1;
-    public static int i = 2;
-    public static int j = 3;
-    public static int k = 4;
-    public static int l = 5;
-    public static int m = 6;
-    public static int n = 7;
-    public static LightingColorFilter C = null;
-    public static int D = 0;
-    public static GamePaint[] ax = new GamePaint[128];
-    public EffectTemplate a = EffectTemplate.defaultEffectTemplate;
-    public boolean e = true;
-    public boolean f = false;
-    public EffectQuality q = EffectQuality.verylow;
-    public float w = 1.0f;
-    public float z = -1.0f;
-    public LightingColorFilter B = null;
-    public float X = 0.0f;
-    public boolean an = false;
-    public float ao = 0.0f;
-    public short ar = 2;
-    public boolean as = false;
-    public GamePaint at = getFreshTexture();
-
-    protected Effect(EffectManager effectManager) {
-        this.ay = effectManager;
-    }
+    /* JADX INFO: renamed from: h */
+    public static int KIND_LIGHT = 1;
+    /* JADX INFO: renamed from: i */
+    public static int KIND_MUZZLE_FLASH = 2;
+    /* JADX INFO: renamed from: j */
+    public static int KIND_FLAME = 3;
+    /* JADX INFO: renamed from: k */
+    public static int KIND_FIRE = 4;
+    /* JADX INFO: renamed from: l */
+    public static int KIND_SMOKE = 5;
+    /* JADX INFO: renamed from: m */
+    public static int KIND_BLOOD = 6;
+    /* JADX INFO: renamed from: n */
+    public static int KIND_ALTERNATE_FIRE = 7;
+    /* JADX INFO: renamed from: C */
+    public static LightingColorFilter cachedLightingColorFilter = null;
+    /* JADX INFO: renamed from: D */
+    public static int cachedLightingColorFilterColor = 0;
+    /* JADX INFO: renamed from: ax */
+    public static GamePaint[] alphaTextures = new GamePaint[128];
 
     static {
-        for (int i2 = 0; i2 < ax.length; i2++) {
-            ax[i2] = getFreshTexture();
-            ax[i2].c((int) ((i2 / (ax.length - 1)) * 255.0f));
+        for (int i2 = 0; i2 < alphaTextures.length; i2++) {
+            alphaTextures[i2] = getFreshTexture();
+            alphaTextures[i2].c((int) ((i2 / (alphaTextures.length - 1)) * 255.0f));
         }
+    }
+
+    /* JADX INFO: renamed from: ay */
+    private final EffectManager effectManager;
+    /* JADX INFO: renamed from: b */
+    public GameObject parentObject;
+    /* JADX INFO: renamed from: c */
+    public boolean ignoreParentZ;
+    /* JADX INFO: renamed from: d */
+    public boolean isLight;
+    /* JADX INFO: renamed from: g */
+    public int effectKind;
+    /* JADX INFO: renamed from: o */
+    public boolean isActive;
+    /* JADX INFO: renamed from: p */
+    public boolean isUiEffect;
+    /* JADX INFO: renamed from: r */
+    public boolean fadeIn;
+    /* JADX INFO: renamed from: s */
+    public boolean fadeOut;
+    /* JADX INFO: renamed from: t */
+    public float fadeDuration;
+    /* JADX INFO: renamed from: u */
+    public boolean useGravity;
+    /* JADX INFO: renamed from: v */
+    public boolean useBounce;
+    /* JADX INFO: renamed from: x */
+    public int startColor;
+    /* JADX INFO: renamed from: y */
+    public int endColor;
+    /* JADX INFO: renamed from: A */
+    public short emitRecursionDepth;
+    /* JADX INFO: renamed from: E */
+    public float alpha;
+    /* JADX INFO: renamed from: F */
+    public float scaleTo;
+    /* JADX INFO: renamed from: G */
+    public float scaleFrom;
+    /* JADX INFO: renamed from: H */
+    public boolean scaleWithZoom;
+    /* JADX INFO: renamed from: I */
+    public float posX;
+    /* JADX INFO: renamed from: J */
+    public float posY;
+    /* JADX INFO: renamed from: K */
+    public float posZ;
+    /* JADX INFO: renamed from: L */
+    public boolean isLaser;
+    /* JADX INFO: renamed from: M */
+    public float laserTargetX;
+    /* JADX INFO: renamed from: N */
+    public float laserTargetY;
+    /* JADX INFO: renamed from: O */
+    public float laserTargetZ;
+    /* JADX INFO: renamed from: P */
+    public float velocityX;
+    /* JADX INFO: renamed from: Q */
+    public float velocityY;
+    /* JADX INFO: renamed from: R */
+    public float velocityZ;
+    /* JADX INFO: renamed from: S */
+    public float bobAmplitude;
+    /* JADX INFO: renamed from: T */
+    public float bobPeriod;
+    /* JADX INFO: renamed from: U */
+    public float delayedStartTimer;
+    /* JADX INFO: renamed from: V */
+    public float lifeTimer;
+    /* JADX INFO: renamed from: W */
+    public float lifeMax;
+    /* JADX INFO: renamed from: Y */
+    public float rotation;
+    /* JADX INFO: renamed from: Z */
+    public float rotationSpeed;
+    /* JADX INFO: renamed from: aa */
+    public String text;
+    /* JADX INFO: renamed from: ab */
+    public Paint textPaint;
+    /* JADX INFO: renamed from: ac */
+    public float textXOffset;
+    /* JADX INFO: renamed from: ad */
+    public float textYOffset;
+    /* JADX INFO: renamed from: ae */
+    public boolean animateFrames;
+    /* JADX INFO: renamed from: af */
+    public int animateFrameStart;
+    /* JADX INFO: renamed from: ag */
+    public int animateFrameEnd;
+    /* JADX INFO: renamed from: ah */
+    public boolean animateFramePingPong;
+    /* JADX INFO: renamed from: ai */
+    public boolean animateFrameLooping;
+    /* JADX INFO: renamed from: aj */
+    public float animateFrameSpeed;
+    /* JADX INFO: renamed from: ak */
+    public float currentFrame;
+    /* JADX INFO: renamed from: al */
+    public boolean animateFrameReversing;
+    /* JADX INFO: renamed from: am */
+    public boolean unusedFlag1;
+    /* JADX INFO: renamed from: an */
+    public boolean isCentered = false;
+    /* JADX INFO: renamed from: ao */
+    public float verticalAnchorOffset = 0.0f;
+    /* JADX INFO: renamed from: ap */
+    public int frameIndex;
+    /* JADX INFO: renamed from: aq */
+    public int stripIndex;
+    /* JADX INFO: renamed from: ar */
+    public short drawLayer = 2;
+    /* JADX INFO: renamed from: as */
+    public boolean shadow = false;
+    /* JADX INFO: renamed from: at */
+    public GamePaint colorPaint = getFreshTexture();
+    /* JADX INFO: renamed from: au */
+    public float cachedAlpha;
+    /* JADX INFO: renamed from: av */
+    public int cachedColor;
+    /* JADX INFO: renamed from: aw */
+    public boolean hasColorFilterApplied;
+    /* JADX INFO: renamed from: a */
+    public EffectTemplate template = EffectTemplate.defaultEffectTemplate;
+    /* JADX INFO: renamed from: e */
+    public boolean showInFog = true;
+    /* JADX INFO: renamed from: f */
+    public boolean visibilityChecked = false;
+    /* JADX INFO: renamed from: q */
+    public EffectQuality priority = EffectQuality.verylow;
+    /* JADX INFO: renamed from: w */
+    public float physicsGravity = 1.0f;
+    /* JADX INFO: renamed from: X */
+    public float trailTimer = 0.0f;
+    /* JADX INFO: renamed from: z */
+    public float endColorTransitionTime = -1.0f;
+    /* JADX INFO: renamed from: B */
+    public LightingColorFilter lightingColorFilter = null;
+
+    protected Effect(EffectManager effectManager) {
+        this.effectManager = effectManager;
     }
 
     /* JADX INFO: renamed from: a */
@@ -120,271 +188,271 @@ public final class Effect {
     }
 
     /* JADX INFO: renamed from: a */
+    public static void computeSpriteRect(int i2, SpriteSheet spriteSheet, Rect rect) {
+        int i3 = 0;
+        if (i2 >= spriteSheet.framesPerRow) {
+            i3 = 0 + (i2 / spriteSheet.framesPerRow);
+            i2 %= spriteSheet.framesPerRow;
+        }
+        int i4 = spriteSheet.offsetX + (i2 * spriteSheet.stepX);
+        int i5 = spriteSheet.offsetY + (i3 * spriteSheet.stepY);
+        rect.a = i4;
+        rect.b = i5;
+        rect.c = i4 + spriteSheet.frameWidth;
+        rect.d = i5 + spriteSheet.frameHeight;
+    }
+
+    /* JADX INFO: renamed from: a */
     public GamePaint getTexture(float f) {
-        int length = (int) (f * (ax.length - 1));
+        int length = (int) (f * (alphaTextures.length - 1));
         if (length < 0) {
             length = 0;
         }
-        if (length > ax.length - 1) {
-            length = ax.length - 1;
+        if (length > alphaTextures.length - 1) {
+            length = alphaTextures.length - 1;
         }
-        return ax[length];
+        return alphaTextures[length];
     }
 
     /* JADX INFO: renamed from: b */
     public void reset() {
         if (this.isActive) {
             this.isActive = false;
-            this.ay.activeEffectsCount--;
+            this.effectManager.activeEffectsCount--;
             EffectManager.useStrictCounting = true;
-            if (this.a.alsoEmitEffectsOnDeath != null && this.A < 20) {
-                float f = this.I;
-                float f2 = this.J;
-                float f3 = this.K;
+            if (this.template.alsoEmitEffectsOnDeath != null && this.emitRecursionDepth < 20) {
+                float f = this.posX;
+                float f2 = this.posY;
+                float f3 = this.posZ;
                 if (this.parentObject != null) {
                     f += this.parentObject.posX;
                     f2 += this.parentObject.posY;
                     f3 += this.parentObject.posZ;
                 }
-                this.a.alsoEmitEffectsOnDeath.a(f, f2, f3, this.Y, this.parentObject, 0, this.A);
+                this.template.alsoEmitEffectsOnDeath.a(f, f2, f3, this.rotation, this.parentObject, 0, this.emitRecursionDepth);
             }
         }
     }
 
     /* JADX INFO: renamed from: c */
     public void free() {
-        this.a = EffectTemplate.defaultEffectTemplate;
-        this.q = EffectQuality.verylow;
+        this.template = EffectTemplate.defaultEffectTemplate;
+        this.priority = EffectQuality.verylow;
         this.parentObject = null;
         this.ignoreParentZ = false;
-        this.d = false;
-        this.e = true;
-        this.f = false;
-        this.g = 0;
-        this.p = false;
-        this.I = 0.0f;
-        this.J = 0.0f;
-        this.L = false;
-        this.M = 0.0f;
-        this.N = 0.0f;
-        this.O = 0.0f;
-        this.K = 0.0f;
-        this.ar = (short) 2;
-        this.an = false;
-        this.ao = 0.0f;
-        this.ae = false;
-        this.ak = 0.0f;
-        this.aj = 0.0f;
-        this.ag = 0;
-        this.ah = false;
-        this.ai = false;
-        this.al = false;
-        this.am = false;
-        this.ap = 0;
-        this.aq = 0;
-        this.U = 0.0f;
-        this.V = 15.0f;
-        this.W = this.V;
-        this.X = 0.0f;
+        this.isLight = false;
+        this.showInFog = true;
+        this.visibilityChecked = false;
+        this.effectKind = 0;
+        this.isUiEffect = false;
+        this.posX = 0.0f;
+        this.posY = 0.0f;
+        this.isLaser = false;
+        this.laserTargetX = 0.0f;
+        this.laserTargetY = 0.0f;
+        this.laserTargetZ = 0.0f;
+        this.posZ = 0.0f;
+        this.drawLayer = (short) 2;
+        this.isCentered = false;
+        this.verticalAnchorOffset = 0.0f;
+        this.animateFrames = false;
+        this.currentFrame = 0.0f;
+        this.animateFrameSpeed = 0.0f;
+        this.animateFrameEnd = 0;
+        this.animateFramePingPong = false;
+        this.animateFrameLooping = false;
+        this.animateFrameReversing = false;
+        this.unusedFlag1 = false;
+        this.frameIndex = 0;
+        this.stripIndex = 0;
+        this.delayedStartTimer = 0.0f;
+        this.lifeTimer = 15.0f;
+        this.lifeMax = this.lifeTimer;
+        this.trailTimer = 0.0f;
         this.fadeIn = false;
         this.fadeOut = false;
         this.fadeDuration = 0.0f;
-        this.F = 1.0f;
-        this.G = 1.0f;
-        this.H = false;
+        this.scaleTo = 1.0f;
+        this.scaleFrom = 1.0f;
+        this.scaleWithZoom = false;
         this.useGravity = false;
         this.useBounce = false;
-        this.w = 1.0f;
-        this.E = 1.0f;
-        this.Y = 0.0f;
-        this.Z = 0.0f;
-        this.P = 0.0f;
-        this.Q = 0.0f;
-        this.R = 0.0f;
-        this.S = 0.0f;
-        this.T = 0.0f;
-        this.aa = null;
-        this.ab = null;
-        this.ac = 0.0f;
-        this.ad = 0.0f;
-        this.A = (short) 0;
+        this.physicsGravity = 1.0f;
+        this.alpha = 1.0f;
+        this.rotation = 0.0f;
+        this.rotationSpeed = 0.0f;
+        this.velocityX = 0.0f;
+        this.velocityY = 0.0f;
+        this.velocityZ = 0.0f;
+        this.bobAmplitude = 0.0f;
+        this.bobPeriod = 0.0f;
+        this.text = null;
+        this.textPaint = null;
+        this.textXOffset = 0.0f;
+        this.textYOffset = 0.0f;
+        this.emitRecursionDepth = (short) 0;
         this.startColor = -1;
-        this.B = null;
+        this.lightingColorFilter = null;
         this.endColor = -1;
-        this.z = -1.0f;
-        this.at.a((ColorFilter) null);
-        this.aw = false;
-        this.at.a((ShaderProgram) null);
-        this.as = false;
+        this.endColorTransitionTime = -1.0f;
+        this.colorPaint.a((ColorFilter) null);
+        this.hasColorFilterApplied = false;
+        this.colorPaint.a((ShaderProgram) null);
+        this.shadow = false;
     }
 
     /* JADX INFO: renamed from: a */
     public void recycle(Effect effect) {
-        this.a = effect.a;
-        this.q = effect.q;
-        this.g = effect.g;
+        this.template = effect.template;
+        this.priority = effect.priority;
+        this.effectKind = effect.effectKind;
         this.parentObject = effect.parentObject;
         this.ignoreParentZ = effect.ignoreParentZ;
-        this.d = effect.d;
-        this.e = effect.e;
-        this.p = effect.p;
-        this.I = effect.I;
-        this.J = effect.J;
-        this.L = effect.L;
-        this.M = effect.M;
-        this.N = effect.N;
-        this.O = effect.O;
-        this.K = effect.K;
-        this.ar = effect.ar;
-        this.an = effect.an;
-        this.ao = effect.ao;
-        this.ae = effect.ae;
-        this.ak = effect.ak;
-        this.aj = effect.aj;
-        this.ag = effect.ag;
-        this.ah = effect.ah;
-        this.ai = effect.ai;
-        this.al = effect.ah;
-        this.am = effect.am;
-        this.ap = effect.ap;
-        this.aq = effect.aq;
-        this.U = effect.U;
-        this.V = effect.V;
-        this.W = effect.W;
-        this.X = effect.X;
+        this.isLight = effect.isLight;
+        this.showInFog = effect.showInFog;
+        this.isUiEffect = effect.isUiEffect;
+        this.posX = effect.posX;
+        this.posY = effect.posY;
+        this.isLaser = effect.isLaser;
+        this.laserTargetX = effect.laserTargetX;
+        this.laserTargetY = effect.laserTargetY;
+        this.laserTargetZ = effect.laserTargetZ;
+        this.posZ = effect.posZ;
+        this.drawLayer = effect.drawLayer;
+        this.isCentered = effect.isCentered;
+        this.verticalAnchorOffset = effect.verticalAnchorOffset;
+        this.animateFrames = effect.animateFrames;
+        this.currentFrame = effect.currentFrame;
+        this.animateFrameSpeed = effect.animateFrameSpeed;
+        this.animateFrameEnd = effect.animateFrameEnd;
+        this.animateFramePingPong = effect.animateFramePingPong;
+        this.animateFrameLooping = effect.animateFrameLooping;
+        this.animateFrameReversing = effect.animateFramePingPong;
+        this.unusedFlag1 = effect.unusedFlag1;
+        this.frameIndex = effect.frameIndex;
+        this.stripIndex = effect.stripIndex;
+        this.delayedStartTimer = effect.delayedStartTimer;
+        this.lifeTimer = effect.lifeTimer;
+        this.lifeMax = effect.lifeMax;
+        this.trailTimer = effect.trailTimer;
         this.fadeIn = effect.fadeIn;
         this.fadeOut = effect.fadeOut;
         this.fadeDuration = effect.fadeDuration;
-        this.F = effect.F;
-        this.G = effect.G;
-        this.H = effect.H;
+        this.scaleTo = effect.scaleTo;
+        this.scaleFrom = effect.scaleFrom;
+        this.scaleWithZoom = effect.scaleWithZoom;
         this.useGravity = effect.useGravity;
         this.useBounce = effect.useBounce;
-        this.w = effect.w;
-        this.E = effect.E;
-        this.Y = effect.Y;
-        this.Z = effect.Z;
-        this.P = effect.P;
-        this.Q = effect.Q;
-        this.R = effect.R;
-        this.S = effect.S;
-        this.T = effect.T;
-        this.aa = effect.aa;
-        this.ab = effect.ab;
-        this.ac = effect.ac;
-        this.ad = effect.ad;
-        this.A = effect.A;
+        this.physicsGravity = effect.physicsGravity;
+        this.alpha = effect.alpha;
+        this.rotation = effect.rotation;
+        this.rotationSpeed = effect.rotationSpeed;
+        this.velocityX = effect.velocityX;
+        this.velocityY = effect.velocityY;
+        this.velocityZ = effect.velocityZ;
+        this.bobAmplitude = effect.bobAmplitude;
+        this.bobPeriod = effect.bobPeriod;
+        this.text = effect.text;
+        this.textPaint = effect.textPaint;
+        this.textXOffset = effect.textXOffset;
+        this.textYOffset = effect.textYOffset;
+        this.emitRecursionDepth = effect.emitRecursionDepth;
         this.startColor = effect.startColor;
         this.endColor = effect.endColor;
-        this.z = effect.z;
-        this.B = effect.B;
-        this.as = effect.as;
+        this.endColorTransitionTime = effect.endColorTransitionTime;
+        this.lightingColorFilter = effect.lightingColorFilter;
+        this.shadow = effect.shadow;
     }
 
     /* JADX INFO: renamed from: b */
     public void draw(float f) {
-        this.U = Utility.moveTowardsZero(this.U, f);
-        if (this.U > 0.0f) {
+        this.delayedStartTimer = Utility.moveTowardsZero(this.delayedStartTimer, f);
+        if (this.delayedStartTimer > 0.0f) {
             return;
         }
-        this.V -= f;
-        if (this.parentObject != null && this.parentObject.isDestroyed && !this.a.liveAfterAttachedDies) {
-            this.V = -1.0f;
+        this.lifeTimer -= f;
+        if (this.parentObject != null && this.parentObject.isDestroyed && !this.template.liveAfterAttachedDies) {
+            this.lifeTimer = -1.0f;
         }
-        if (this.V < 0.0f) {
+        if (this.lifeTimer < 0.0f) {
             reset();
             return;
         }
-        if (this.ae) {
-            if (this.al) {
-                this.ak -= this.aj * f;
+        if (this.animateFrames) {
+            if (this.animateFrameReversing) {
+                this.currentFrame -= this.animateFrameSpeed * f;
             } else {
-                this.ak += this.aj * f;
+                this.currentFrame += this.animateFrameSpeed * f;
             }
-            if (this.ah) {
-                if (this.al) {
-                    if (this.ak < this.af) {
-                        if (!this.ai) {
+            if (this.animateFramePingPong) {
+                if (this.animateFrameReversing) {
+                    if (this.currentFrame < this.animateFrameStart) {
+                        if (!this.animateFrameLooping) {
                             reset();
                             return;
                         } else {
-                            this.al = false;
-                            this.ak = this.af;
+                            this.animateFrameReversing = false;
+                            this.currentFrame = this.animateFrameStart;
                         }
                     }
-                } else if (this.ak >= this.ag + 1) {
-                    this.al = true;
-                    this.ak = this.ag;
+                } else if (this.currentFrame >= this.animateFrameEnd + 1) {
+                    this.animateFrameReversing = true;
+                    this.currentFrame = this.animateFrameEnd;
                 }
-            } else if (this.ak >= this.ag + 1) {
-                if (!this.ai) {
+            } else if (this.currentFrame >= this.animateFrameEnd + 1) {
+                if (!this.animateFrameLooping) {
                     reset();
                     return;
                 }
-                this.ak = this.af;
+                this.currentFrame = this.animateFrameStart;
             }
-            this.ap = (int) this.ak;
+            this.frameIndex = (int) this.currentFrame;
         }
         if (this.useGravity) {
-            this.R -= (this.R * 0.002f) * f;
-            this.P -= f * 0.0015f;
+            this.velocityZ -= (this.velocityZ * 0.002f) * f;
+            this.velocityX -= f * 0.0015f;
         }
         if (this.useBounce) {
-            if (this.K > 0.0f) {
-                this.R -= (0.1f * this.w) * f;
+            if (this.posZ > 0.0f) {
+                this.velocityZ -= (0.1f * this.physicsGravity) * f;
             } else {
-                if (this.R < 0.0f) {
-                    this.R = -this.R;
-                    this.R *= 0.5f;
-                    this.R = Utility.moveTowardsZero(this.R, 1.3f);
+                if (this.velocityZ < 0.0f) {
+                    this.velocityZ = -this.velocityZ;
+                    this.velocityZ *= 0.5f;
+                    this.velocityZ = Utility.moveTowardsZero(this.velocityZ, 1.3f);
                 }
-                if (this.K < 0.0f) {
-                    this.K = 0.0f;
+                if (this.posZ < 0.0f) {
+                    this.posZ = 0.0f;
                 }
-                if (this.R < 0.2d) {
-                    this.ar = (short) 1;
+                if (this.velocityZ < 0.2d) {
+                    this.drawLayer = (short) 1;
                 }
-                this.P = Utility.moveTowardsZero(this.P, 0.15f * f);
-                this.Q = Utility.moveTowardsZero(this.Q, 0.15f * f);
-                this.Z = Utility.moveTowardsZero(this.Z, 1.0f * f);
+                this.velocityX = Utility.moveTowardsZero(this.velocityX, 0.15f * f);
+                this.velocityY = Utility.moveTowardsZero(this.velocityY, 0.15f * f);
+                this.rotationSpeed = Utility.moveTowardsZero(this.rotationSpeed, 1.0f * f);
             }
         }
-        this.I += this.P * f;
-        this.J += this.Q * f;
-        this.K += this.R * f;
-        this.Y += this.Z * f;
-        if (this.a.trailEffect != null) {
-            this.X += f;
-            if (this.X > this.a.trailEffectRate) {
-                this.X = 0.0f;
-                if (this.A < 20) {
-                    float f2 = this.I;
-                    float f3 = this.J;
-                    float f4 = this.K;
+        this.posX += this.velocityX * f;
+        this.posY += this.velocityY * f;
+        this.posZ += this.velocityZ * f;
+        this.rotation += this.rotationSpeed * f;
+        if (this.template.trailEffect != null) {
+            this.trailTimer += f;
+            if (this.trailTimer > this.template.trailEffectRate) {
+                this.trailTimer = 0.0f;
+                if (this.emitRecursionDepth < 20) {
+                    float f2 = this.posX;
+                    float f3 = this.posY;
+                    float f4 = this.posZ;
                     if (this.parentObject != null) {
                         f2 += this.parentObject.posX;
                         f3 += this.parentObject.posY;
                         f4 += this.parentObject.posZ;
                     }
-                    this.a.trailEffect.a(f2, f3, f4, this.Y, this.parentObject, 0, this.A);
+                    this.template.trailEffect.a(f2, f3, f4, this.rotation, this.parentObject, 0, this.emitRecursionDepth);
                 }
             }
         }
-    }
-
-    /* JADX INFO: renamed from: a */
-    public static void computeSpriteRect(int i2, SpriteSheet spriteSheet, Rect rect) {
-        int i3 = 0;
-        if (i2 >= spriteSheet.h) {
-            i3 = 0 + (i2 / spriteSheet.h);
-            i2 %= spriteSheet.h;
-        }
-        int i4 = spriteSheet.d + (i2 * spriteSheet.f);
-        int i5 = spriteSheet.e + (i3 * spriteSheet.g);
-        rect.a = i4;
-        rect.b = i5;
-        rect.c = i4 + spriteSheet.b;
-        rect.d = i5 + spriteSheet.c;
     }
 
     /* JADX INFO: renamed from: a */
@@ -395,42 +463,42 @@ public final class Effect {
         GamePaint texture;
         Rect rect = EffectManager.rect;
         RectF rectF = EffectManager.rectF;
-        if (this.U > 0.0f) {
+        if (this.delayedStartTimer > 0.0f) {
             return false;
         }
-        if (z && this.K < 1.0f) {
+        if (z && this.posZ < 1.0f) {
             return false;
         }
-        if (this.a.imageStrip != null) {
-            spriteSheet = this.a.imageStrip;
+        if (this.template.imageStrip != null) {
+            spriteSheet = this.template.imageStrip;
         } else {
-            spriteSheet = EffectManager.effectTemplates[this.aq];
+            spriteSheet = EffectManager.effectTemplates[this.stripIndex];
         }
-        if (!spriteSheet.k) {
-            computeSpriteRect(this.ap, spriteSheet, rect);
+        if (!spriteSheet.singleFrame) {
+            computeSpriteRect(this.frameIndex, spriteSheet, rect);
         } else {
-            rect.a(0, 0, spriteSheet.i.m(), spriteSheet.i.l());
+            rect.a(0, 0, spriteSheet.texture.m(), spriteSheet.texture.l());
         }
         if (!z) {
-            pointFCreatePointWithOffset = Utility.createPointWithOffset(this.I, this.J, this.K);
+            pointFCreatePointWithOffset = Utility.createPointWithOffset(this.posX, this.posY, this.posZ);
         } else {
-            pointFCreatePointWithOffset = Utility.createPointWithOffset(this.I, this.J, 0.0f);
+            pointFCreatePointWithOffset = Utility.createPointWithOffset(this.posX, this.posY, 0.0f);
         }
-        boolean z2 = this.ar == 4;
+        boolean z2 = this.drawLayer == 4;
         float fFromHexString = 1.0f;
-        if (this.G != 1.0f || this.F != 1.0f || this.H) {
-            fFromHexString = Utility.lerp(this.G, this.F, 1.0f - (this.V / this.W));
-            boolean z3 = this.ar != 4;
-            if (this.H && z3) {
+        if (this.scaleFrom != 1.0f || this.scaleTo != 1.0f || this.scaleWithZoom) {
+            fFromHexString = Utility.lerp(this.scaleFrom, this.scaleTo, 1.0f - (this.lifeTimer / this.lifeMax));
+            boolean z3 = this.drawLayer != 4;
+            if (this.scaleWithZoom && z3) {
                 fFromHexString = fFromHexString * (1.0f / gameEngine.zoom) * gameEngine.screenScale;
             }
         }
         rectF.a(pointFCreatePointWithOffset.x, pointFCreatePointWithOffset.y, pointFCreatePointWithOffset.x + rect.b(), pointFCreatePointWithOffset.y + rect.c());
-        if (this.an) {
+        if (this.isCentered) {
             rectF.a((-rectF.b()) / 2.0f, (-rectF.c()) / 2.0f);
         }
-        if (this.ao != 0.0f) {
-            rectF.a(0.0f, rectF.c() * this.ao * fFromHexString);
+        if (this.verticalAnchorOffset != 0.0f) {
+            rectF.a(0.0f, rectF.c() * this.verticalAnchorOffset * fFromHexString);
         }
         if (this.parentObject != null) {
             if (!z && !this.ignoreParentZ) {
@@ -439,22 +507,22 @@ public final class Effect {
                 rectF.a(this.parentObject.posX, this.parentObject.posY);
             }
         }
-        if ((!z2 || this.L) && !Utility.rectanglesOverlap(gameEngine.bufferedVisibleWorldRect, rectF)) {
+        if ((!z2 || this.isLaser) && !Utility.rectanglesOverlap(gameEngine.bufferedVisibleWorldRect, rectF)) {
             return false;
         }
-        if (!this.e && !z2 && !this.f) {
+        if (!this.showInFog && !z2 && !this.visibilityChecked) {
             if (!gameEngine.tileMap.isWorldPointVisibleForTeam(rectF.d(), rectF.e(), gameEngine.playerTeam)) {
                 return false;
             }
-            this.f = true;
+            this.visibilityChecked = true;
         }
         if (!z2) {
             rectF.a(-gameEngine.viewpointXSnapped, -gameEngine.viewpointYSnapped);
         }
-        if (this.S != 0.0f) {
-            rectF.a(0.0f, Utility.fastSin(((this.W - this.V) / this.T) * 360.0f) * this.S);
+        if (this.bobAmplitude != 0.0f) {
+            rectF.a(0.0f, Utility.fastSin(((this.lifeMax - this.lifeTimer) / this.bobPeriod) * 360.0f) * this.bobAmplitude);
         }
-        float f = this.W - this.V;
+        float f = this.lifeMax - this.lifeTimer;
         float fA = 1.0f;
         float f2 = 1.0f;
         float f3 = 1.0f;
@@ -472,19 +540,19 @@ public final class Effect {
                 f4 = iD * 0.003921569f;
             }
         }
-        if (this.z >= 0.0f) {
+        if (this.endColorTransitionTime >= 0.0f) {
             float fA2 = Color.a(this.endColor) * 0.003921569f;
             float fB = Color.b(this.endColor) * 0.003921569f;
             float fC = Color.c(this.endColor) * 0.003921569f;
             float fD = Color.d(this.endColor) * 0.003921569f;
-            if (this.z <= f) {
+            if (this.endColorTransitionTime <= f) {
                 fA = fA2;
                 z4 = true;
                 f2 = fB;
                 f3 = fC;
                 f4 = fD;
             } else {
-                float f5 = f / this.z;
+                float f5 = f / this.endColorTransitionTime;
                 float f6 = 1.0f - f5;
                 fA = (fA * f6) + (fA2 * f5);
                 z4 = true;
@@ -494,11 +562,11 @@ public final class Effect {
             }
         }
         if (this.fadeIn && f >= this.fadeDuration) {
-            fClampTo255 = fA * (this.V / (this.W - this.fadeDuration)) * this.E;
+            fClampTo255 = fA * (this.lifeTimer / (this.lifeMax - this.fadeDuration)) * this.alpha;
         } else if (this.fadeOut && f < this.fadeDuration) {
-            fClampTo255 = fA * (f / this.fadeDuration) * this.E;
+            fClampTo255 = fA * (f / this.fadeDuration) * this.alpha;
         } else {
-            fClampTo255 = fA * this.E;
+            fClampTo255 = fA * this.alpha;
         }
         if (fClampTo255 > 1.0f) {
             fClampTo255 = 1.0f;
@@ -508,12 +576,12 @@ public final class Effect {
         }
         boolean z5 = false;
         GraphicsEngine graphicsEngine = gameEngine.renderGraphicsEngine;
-        if (this.Y != 0.0f) {
+        if (this.rotation != 0.0f) {
             if (0 == 0) {
                 z5 = true;
                 graphicsEngine.k();
             }
-            graphicsEngine.a(this.Y + 90.0f, rectF.d(), rectF.e());
+            graphicsEngine.a(this.rotation + 90.0f, rectF.d(), rectF.e());
         }
         if (fFromHexString != 1.0f) {
             if (!z5) {
@@ -529,28 +597,28 @@ public final class Effect {
             f4 = 0.0f;
             z4 = true;
         }
-        if (z4 && GameEngine.isAndroidPlatform() && !z && this.B == null) {
+        if (z4 && GameEngine.isAndroidPlatform() && !z && this.lightingColorFilter == null) {
             int iLongToIntArray = Utility.packArgb(255, (int) (f2 * 255.0f), (int) (f3 * 255.0f), (int) (f4 * 255.0f));
-            if (C != null && D == iLongToIntArray) {
-                this.B = C;
+            if (cachedLightingColorFilter != null && cachedLightingColorFilterColor == iLongToIntArray) {
+                this.lightingColorFilter = cachedLightingColorFilter;
             } else {
-                C = new LightingColorFilter(iLongToIntArray, 0);
-                D = iLongToIntArray;
-                this.B = C;
+                cachedLightingColorFilter = new LightingColorFilter(iLongToIntArray, 0);
+                cachedLightingColorFilterColor = iLongToIntArray;
+                this.lightingColorFilter = cachedLightingColorFilter;
             }
         }
-        LightingColorFilter lightingColorFilter = this.B;
+        LightingColorFilter lightingColorFilter = this.lightingColorFilter;
         if (lightingColorFilter != null) {
-            if (!this.aw) {
-                this.at.a(lightingColorFilter);
-                this.aw = true;
+            if (!this.hasColorFilterApplied) {
+                this.colorPaint.a(lightingColorFilter);
+                this.hasColorFilterApplied = true;
             }
             z4 = true;
-        } else if (this.aw) {
-            this.at.a((ColorFilter) null);
-            this.aw = false;
+        } else if (this.hasColorFilterApplied) {
+            this.colorPaint.a((ColorFilter) null);
+            this.hasColorFilterApplied = false;
         }
-        if (this.ar == 3) {
+        if (this.drawLayer == 3) {
             if (EffectManager.shader == null) {
                 GameEngine.log("Loading displacement shader");
                 try {
@@ -559,44 +627,44 @@ public final class Effect {
                     throw new RuntimeException(e);
                 }
             }
-            if (this.ay.texture != null) {
+            if (this.effectManager.texture != null) {
                 ShaderProgram shaderProgram = EffectManager.shader;
-                shaderProgram.a("screenBase", this.ay.texture);
-                shaderProgram.b("screenBaseSize", this.ay.texture);
+                shaderProgram.a("screenBase", this.effectManager.texture);
+                shaderProgram.b("screenBaseSize", this.effectManager.texture);
                 shaderProgram.a("u_resolution", gameEngine.screenWidth, gameEngine.screenHeight);
                 shaderProgram.a("u_offsetBy", 0.12f * gameEngine.zoom);
-                this.at.a(shaderProgram);
+                this.colorPaint.a(shaderProgram);
                 z4 = true;
             }
         }
         if (!z4) {
             texture = getTexture(fClampTo255);
         } else {
-            texture = this.at;
+            texture = this.colorPaint;
             int iLongToIntArray2 = Utility.packArgb(255, (int) (f2 * 255.0f), (int) (f3 * 255.0f), (int) (f4 * 255.0f));
-            float f7 = this.au - fClampTo255;
-            if (f7 < -0.01f || f7 > 0.01f || this.av != iLongToIntArray2) {
-                this.au = fClampTo255;
-                this.av = iLongToIntArray2;
-                this.at.b(Utility.packArgb((int) (fClampTo255 * 255.0f), (int) (f2 * 255.0f), (int) (f3 * 255.0f), (int) (f4 * 255.0f)));
+            float f7 = this.cachedAlpha - fClampTo255;
+            if (f7 < -0.01f || f7 > 0.01f || this.cachedColor != iLongToIntArray2) {
+                this.cachedAlpha = fClampTo255;
+                this.cachedColor = iLongToIntArray2;
+                this.colorPaint.b(Utility.packArgb((int) (fClampTo255 * 255.0f), (int) (f2 * 255.0f), (int) (f3 * 255.0f), (int) (f4 * 255.0f)));
             }
         }
-        if (this.aa != null) {
+        if (this.text != null) {
             Paint paint = texture;
-            if (this.ab != null) {
-                paint = this.ab;
+            if (this.textPaint != null) {
+                paint = this.textPaint;
             }
-            graphicsEngine.a(this.aa, rectF.d() + this.ac, rectF.e() + this.ad, paint);
+            graphicsEngine.a(this.text, rectF.d() + this.textXOffset, rectF.e() + this.textYOffset, paint);
         }
-        if (this.L) {
-            PointF pointFCreatePointWithOffset2 = Utility.createPointWithOffset(this.M, this.N, this.O);
-            graphicsEngine.a(rectF.a, rectF.b, pointFCreatePointWithOffset2.x - gameEngine.viewpointXSnapped, pointFCreatePointWithOffset2.y - gameEngine.viewpointYSnapped, this.ay.linePaint);
+        if (this.isLaser) {
+            PointF pointFCreatePointWithOffset2 = Utility.createPointWithOffset(this.laserTargetX, this.laserTargetY, this.laserTargetZ);
+            graphicsEngine.a(rectF.a, rectF.b, pointFCreatePointWithOffset2.x - gameEngine.viewpointXSnapped, pointFCreatePointWithOffset2.y - gameEngine.viewpointYSnapped, this.effectManager.linePaint);
         } else if (z) {
-            if (spriteSheet.j != null) {
-                graphicsEngine.a(spriteSheet.j, rect, rectF, texture);
+            if (spriteSheet.shadowTexture != null) {
+                graphicsEngine.a(spriteSheet.shadowTexture, rect, rectF, texture);
             }
         } else {
-            graphicsEngine.a(spriteSheet.i, rect, rectF, texture);
+            graphicsEngine.a(spriteSheet.texture, rect, rectF, texture);
         }
         if (z5) {
             graphicsEngine.l();

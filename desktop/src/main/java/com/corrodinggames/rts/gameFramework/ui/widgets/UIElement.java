@@ -14,10 +14,14 @@ public abstract class UIElement {
     float positionX;
     /* JADX INFO: renamed from: h */
     float positionY;
-    float k;
-    float l;
-    float m;
-    float n;
+    /* JADX INFO: renamed from: e */
+    static final PointF tmpPoint = new PointF();
+    /* JADX INFO: renamed from: f */
+    static final RectF tmpRect = new RectF();
+    /* JADX INFO: renamed from: A */
+    static final PointF tmpAbsolutePoint = new PointF();
+    /* JADX INFO: renamed from: k */
+    float paddingTop;
     /* JADX INFO: renamed from: o */
     float marginTop;
     /* JADX INFO: renamed from: p */
@@ -34,38 +38,33 @@ public abstract class UIElement {
     float layoutHeight;
     /* JADX INFO: renamed from: z */
     float layoutWidth;
-    UIEventHandler B;
-    static final PointF e = new PointF();
-    static final RectF f = new RectF();
-    static final PointF A = new PointF();
-    float i = 50.0f;
-    float j = 50.0f;
-    boolean s = false;
-    boolean t = false;
-    FastArrayList<UIElement> w = new FastArrayList();
-    LayoutDirection x = LayoutDirection.vertical;
+    /* JADX INFO: renamed from: l */
+    float paddingBottom;
+    /* JADX INFO: renamed from: m */
+    float paddingLeft;
+    /* JADX INFO: renamed from: n */
+    float paddingRight;
+    /* JADX INFO: renamed from: B */
+    UIEventHandler eventHandler;
+    /* JADX INFO: renamed from: i */
+    float width = 50.0f;
+    /* JADX INFO: renamed from: j */
+    float height = 50.0f;
+    /* JADX INFO: renamed from: s */
+    boolean needsLayout = false;
+    /* JADX INFO: renamed from: t */
+    boolean debugBounds = false;
+    /* JADX INFO: renamed from: w */
+    FastArrayList<UIElement> children = new FastArrayList();
+    /* JADX INFO: renamed from: x */
+    LayoutDirection layoutDirection = LayoutDirection.vertical;
 
-    public String a() {
-        return getClass().getSimpleName();
-    }
-
-    public GraphicsEngine d() {
-        return GameEngine.getInstance().renderGraphicsEngine;
-    }
-
-    public RectF a(RectF rectF, float f2, float f3) {
-        rectF.a = 0.0f + f2;
-        rectF.b = 0.0f + f3;
-        rectF.c = 0.0f + this.i + f2;
-        rectF.d = 0.0f + this.j + f3;
-        return rectF;
-    }
-
-    public static void a(float f2, float f3, FastArrayList fastArrayList) {
+    /* JADX INFO: renamed from: a */
+    public static void layoutHorizontalCentered(float f2, float f3, FastArrayList fastArrayList) {
         float fG = 0.0f;
         Iterator it = fastArrayList.iterator();
         while (it.hasNext()) {
-            fG += ((UIElement) it.next()).g();
+            fG += ((UIElement) it.next()).getTotalWidth();
         }
         float f4 = f2 - (fG * 0.5f);
         Iterator it2 = fastArrayList.iterator();
@@ -73,16 +72,17 @@ public abstract class UIElement {
             UIElement uIElement = (UIElement) it2.next();
             float f5 = f4 + uIElement.marginLeft;
             uIElement.positionX = f5;
-            f4 = f5 + uIElement.i + uIElement.marginRight;
-            uIElement.d(f3);
+            f4 = f5 + uIElement.width + uIElement.marginRight;
+            uIElement.setCenterY(f3);
         }
     }
 
-    public static void b(float f2, float f3, FastArrayList fastArrayList) {
+    /* JADX INFO: renamed from: b */
+    public static void layoutVerticalCentered(float f2, float f3, FastArrayList fastArrayList) {
         float fH = 0.0f;
         Iterator it = fastArrayList.iterator();
         while (it.hasNext()) {
-            fH += ((UIElement) it.next()).h();
+            fH += ((UIElement) it.next()).getTotalHeight();
         }
         float f4 = f3 - (fH * 0.5f);
         Iterator it2 = fastArrayList.iterator();
@@ -90,148 +90,179 @@ public abstract class UIElement {
             UIElement uIElement = (UIElement) it2.next();
             float f5 = f4 + uIElement.marginTop;
             uIElement.positionY = f5;
-            f4 = f5 + uIElement.j + uIElement.marginBottom;
-            uIElement.c(f2);
+            f4 = f5 + uIElement.height + uIElement.marginBottom;
+            uIElement.setCenterX(f2);
         }
     }
 
-    public RectF a(RectF rectF) {
-        A.x = this.positionX;
-        A.y = this.positionY;
-        if (this.parent != null) {
-            this.parent.a(A);
-        }
-        rectF.a = 0.0f + A.x;
-        rectF.b = 0.0f + A.y;
-        rectF.c = 0.0f + this.i + A.x;
-        rectF.d = 0.0f + this.j + A.y;
+    /* JADX INFO: renamed from: a */
+    public String getTypeName() {
+        return getClass().getSimpleName();
+    }
+
+    /* JADX INFO: renamed from: d */
+    public GraphicsEngine getGraphicsEngine() {
+        return GameEngine.getInstance().renderGraphicsEngine;
+    }
+
+    /* JADX INFO: renamed from: a */
+    public RectF getRectAt(RectF rectF, float f2, float f3) {
+        rectF.a = 0.0f + f2;
+        rectF.b = 0.0f + f3;
+        rectF.c = 0.0f + this.width + f2;
+        rectF.d = 0.0f + this.height + f3;
         return rectF;
     }
 
-    public void b() {
-        Iterator it = this.w.iterator();
+    /* JADX INFO: renamed from: a */
+    public RectF getAbsoluteRect(RectF rectF) {
+        tmpAbsolutePoint.x = this.positionX;
+        tmpAbsolutePoint.y = this.positionY;
+        if (this.parent != null) {
+            this.parent.applyAbsoluteOffset(tmpAbsolutePoint);
+        }
+        rectF.a = 0.0f + tmpAbsolutePoint.x;
+        rectF.b = 0.0f + tmpAbsolutePoint.y;
+        rectF.c = 0.0f + this.width + tmpAbsolutePoint.x;
+        rectF.d = 0.0f + this.height + tmpAbsolutePoint.y;
+        return rectF;
+    }
+
+    /* JADX INFO: renamed from: b */
+    public void layout() {
+        Iterator it = this.children.iterator();
         while (it.hasNext()) {
-            ((UIElement) it.next()).b();
+            ((UIElement) it.next()).layout();
         }
         this.layoutHeight = 0.0f;
         this.layoutWidth = 0.0f;
-        if (this.x != LayoutDirection.none) {
-            if (this.x == LayoutDirection.vertical) {
+        if (this.layoutDirection != LayoutDirection.none) {
+            if (this.layoutDirection == LayoutDirection.vertical) {
                 float fG = 0.0f;
                 float fH = 0.0f;
-                for (UIElement uIElement : this.w) {
-                    if (uIElement.i > fG) {
-                        fG = uIElement.g();
+                for (UIElement uIElement : this.children) {
+                    if (uIElement.width > fG) {
+                        fG = uIElement.getTotalWidth();
                     }
-                    fH += uIElement.h();
+                    fH += uIElement.getTotalHeight();
                 }
                 this.layoutHeight = fH;
                 this.layoutWidth = fG;
-                b(this.layoutWidth * 0.5f, this.layoutHeight * 0.5f, this.w);
-            } else if (this.x == LayoutDirection.horizontal) {
+                layoutVerticalCentered(this.layoutWidth * 0.5f, this.layoutHeight * 0.5f, this.children);
+            } else if (this.layoutDirection == LayoutDirection.horizontal) {
                 float fH2 = 0.0f;
                 float fG2 = 0.0f;
-                for (UIElement uIElement2 : this.w) {
-                    if (uIElement2.j > fH2) {
-                        fH2 = uIElement2.h();
+                for (UIElement uIElement2 : this.children) {
+                    if (uIElement2.height > fH2) {
+                        fH2 = uIElement2.getTotalHeight();
                     }
-                    fG2 += uIElement2.g();
+                    fG2 += uIElement2.getTotalWidth();
                 }
                 this.layoutHeight = fH2;
                 this.layoutWidth = fG2;
-                a(this.layoutWidth * 0.5f, this.layoutHeight * 0.5f, this.w);
+                layoutHorizontalCentered(this.layoutWidth * 0.5f, this.layoutHeight * 0.5f, this.children);
             } else {
-                throw new RuntimeException("Unknown layout style:" + this.x);
+                throw new RuntimeException("Unknown layout style:" + this.layoutDirection);
             }
         }
-        this.s = false;
+        this.needsLayout = false;
     }
 
-    public void a(PointF pointF) {
+    /* JADX INFO: renamed from: a */
+    public void applyAbsoluteOffset(PointF pointF) {
         if (this.parent != null) {
-            this.parent.a(pointF);
+            this.parent.applyAbsoluteOffset(pointF);
         }
         pointF.x += this.positionX;
         pointF.y += this.positionY;
     }
 
-    public void a(UIElement uIElement) {
-        uIElement.b(this);
+    /* JADX INFO: renamed from: a */
+    public void addChild(UIElement uIElement) {
+        uIElement.setParent(this);
     }
 
-    public void b(UIElement uIElement) {
-        a(uIElement, false);
+    /* JADX INFO: renamed from: b */
+    public void setParent(UIElement uIElement) {
+        setParent(uIElement, false);
     }
 
-    public void a(UIElement uIElement, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public void setParent(UIElement uIElement, boolean z) {
         if (this.parent == uIElement) {
             return;
         }
         if (this.parent != null) {
-            this.parent.w.remove(this);
+            this.parent.children.remove(this);
         }
         this.parent = uIElement;
         if (uIElement != null) {
             if (!z) {
-                uIElement.w.add(this);
+                uIElement.children.add(this);
             } else {
-                uIElement.w.add(0, this);
+                uIElement.children.add(0, this);
             }
         }
-        e();
+        invalidateLayout();
     }
 
-    public void e() {
-        this.s = true;
+    /* JADX INFO: renamed from: e */
+    public void invalidateLayout() {
+        this.needsLayout = true;
         if (this.parent != null) {
-            this.parent.e();
+            this.parent.invalidateLayout();
         }
     }
 
-    public void b(float f2) {
-        if (this.w.size() > 0) {
-            Iterator it = this.w.iterator();
+    /* JADX INFO: renamed from: b */
+    public void update(float f2) {
+        if (this.children.size() > 0) {
+            Iterator it = this.children.iterator();
             while (it.hasNext()) {
-                ((UIElement) it.next()).b(f2);
+                ((UIElement) it.next()).update(f2);
             }
         }
     }
 
-    public void f() {
-        A.x = this.positionX;
-        A.y = this.positionY;
+    /* JADX INFO: renamed from: f */
+    public void render() {
+        tmpAbsolutePoint.x = this.positionX;
+        tmpAbsolutePoint.y = this.positionY;
         if (this.parent != null) {
-            this.parent.a(A);
+            this.parent.applyAbsoluteOffset(tmpAbsolutePoint);
         }
-        a(A.x, A.y);
-        if (this.w.size() > 0) {
-            Iterator it = this.w.iterator();
+        draw(tmpAbsolutePoint.x, tmpAbsolutePoint.y);
+        if (this.children.size() > 0) {
+            Iterator it = this.children.iterator();
             while (it.hasNext()) {
-                ((UIElement) it.next()).f();
+                ((UIElement) it.next()).render();
             }
         }
     }
 
-    public void a(float f2, float f3) {
-        if (this.t) {
-            UIStyle.m.a(d(), a(new RectF(), f2, f3));
+    /* JADX INFO: renamed from: a */
+    public void draw(float f2, float f3) {
+        if (this.debugBounds) {
+            UIStyle.debugStyle.draw(getGraphicsEngine(), getRectAt(new RectF(), f2, f3));
         }
     }
 
-    public void a(UIEventHandler uIEventHandler) {
-        this.B = uIEventHandler;
+    /* JADX INFO: renamed from: a */
+    public void setEventHandler(UIEventHandler uIEventHandler) {
+        this.eventHandler = uIEventHandler;
     }
 
-    public boolean a(UIEvent uIEvent) {
-        if (uIEvent.a() && c(uIEvent)) {
-            GameEngine.log("UI click " + a());
-            if (this.B != null) {
-                return this.B.a(uIEvent);
+    /* JADX INFO: renamed from: a */
+    public boolean handleEvent(UIEvent uIEvent) {
+        if (uIEvent.isMouseClick() && containsEvent(uIEvent)) {
+            GameEngine.log("UI click " + getTypeName());
+            if (this.eventHandler != null) {
+                return this.eventHandler.handleEvent(uIEvent);
             }
             return false;
         }
-        if (uIEvent.b()) {
-            if (c(uIEvent)) {
+        if (uIEvent.isMouseMove()) {
+            if (containsEvent(uIEvent)) {
                 this.isHovered = true;
                 return false;
             }
@@ -241,57 +272,66 @@ public abstract class UIElement {
         return false;
     }
 
-    public boolean b(UIEvent uIEvent) {
-        if (this.w.size() > 0) {
-            Iterator it = this.w.iterator();
+    /* JADX INFO: renamed from: b */
+    public boolean dispatchEvent(UIEvent uIEvent) {
+        if (this.children.size() > 0) {
+            Iterator it = this.children.iterator();
             while (it.hasNext()) {
-                if (((UIElement) it.next()).b(uIEvent)) {
+                if (((UIElement) it.next()).dispatchEvent(uIEvent)) {
                     return true;
                 }
             }
         }
-        if (a(uIEvent)) {
+        if (handleEvent(uIEvent)) {
             return true;
         }
         return false;
     }
 
-    public boolean c(UIEvent uIEvent) {
-        a(f);
-        return f.b(uIEvent.x, uIEvent.y);
+    /* JADX INFO: renamed from: c */
+    public boolean containsEvent(UIEvent uIEvent) {
+        getAbsoluteRect(tmpRect);
+        return tmpRect.b(uIEvent.x, uIEvent.y);
     }
 
-    public void c(float f2) {
-        this.positionX = f2 - (this.i * 0.5f);
+    /* JADX INFO: renamed from: c */
+    public void setCenterX(float f2) {
+        this.positionX = f2 - (this.width * 0.5f);
     }
 
-    public void d(float f2) {
-        this.positionY = f2 - (this.j * 0.5f);
+    /* JADX INFO: renamed from: d */
+    public void setCenterY(float f2) {
+        this.positionY = f2 - (this.height * 0.5f);
     }
 
-    public void e(float f2) {
+    /* JADX INFO: renamed from: e */
+    public void setMargin(float f2) {
         this.marginTop = f2;
         this.marginBottom = f2;
         this.marginLeft = f2;
         this.marginRight = f2;
     }
 
-    public void f(float f2) {
-        this.k = f2;
-        this.l = f2;
-        this.m = f2;
-        this.n = f2;
+    /* JADX INFO: renamed from: f */
+    public void setPadding(float f2) {
+        this.paddingTop = f2;
+        this.paddingBottom = f2;
+        this.paddingLeft = f2;
+        this.paddingRight = f2;
     }
 
-    public float g() {
-        return this.marginLeft + this.i + this.marginRight;
+    /* JADX INFO: renamed from: g */
+    public float getTotalWidth() {
+        return this.marginLeft + this.width + this.marginRight;
     }
 
-    public float h() {
-        return this.marginTop + this.j + this.marginBottom;
+    /* JADX INFO: renamed from: h */
+    public float getTotalHeight() {
+        return this.marginTop + this.height + this.marginBottom;
     }
 
-    public void i() {
-        b((UIElement) null);
+    /* JADX INFO: renamed from: i */
+    public void removeFromParent() {
+        setParent((UIElement) null);
     }
 }

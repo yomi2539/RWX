@@ -15,7 +15,8 @@ import java.util.ArrayList;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.a.f */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/a/f.class */
 public class AIUnitActionUtils {
-    static boolean a(OrderableUnit orderableUnit) {
+    /* JADX INFO: renamed from: a */
+    static boolean isIdleOrReclaiming(OrderableUnit orderableUnit) {
         UnitCommand currentWaypoint;
         boolean z = false;
         if (orderableUnit.hasNoCurrentWaypoint()) {
@@ -27,7 +28,8 @@ public class AIUnitActionUtils {
         return z;
     }
 
-    static boolean b(OrderableUnit orderableUnit) {
+    /* JADX INFO: renamed from: b */
+    static boolean isIdle(OrderableUnit orderableUnit) {
         boolean z = false;
         if (orderableUnit.hasNoCurrentWaypoint()) {
             z = true;
@@ -35,7 +37,8 @@ public class AIUnitActionUtils {
         return z;
     }
 
-    public static Object a(AbstractList abstractList) {
+    /* JADX INFO: renamed from: a */
+    public static Object getRandomElement(AbstractList abstractList) {
         int size = abstractList.size();
         if (size == 0) {
             return null;
@@ -43,7 +46,8 @@ public class AIUnitActionUtils {
         return abstractList.get(Utility.getRandomIntInRange(0, size - 1));
     }
 
-    public static boolean a(OrderableUnit orderableUnit, AnimationTag animationTag) {
+    /* JADX INFO: renamed from: a */
+    public static boolean hasAiTag(OrderableUnit orderableUnit, AnimationTag animationTag) {
         UnitType unitTypeR = orderableUnit.r();
         if ((unitTypeR instanceof CustomUnitConfig) && AnimationTag.a(animationTag, ((CustomUnitConfig) unitTypeR).aiTags)) {
             return true;
@@ -51,7 +55,8 @@ public class AIUnitActionUtils {
         return false;
     }
 
-    public static AbstractUnitAction a(AIController aIController, OrderableUnit orderableUnit, ActionType actionType) {
+    /* JADX INFO: renamed from: a */
+    public static AbstractUnitAction findAvailableAction(AIController aIController, OrderableUnit orderableUnit, ActionType actionType) {
         ArrayList<AbstractUnitAction> arrayListN = orderableUnit.getAvailableActions();
         ArrayList reusableList = aIController.getReusableList();
         for (AbstractUnitAction abstractUnitAction : arrayListN) {
@@ -60,7 +65,7 @@ public class AIUnitActionUtils {
             }
         }
         if (reusableList.size() > 0) {
-            return (AbstractUnitAction) a(reusableList);
+            return (AbstractUnitAction) getRandomElement(reusableList);
         }
         return null;
     }

@@ -28,11 +28,12 @@ public class StatHistory {
         }
     }
 
-    public void a(int i, int i2) {
+    /* JADX INFO: renamed from: a */
+    public void setValue(int i, int i2) {
         this.values[i] = i2;
     }
 
-    public float a(int i) {
+    public float getRatio(int i) {
         if (this.totalCache < 0) {
             this.totalCache = 0;
             for (int i2 = 0; i2 < this.values.length; i2++) {

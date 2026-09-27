@@ -31,7 +31,7 @@ public class QueueUnitAction extends PopupQueueAction {
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction
     /* JADX INFO: renamed from: a */
     public String getDescription() {
-        return this.unitType.f() + "\n\n" + GameInterfaceRenderer.a(BaseUnit.getPrototypeForUnitType(this.unitType), false, false, true);
+        return this.unitType.f() + "\n\n" + GameInterfaceRenderer.clearMessageIfSame(BaseUnit.getPrototypeForUnitType(this.unitType), false, false, true);
     }
 
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction

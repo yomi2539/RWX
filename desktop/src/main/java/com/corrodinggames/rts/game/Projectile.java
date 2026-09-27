@@ -434,11 +434,11 @@ public class Projectile extends PositionedObject {
             GameEngine gameEngine = GameEngine.getInstance();
             Effect effectCreateSmallExplosionInternal = gameEngine.effectManager.createSmallExplosionInternal(this.posX, this.posY, this.posZ, 0);
             if (effectCreateSmallExplosionInternal != null) {
-                effectCreateSmallExplosionInternal.G = 0.7f;
-                effectCreateSmallExplosionInternal.F = 2.1f;
-                effectCreateSmallExplosionInternal.ar = (short) 2;
-                effectCreateSmallExplosionInternal.V = 90.0f;
-                effectCreateSmallExplosionInternal.W = effectCreateSmallExplosionInternal.V;
+                effectCreateSmallExplosionInternal.scaleFrom = 0.7f;
+                effectCreateSmallExplosionInternal.scaleTo = 2.1f;
+                effectCreateSmallExplosionInternal.drawLayer = (short) 2;
+                effectCreateSmallExplosionInternal.lifeTimer = 90.0f;
+                effectCreateSmallExplosionInternal.lifeMax = effectCreateSmallExplosionInternal.lifeTimer;
             }
             gameEngine.soundEngine.playSound(SoundEngine.buildingExplodeSound, 0.8f, this.posX, this.posY);
         }
@@ -818,18 +818,18 @@ public class Projectile extends PositionedObject {
                     this.trailTimer = Utility.randomFloatInRange(1.0f, 4.0f);
                     Effect effectCreateEffectInternal2 = gameEngine.effectManager.createEffectInternal(f10, f11, this.targetUnit.posZ, EffectType.custom, false, EffectQuality.low);
                     if (effectCreateEffectInternal2 != null) {
-                        effectCreateEffectInternal2.aq = 0;
-                        effectCreateEffectInternal2.ap = 0;
-                        effectCreateEffectInternal2.ar = (short) 2;
+                        effectCreateEffectInternal2.stripIndex = 0;
+                        effectCreateEffectInternal2.frameIndex = 0;
+                        effectCreateEffectInternal2.drawLayer = (short) 2;
                         effectCreateEffectInternal2.fadeIn = true;
-                        effectCreateEffectInternal2.E = 0.5f;
-                        effectCreateEffectInternal2.W = 60.0f;
-                        effectCreateEffectInternal2.V = 60.0f;
-                        effectCreateEffectInternal2.G = 0.7f;
-                        effectCreateEffectInternal2.F = 0.3f;
-                        effectCreateEffectInternal2.as = false;
-                        effectCreateEffectInternal2.P = Utility.randomFloatInRange(-0.3f, 0.3f);
-                        effectCreateEffectInternal2.Q = (-0.9f) + Utility.randomFloatInRange(-0.3f, 0.3f);
+                        effectCreateEffectInternal2.alpha = 0.5f;
+                        effectCreateEffectInternal2.lifeMax = 60.0f;
+                        effectCreateEffectInternal2.lifeTimer = 60.0f;
+                        effectCreateEffectInternal2.scaleFrom = 0.7f;
+                        effectCreateEffectInternal2.scaleTo = 0.3f;
+                        effectCreateEffectInternal2.shadow = false;
+                        effectCreateEffectInternal2.velocityX = Utility.randomFloatInRange(-0.3f, 0.3f);
+                        effectCreateEffectInternal2.velocityY = (-0.9f) + Utility.randomFloatInRange(-0.3f, 0.3f);
                     }
                 }
                 if (this.explosionParticleTimer > 75.0f) {
@@ -1010,36 +1010,36 @@ public class Projectile extends PositionedObject {
                 }
                 if (this.hasTrail && (effectCreateEffectInternal = gameEngine.effectManager.createEffectInternal(this.posX, this.posY, this.posZ, EffectType.custom, z6, EffectQuality.low)) != null) {
                     if (this.posZ >= 0.0f) {
-                        effectCreateEffectInternal.aq = 0;
-                        effectCreateEffectInternal.ap = 0;
-                        effectCreateEffectInternal.ar = (short) 2;
+                        effectCreateEffectInternal.stripIndex = 0;
+                        effectCreateEffectInternal.frameIndex = 0;
+                        effectCreateEffectInternal.drawLayer = (short) 2;
                         effectCreateEffectInternal.fadeIn = true;
-                        effectCreateEffectInternal.E = 0.5f;
-                        effectCreateEffectInternal.V = 70.0f;
-                        effectCreateEffectInternal.W = effectCreateEffectInternal.V;
-                        effectCreateEffectInternal.as = true;
+                        effectCreateEffectInternal.alpha = 0.5f;
+                        effectCreateEffectInternal.lifeTimer = 70.0f;
+                        effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
+                        effectCreateEffectInternal.shadow = true;
                         if (z5) {
-                            effectCreateEffectInternal.as = false;
+                            effectCreateEffectInternal.shadow = false;
                         }
-                        effectCreateEffectInternal.Q = 0.1f;
+                        effectCreateEffectInternal.velocityY = 0.1f;
                         effectCreateEffectInternal.fadeOut = true;
                         effectCreateEffectInternal.fadeDuration = 5.0f;
-                        effectCreateEffectInternal.G = 0.5f;
-                        effectCreateEffectInternal.F = 1.2f;
-                        effectCreateEffectInternal.Y = Utility.randomFloatInRange(-180.0f, 180.0f);
+                        effectCreateEffectInternal.scaleFrom = 0.5f;
+                        effectCreateEffectInternal.scaleTo = 1.2f;
+                        effectCreateEffectInternal.rotation = Utility.randomFloatInRange(-180.0f, 180.0f);
                         if (this.isNuke) {
-                            effectCreateEffectInternal.G = 0.5f;
-                            effectCreateEffectInternal.F = 2.1f;
+                            effectCreateEffectInternal.scaleFrom = 0.5f;
+                            effectCreateEffectInternal.scaleTo = 2.1f;
                         }
                     } else {
-                        effectCreateEffectInternal.aq = 9;
-                        effectCreateEffectInternal.ap = 1;
-                        effectCreateEffectInternal.ar = (short) 1;
+                        effectCreateEffectInternal.stripIndex = 9;
+                        effectCreateEffectInternal.frameIndex = 1;
+                        effectCreateEffectInternal.drawLayer = (short) 1;
                         effectCreateEffectInternal.fadeIn = true;
-                        effectCreateEffectInternal.E = 0.5f;
-                        effectCreateEffectInternal.W = 60.0f;
-                        effectCreateEffectInternal.V = 60.0f;
-                        effectCreateEffectInternal.Q = 0.1f;
+                        effectCreateEffectInternal.alpha = 0.5f;
+                        effectCreateEffectInternal.lifeMax = 60.0f;
+                        effectCreateEffectInternal.lifeTimer = 60.0f;
+                        effectCreateEffectInternal.velocityY = 0.1f;
                     }
                 }
             }
@@ -1204,19 +1204,19 @@ public class Projectile extends PositionedObject {
                     if (this.targetUnit != null && this.targetUnit.shield > 10.0f) {
                         z10 = false;
                         if (projectileTemplate.explodeEffectOnShield == null && (effectCreateSmallExplosionInternal2 = gameEngine.effectManager.createSmallExplosionInternal(this.hitX, this.hitY, this.hitZ, -1127220)) != null) {
-                            effectCreateSmallExplosionInternal2.V = 10.0f;
-                            effectCreateSmallExplosionInternal2.F = 0.5f;
+                            effectCreateSmallExplosionInternal2.lifeTimer = 10.0f;
+                            effectCreateSmallExplosionInternal2.scaleTo = 0.5f;
                             if (this.isSmallExplosion) {
-                                effectCreateSmallExplosionInternal2.V = 25.0f;
-                                effectCreateSmallExplosionInternal2.F = 1.0f;
+                                effectCreateSmallExplosionInternal2.lifeTimer = 25.0f;
+                                effectCreateSmallExplosionInternal2.scaleTo = 1.0f;
                             }
-                            effectCreateSmallExplosionInternal2.ar = (short) 2;
-                            effectCreateSmallExplosionInternal2.W = effectCreateSmallExplosionInternal2.V;
+                            effectCreateSmallExplosionInternal2.drawLayer = (short) 2;
+                            effectCreateSmallExplosionInternal2.lifeMax = effectCreateSmallExplosionInternal2.lifeTimer;
                         }
                     }
                     if (this.spawnEmitterOnHit) {
                         z10 = false;
-                        EffectEmitter.b(this.posX, this.posY).duration = 21.0f;
+                        EffectEmitter.createAlternateFireEmitter(this.posX, this.posY).duration = 21.0f;
                     }
                     if (z10) {
                         if (!this.isSmallExplosion) {
@@ -1225,10 +1225,10 @@ public class Projectile extends PositionedObject {
                             }
                         } else if (projectileTemplate.explodeEffect == null) {
                             if (this.explosionRadius > 10.0f && (effectCreateSmallExplosionInternal = gameEngine.effectManager.createSmallExplosionInternal(this.hitX, this.hitY, this.hitZ, 0)) != null) {
-                                effectCreateSmallExplosionInternal.F = this.explosionRadius / 25.0f;
-                                effectCreateSmallExplosionInternal.E = 0.7f;
+                                effectCreateSmallExplosionInternal.scaleTo = this.explosionRadius / 25.0f;
+                                effectCreateSmallExplosionInternal.alpha = 0.7f;
                                 if (this.hitZ > 5.0f) {
-                                    effectCreateSmallExplosionInternal.ar = (short) 2;
+                                    effectCreateSmallExplosionInternal.drawLayer = (short) 2;
                                 }
                             }
                             gameEngine.effectManager.createSmallExplosion(this.hitX, this.hitY, this.hitZ);
@@ -1241,173 +1241,173 @@ public class Projectile extends PositionedObject {
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(255, 255, 255, 255));
                             if (effectCreateLightEffect != null) {
-                                effectCreateLightEffect.G = 14.0f;
-                                effectCreateLightEffect.F = 8.0f;
-                                effectCreateLightEffect.E = 0.9f;
-                                effectCreateLightEffect.V = 35.0f;
-                                effectCreateLightEffect.W = effectCreateLightEffect.V;
+                                effectCreateLightEffect.scaleFrom = 14.0f;
+                                effectCreateLightEffect.scaleTo = 8.0f;
+                                effectCreateLightEffect.alpha = 0.9f;
+                                effectCreateLightEffect.lifeTimer = 35.0f;
+                                effectCreateLightEffect.lifeMax = effectCreateLightEffect.lifeTimer;
                                 effectCreateLightEffect.fadeIn = true;
                             }
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateSmallExplosion = gameEngine.effectManager.createSmallExplosion(this.hitX, this.hitY, this.hitZ, -1127220);
                             if (effectCreateSmallExplosion != null) {
-                                effectCreateSmallExplosion.G = 1.5f;
-                                effectCreateSmallExplosion.F = 3.0f;
-                                effectCreateSmallExplosion.ar = (short) 2;
-                                effectCreateSmallExplosion.V = 20.0f;
-                                effectCreateSmallExplosion.W = effectCreateSmallExplosion.V;
-                                effectCreateSmallExplosion.U = 0.0f;
+                                effectCreateSmallExplosion.scaleFrom = 1.5f;
+                                effectCreateSmallExplosion.scaleTo = 3.0f;
+                                effectCreateSmallExplosion.drawLayer = (short) 2;
+                                effectCreateSmallExplosion.lifeTimer = 20.0f;
+                                effectCreateSmallExplosion.lifeMax = effectCreateSmallExplosion.lifeTimer;
+                                effectCreateSmallExplosion.delayedStartTimer = 0.0f;
                             }
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateSmallExplosion2 = gameEngine.effectManager.createSmallExplosion(this.hitX, this.hitY, this.hitZ, -1127220);
                             if (effectCreateSmallExplosion2 != null) {
-                                effectCreateSmallExplosion2.G = 0.2f;
-                                effectCreateSmallExplosion2.F = 5.0f;
-                                effectCreateSmallExplosion2.ar = (short) 2;
-                                effectCreateSmallExplosion2.V = 65.0f;
-                                effectCreateSmallExplosion2.W = effectCreateSmallExplosion2.V;
-                                effectCreateSmallExplosion2.U = 0.0f;
+                                effectCreateSmallExplosion2.scaleFrom = 0.2f;
+                                effectCreateSmallExplosion2.scaleTo = 5.0f;
+                                effectCreateSmallExplosion2.drawLayer = (short) 2;
+                                effectCreateSmallExplosion2.lifeTimer = 65.0f;
+                                effectCreateSmallExplosion2.lifeMax = effectCreateSmallExplosion2.lifeTimer;
+                                effectCreateSmallExplosion2.delayedStartTimer = 0.0f;
                             }
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateLightEffect2 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(255, 255, 255, 255));
                             if (effectCreateLightEffect2 != null) {
-                                effectCreateLightEffect2.G = 3.0f;
-                                effectCreateLightEffect2.F = 6.0f;
-                                effectCreateLightEffect2.E = 0.9f;
-                                effectCreateLightEffect2.V = 290.0f;
-                                effectCreateLightEffect2.W = effectCreateLightEffect2.V;
+                                effectCreateLightEffect2.scaleFrom = 3.0f;
+                                effectCreateLightEffect2.scaleTo = 6.0f;
+                                effectCreateLightEffect2.alpha = 0.9f;
+                                effectCreateLightEffect2.lifeTimer = 290.0f;
+                                effectCreateLightEffect2.lifeMax = effectCreateLightEffect2.lifeTimer;
                             }
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateLightEffect3 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(255, 255, 244, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_DATA_SERVICE));
                             if (effectCreateLightEffect3 != null) {
-                                effectCreateLightEffect3.G = 2.0f;
-                                effectCreateLightEffect3.F = 6.0f;
-                                effectCreateLightEffect3.E = 0.5f;
-                                effectCreateLightEffect3.V = 370.0f;
-                                effectCreateLightEffect3.W = effectCreateLightEffect3.V;
-                                effectCreateLightEffect3.U = 10.0f;
+                                effectCreateLightEffect3.scaleFrom = 2.0f;
+                                effectCreateLightEffect3.scaleTo = 6.0f;
+                                effectCreateLightEffect3.alpha = 0.5f;
+                                effectCreateLightEffect3.lifeTimer = 370.0f;
+                                effectCreateLightEffect3.lifeMax = effectCreateLightEffect3.lifeTimer;
+                                effectCreateLightEffect3.delayedStartTimer = 10.0f;
                             }
                             for (int i3 = 0; i3 < 1; i3++) {
                                 gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                                 Effect effectCreateLightEffect4 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(255, 255, 244, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_DATA_SERVICE));
                                 if (effectCreateLightEffect4 != null) {
-                                    effectCreateLightEffect4.G = 0.2f;
-                                    effectCreateLightEffect4.F = 9.0f;
-                                    effectCreateLightEffect4.E = 0.7f;
-                                    effectCreateLightEffect4.V = 210.0f;
-                                    effectCreateLightEffect4.W = effectCreateLightEffect4.V;
-                                    effectCreateLightEffect4.U = 20 + (i3 * 110);
+                                    effectCreateLightEffect4.scaleFrom = 0.2f;
+                                    effectCreateLightEffect4.scaleTo = 9.0f;
+                                    effectCreateLightEffect4.alpha = 0.7f;
+                                    effectCreateLightEffect4.lifeTimer = 210.0f;
+                                    effectCreateLightEffect4.lifeMax = effectCreateLightEffect4.lifeTimer;
+                                    effectCreateLightEffect4.delayedStartTimer = 20 + (i3 * 110);
                                 }
                             }
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateLightEffect5 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(255, 255, 255, 255));
                             if (effectCreateLightEffect5 != null) {
-                                effectCreateLightEffect5.G = 3.0f;
-                                effectCreateLightEffect5.F = 4.0f;
-                                effectCreateLightEffect5.E = 0.2f;
-                                effectCreateLightEffect5.V = 870.0f;
-                                effectCreateLightEffect5.W = effectCreateLightEffect5.V;
+                                effectCreateLightEffect5.scaleFrom = 3.0f;
+                                effectCreateLightEffect5.scaleTo = 4.0f;
+                                effectCreateLightEffect5.alpha = 0.2f;
+                                effectCreateLightEffect5.lifeTimer = 870.0f;
+                                effectCreateLightEffect5.lifeMax = effectCreateLightEffect5.lifeTimer;
                                 effectCreateLightEffect5.fadeIn = true;
-                                effectCreateLightEffect5.U = 70.0f;
+                                effectCreateLightEffect5.delayedStartTimer = 70.0f;
                             }
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateLightEffect6 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(255, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_3D_MODE, 255, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_SATELLITE_CS));
                             if (effectCreateLightEffect6 != null) {
-                                effectCreateLightEffect6.G = 4.0f;
-                                effectCreateLightEffect6.F = 1.0f;
-                                effectCreateLightEffect6.E = 0.9f;
-                                effectCreateLightEffect6.V = 320.0f;
-                                effectCreateLightEffect6.W = effectCreateLightEffect6.V;
+                                effectCreateLightEffect6.scaleFrom = 4.0f;
+                                effectCreateLightEffect6.scaleTo = 1.0f;
+                                effectCreateLightEffect6.alpha = 0.9f;
+                                effectCreateLightEffect6.lifeTimer = 320.0f;
+                                effectCreateLightEffect6.lifeMax = effectCreateLightEffect6.lifeTimer;
                             }
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateLightEffect7 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(255, 255, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_ANTENNA_CABLE, 129));
                             if (effectCreateLightEffect7 != null) {
-                                effectCreateLightEffect7.G = 2.0f;
-                                effectCreateLightEffect7.F = 1.0f;
-                                effectCreateLightEffect7.E = 1.0f;
-                                effectCreateLightEffect7.V = 340.0f;
-                                effectCreateLightEffect7.W = effectCreateLightEffect7.V;
+                                effectCreateLightEffect7.scaleFrom = 2.0f;
+                                effectCreateLightEffect7.scaleTo = 1.0f;
+                                effectCreateLightEffect7.alpha = 1.0f;
+                                effectCreateLightEffect7.lifeTimer = 340.0f;
+                                effectCreateLightEffect7.lifeMax = effectCreateLightEffect7.lifeTimer;
                                 effectCreateLightEffect7.fadeOut = true;
                                 effectCreateLightEffect7.fadeDuration = 20.0f;
                             }
                             gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                             Effect effectCreateLightEffect8 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(245, 255, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_AVR_INPUT, 110));
                             if (effectCreateLightEffect8 != null) {
-                                effectCreateLightEffect8.G = 1.5f;
-                                effectCreateLightEffect8.F = 1.5f;
-                                effectCreateLightEffect8.E = 0.3f;
-                                effectCreateLightEffect8.V = 1340.0f;
-                                effectCreateLightEffect8.W = effectCreateLightEffect8.V;
+                                effectCreateLightEffect8.scaleFrom = 1.5f;
+                                effectCreateLightEffect8.scaleTo = 1.5f;
+                                effectCreateLightEffect8.alpha = 0.3f;
+                                effectCreateLightEffect8.lifeTimer = 1340.0f;
+                                effectCreateLightEffect8.lifeMax = effectCreateLightEffect8.lifeTimer;
                                 effectCreateLightEffect8.fadeOut = true;
                                 effectCreateLightEffect8.fadeDuration = 40.0f;
-                                effectCreateLightEffect8.U = 140.0f;
+                                effectCreateLightEffect8.delayedStartTimer = 140.0f;
                             }
                             for (int i4 = 0; i4 < 4; i4++) {
                                 gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                                 Effect effectCreateLightEffect9 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(SlickToAndroidKeycodes.AndroidCodes.KEYCODE_PAIRING, 255, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_ANTENNA_CABLE, 129));
                                 if (effectCreateLightEffect9 != null) {
-                                    effectCreateLightEffect9.G = 1.5f;
-                                    effectCreateLightEffect9.F = 1.4f;
-                                    effectCreateLightEffect9.E = 1.3f;
-                                    effectCreateLightEffect9.V = 340.0f;
-                                    effectCreateLightEffect9.W = effectCreateLightEffect9.V;
-                                    effectCreateLightEffect9.Q = -0.29f;
+                                    effectCreateLightEffect9.scaleFrom = 1.5f;
+                                    effectCreateLightEffect9.scaleTo = 1.4f;
+                                    effectCreateLightEffect9.alpha = 1.3f;
+                                    effectCreateLightEffect9.lifeTimer = 340.0f;
+                                    effectCreateLightEffect9.lifeMax = effectCreateLightEffect9.lifeTimer;
+                                    effectCreateLightEffect9.velocityY = -0.29f;
                                     effectCreateLightEffect9.fadeOut = true;
                                     effectCreateLightEffect9.fadeDuration = 50.0f;
-                                    effectCreateLightEffect9.U = 30 + (i4 * 40);
+                                    effectCreateLightEffect9.delayedStartTimer = 30 + (i4 * 40);
                                 }
                             }
                             for (int i5 = 0; i5 < 2; i5++) {
                                 gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                                 Effect effectCreateLightEffect10 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, Color.a(SlickToAndroidKeycodes.AndroidCodes.KEYCODE_PROG_YELLOW, 255, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_ANTENNA_CABLE, 129));
                                 if (effectCreateLightEffect10 != null) {
-                                    effectCreateLightEffect10.G = 1.3f;
-                                    effectCreateLightEffect10.F = 1.0f;
-                                    effectCreateLightEffect10.E = 1.0f;
-                                    effectCreateLightEffect10.V = 340.0f;
-                                    effectCreateLightEffect10.W = effectCreateLightEffect10.V;
-                                    effectCreateLightEffect10.Q = -0.14f;
+                                    effectCreateLightEffect10.scaleFrom = 1.3f;
+                                    effectCreateLightEffect10.scaleTo = 1.0f;
+                                    effectCreateLightEffect10.alpha = 1.0f;
+                                    effectCreateLightEffect10.lifeTimer = 340.0f;
+                                    effectCreateLightEffect10.lifeMax = effectCreateLightEffect10.lifeTimer;
+                                    effectCreateLightEffect10.velocityY = -0.14f;
                                     effectCreateLightEffect10.fadeOut = true;
                                     effectCreateLightEffect10.fadeDuration = 50.0f;
-                                    effectCreateLightEffect10.U = 70 + (i5 * 70);
+                                    effectCreateLightEffect10.delayedStartTimer = 70 + (i5 * 70);
                                 }
                             }
                             for (int i6 = 0; i6 < 4; i6++) {
                                 gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                                 Effect effectCreateLightEffect11 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY - 30.0f, this.posZ, -16711936);
                                 if (effectCreateLightEffect11 != null) {
-                                    effectCreateLightEffect11.G = 1.5f;
-                                    effectCreateLightEffect11.F = 2.6f;
-                                    effectCreateLightEffect11.E = 1.3f;
-                                    effectCreateLightEffect11.V = 510.0f;
-                                    effectCreateLightEffect11.W = effectCreateLightEffect11.V;
-                                    effectCreateLightEffect11.Q = -0.2f;
+                                    effectCreateLightEffect11.scaleFrom = 1.5f;
+                                    effectCreateLightEffect11.scaleTo = 2.6f;
+                                    effectCreateLightEffect11.alpha = 1.3f;
+                                    effectCreateLightEffect11.lifeTimer = 510.0f;
+                                    effectCreateLightEffect11.lifeMax = effectCreateLightEffect11.lifeTimer;
+                                    effectCreateLightEffect11.velocityY = -0.2f;
                                     effectCreateLightEffect11.fadeOut = true;
                                     effectCreateLightEffect11.fadeDuration = 50.0f;
-                                    effectCreateLightEffect11.B = null;
+                                    effectCreateLightEffect11.lightingColorFilter = null;
                                     effectCreateLightEffect11.startColor = Color.a(175, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_TERRESTRIAL_ANALOG, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_TERRESTRIAL_ANALOG, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_TERRESTRIAL_ANALOG);
-                                    effectCreateLightEffect11.U = 20 + (i6 * 40);
+                                    effectCreateLightEffect11.delayedStartTimer = 20 + (i6 * 40);
                                 }
                             }
                             for (int i7 = 0; i7 < 2; i7++) {
                                 gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                                 Effect effectCreateLightEffect12 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY - 30.0f, this.posZ, -16711936);
                                 if (effectCreateLightEffect12 != null) {
-                                    effectCreateLightEffect12.G = 1.5f;
-                                    effectCreateLightEffect12.F = 3.8f;
-                                    effectCreateLightEffect12.E = 0.8f;
-                                    effectCreateLightEffect12.V = 590.0f;
-                                    effectCreateLightEffect12.W = effectCreateLightEffect12.V;
-                                    effectCreateLightEffect12.Q = -0.2f;
+                                    effectCreateLightEffect12.scaleFrom = 1.5f;
+                                    effectCreateLightEffect12.scaleTo = 3.8f;
+                                    effectCreateLightEffect12.alpha = 0.8f;
+                                    effectCreateLightEffect12.lifeTimer = 590.0f;
+                                    effectCreateLightEffect12.lifeMax = effectCreateLightEffect12.lifeTimer;
+                                    effectCreateLightEffect12.velocityY = -0.2f;
                                     effectCreateLightEffect12.fadeOut = true;
                                     effectCreateLightEffect12.fadeDuration = 50.0f;
-                                    effectCreateLightEffect12.B = null;
+                                    effectCreateLightEffect12.lightingColorFilter = null;
                                     effectCreateLightEffect12.startColor = Color.a(105, 115, 115, 115);
-                                    effectCreateLightEffect12.U = 20 + (i7 * 40);
+                                    effectCreateLightEffect12.delayedStartTimer = 20 + (i7 * 40);
                                 }
                             }
                             for (int i8 = 0; i8 < 1; i8++) {
-                                EffectEmitter effectEmitterA = EffectEmitter.a(this.hitX + Utility.getDeterministicRandomFloat(-10.0f, 10.0f, (int) this.objectId), this.hitY + Utility.getDeterministicRandomFloat(-10.0f, 10.0f, ((int) this.objectId) + i8));
+                                EffectEmitter effectEmitterA = EffectEmitter.createDefaultFireEmitter(this.hitX + Utility.getDeterministicRandomFloat(-10.0f, 10.0f, (int) this.objectId), this.hitY + Utility.getDeterministicRandomFloat(-10.0f, 10.0f, ((int) this.objectId) + i8));
                                 if (effectEmitterA != null) {
                                     effectEmitterA.startDelay = 200 + (i8 * 70);
                                     effectEmitterA.duration = 980 + (i8 * 800);
@@ -1423,23 +1423,23 @@ public class Projectile extends PositionedObject {
                                 gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                                 Effect effectCreateLightEffect13 = gameEngine.effectManager.createLightEffect(this.hitX, this.hitY, this.posZ, -1);
                                 if (effectCreateLightEffect13 != null && gameEngine.effectManager.shockwaveTexture != null) {
-                                    effectCreateLightEffect13.a = new EffectTemplate((BuiltInEffectType) null);
-                                    effectCreateLightEffect13.a.imageStrip = new SpriteSheet();
-                                    effectCreateLightEffect13.a.imageStrip.k = true;
-                                    effectCreateLightEffect13.a.imageStrip.i = gameEngine.effectManager.shockwaveTexture;
-                                    effectCreateLightEffect13.a.imageStrip.b = effectCreateLightEffect13.a.imageStrip.i.m();
-                                    effectCreateLightEffect13.a.imageStrip.c = effectCreateLightEffect13.a.imageStrip.i.l();
-                                    effectCreateLightEffect13.ar = (short) 3;
-                                    effectCreateLightEffect13.G = 0.5f;
-                                    effectCreateLightEffect13.F = 3.5f;
-                                    effectCreateLightEffect13.E = 0.5f;
-                                    effectCreateLightEffect13.V = 60.0f;
-                                    effectCreateLightEffect13.W = effectCreateLightEffect13.V;
-                                    effectCreateLightEffect13.Q = -0.2f;
+                                    effectCreateLightEffect13.template = new EffectTemplate((BuiltInEffectType) null);
+                                    effectCreateLightEffect13.template.imageStrip = new SpriteSheet();
+                                    effectCreateLightEffect13.template.imageStrip.singleFrame = true;
+                                    effectCreateLightEffect13.template.imageStrip.texture = gameEngine.effectManager.shockwaveTexture;
+                                    effectCreateLightEffect13.template.imageStrip.frameWidth = effectCreateLightEffect13.template.imageStrip.texture.m();
+                                    effectCreateLightEffect13.template.imageStrip.frameHeight = effectCreateLightEffect13.template.imageStrip.texture.l();
+                                    effectCreateLightEffect13.drawLayer = (short) 3;
+                                    effectCreateLightEffect13.scaleFrom = 0.5f;
+                                    effectCreateLightEffect13.scaleTo = 3.5f;
+                                    effectCreateLightEffect13.alpha = 0.5f;
+                                    effectCreateLightEffect13.lifeTimer = 60.0f;
+                                    effectCreateLightEffect13.lifeMax = effectCreateLightEffect13.lifeTimer;
+                                    effectCreateLightEffect13.velocityY = -0.2f;
                                     effectCreateLightEffect13.fadeOut = true;
                                     effectCreateLightEffect13.fadeDuration = 1.0f;
-                                    effectCreateLightEffect13.B = null;
-                                    effectCreateLightEffect13.U = 0.0f;
+                                    effectCreateLightEffect13.lightingColorFilter = null;
+                                    effectCreateLightEffect13.delayedStartTimer = 0.0f;
                                 }
                             }
                         }

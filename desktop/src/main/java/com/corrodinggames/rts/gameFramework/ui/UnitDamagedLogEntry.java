@@ -15,21 +15,23 @@ class UnitDamagedLogEntry extends WarLogEntry {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public boolean a(WarLogEntry warLogEntry) {
-        return super.a(warLogEntry) && (warLogEntry instanceof UnitDamagedLogEntry) && ((UnitDamagedLogEntry) warLogEntry).isBaseDamaged == this.isBaseDamaged;
+    /* JADX INFO: renamed from: a */
+    public boolean canMergeWith(WarLogEntry warLogEntry) {
+        return super.canMergeWith(warLogEntry) && (warLogEntry instanceof UnitDamagedLogEntry) && ((UnitDamagedLogEntry) warLogEntry).isBaseDamaged == this.isBaseDamaged;
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public void b(WarLogEntry warLogEntry) {
+    /* JADX INFO: renamed from: b */
+    public void mergeWith(WarLogEntry warLogEntry) {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    protected long b() {
+    protected long getDisplayDurationMs() {
         return 20000L;
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public String a() {
+    public String getDisplayText() {
         if (this.text == null) {
             if (this.isBaseDamaged) {
                 this.text = Locale.get("gui.log.baseDamaged", new Object[0]);

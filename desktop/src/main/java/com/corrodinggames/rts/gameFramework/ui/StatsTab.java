@@ -22,7 +22,8 @@ public enum StatsTab {
         this.statType = statisticType;
     }
 
-    public StatisticType a() {
+    /* JADX INFO: renamed from: a */
+    public StatisticType getStatType() {
         return this.statType;
     }
 }

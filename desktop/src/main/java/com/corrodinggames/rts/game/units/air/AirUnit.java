@@ -103,8 +103,8 @@ public abstract class AirUnit extends MovableUnit {
                     if (this.j > 30.0f) {
                         this.j = 0.0f;
                         if (isVisibleOnScreen() && (effectCreateSmokeEffect = GameEngine.getInstance().effectManager.createSmokeEffect(this.posX, this.posY, this.posZ, this.rotationSpeed)) != null) {
-                            effectCreateSmokeEffect.P = 0.0f;
-                            effectCreateSmokeEffect.Q = -0.1f;
+                            effectCreateSmokeEffect.velocityX = 0.0f;
+                            effectCreateSmokeEffect.velocityY = -0.1f;
                         }
                     }
                 }

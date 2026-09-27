@@ -607,7 +607,7 @@ public class Command {
                 }
             }
             if (str2 != null) {
-                NetworkEngine.a("Player(" + this.sourceTeam.teamId + ") " + this.sourceTeam.teamName + " cannot control units: " + str2, true);
+                NetworkEngine.reportDesyncVerbose("Player(" + this.sourceTeam.teamId + ") " + this.sourceTeam.teamName + " cannot control units: " + str2, true);
                 if (orderableUnit2 != null) {
                     String str3 = VariableScope.nullOrMissingString;
                     if (orderableUnit2.team != null) {
@@ -673,7 +673,7 @@ public class Command {
                     }
                 } else {
                     orderableUnit7.a(abstractUnitActionA);
-                    LagHidingManager.a(orderableUnit7, abstractUnitActionA);
+                    LagHidingManager.onUnitActionStarted(orderableUnit7, abstractUnitActionA);
                     orderableUnit7.a(abstractUnitActionA, this.stopCurrentAction, this.targetPoint, this.targetUnit);
                 }
             }

@@ -57,7 +57,7 @@ public class StatHistoryBuilder {
                 if (iArr[i2] < intLookupTable.size()) {
                     Point2i point2i = (Point2i) intLookupTable.get(iArr[i2]);
                     if (point2i.x <= statHistory.historySize) {
-                        statHistory.a(i2, point2i.y);
+                        statHistory.setValue(i2, point2i.y);
                         int i3 = i2;
                         iArr[i3] = iArr[i3] + 1;
                         z2 = false;

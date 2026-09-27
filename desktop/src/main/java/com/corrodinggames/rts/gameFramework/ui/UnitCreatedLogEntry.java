@@ -20,12 +20,14 @@ class UnitCreatedLogEntry extends WarLogEntry {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public boolean a(WarLogEntry warLogEntry) {
-        return super.a(warLogEntry) && (warLogEntry instanceof UnitCreatedLogEntry) && ((UnitCreatedLogEntry) warLogEntry).unitType == this.unitType;
+    /* JADX INFO: renamed from: a */
+    public boolean canMergeWith(WarLogEntry warLogEntry) {
+        return super.canMergeWith(warLogEntry) && (warLogEntry instanceof UnitCreatedLogEntry) && ((UnitCreatedLogEntry) warLogEntry).unitType == this.unitType;
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public void b(WarLogEntry warLogEntry) {
+    /* JADX INFO: renamed from: b */
+    public void mergeWith(WarLogEntry warLogEntry) {
         this.timestamp = warLogEntry.timestamp;
         this.count++;
         this.text = null;
@@ -33,7 +35,7 @@ class UnitCreatedLogEntry extends WarLogEntry {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public String a() {
+    public String getDisplayText() {
         if (this.text == null) {
             String str = "gui.log.unitCreated";
             if (this.unitType.isBuildingUnit()) {

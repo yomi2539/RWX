@@ -177,7 +177,7 @@ public class FilteredUnitAction extends AbstractUnitAction {
         if (unitType != null && (unitType instanceof CustomUnitConfig)) {
             CustomUnitConfig customUnitConfig = (CustomUnitConfig) unitType;
             if (customUnitConfig.modInfo != null) {
-                textRenderQueue.a("\n(mod: " + Utility.truncateToLength(customUnitConfig.modInfo.getDisplayTitle(), 30) + ")", this.f, true);
+                textRenderQueue.addColoredTextWithHighlightPaint("\n(mod: " + Utility.truncateToLength(customUnitConfig.modInfo.getDisplayTitle(), 30) + ")", this.f, true);
             }
         }
     }

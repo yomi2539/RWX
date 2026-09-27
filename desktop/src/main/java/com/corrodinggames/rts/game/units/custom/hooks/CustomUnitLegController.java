@@ -299,10 +299,10 @@ public class CustomUnitLegController extends CustomUnitRenderHook {
                                         gameEngine.effectManager.createRedLaserEffect(f14, f15, legInstance3.d, 0, 0.0f, 0.0f);
                                     }
                                 } else if (gameEngine.shouldDrawHighDetailEffects && customUnit.shouldDraw && (effectCreateMuzzleFlash = gameEngine.effectManager.createMuzzleFlash(f14, f15, legInstance3.d, legInstance3.i, 0)) != null) {
-                                    effectCreateMuzzleFlash.P = 0.0f;
-                                    effectCreateMuzzleFlash.Q = 0.0f;
-                                    effectCreateMuzzleFlash.G = 1.6f;
-                                    effectCreateMuzzleFlash.F = 2.8f;
+                                    effectCreateMuzzleFlash.velocityX = 0.0f;
+                                    effectCreateMuzzleFlash.velocityY = 0.0f;
+                                    effectCreateMuzzleFlash.scaleFrom = 1.6f;
+                                    effectCreateMuzzleFlash.scaleTo = 2.8f;
                                 }
                             }
                         }

@@ -314,21 +314,21 @@ public class Tree extends NaturalUnit {
                 gameEngine.effectManager.setOnlyOnScreen();
                 Effect effectCreateEffectInternal = gameEngine.effectManager.createEffectInternal(this.posX + Utility.randomFloatInRange(-12.0f, 12.0f), this.posY + Utility.randomFloatInRange(-12.0f, 12.0f), this.posZ, EffectType.custom, false, EffectQuality.high);
                 if (effectCreateEffectInternal != null) {
-                    effectCreateEffectInternal.aq = 9;
-                    effectCreateEffectInternal.ap = Utility.getRandomIntInRange(4, 5);
-                    effectCreateEffectInternal.Y = Utility.randomFloatInRange(-180.0f, 180.0f);
-                    effectCreateEffectInternal.an = true;
-                    effectCreateEffectInternal.K = 5.0f + Utility.randomFloatInRange(0.0f, 3.0f);
-                    effectCreateEffectInternal.P = Utility.randomFloatInRange(-0.05f, 0.05f) + (Utility.fastCos(this.rotationSpeed) * 0.4f);
-                    effectCreateEffectInternal.Q = Utility.randomFloatInRange(-0.05f, 0.05f) + (Utility.fastSin(this.rotationSpeed) * 0.4f);
+                    effectCreateEffectInternal.stripIndex = 9;
+                    effectCreateEffectInternal.frameIndex = Utility.getRandomIntInRange(4, 5);
+                    effectCreateEffectInternal.rotation = Utility.randomFloatInRange(-180.0f, 180.0f);
+                    effectCreateEffectInternal.isCentered = true;
+                    effectCreateEffectInternal.posZ = 5.0f + Utility.randomFloatInRange(0.0f, 3.0f);
+                    effectCreateEffectInternal.velocityX = Utility.randomFloatInRange(-0.05f, 0.05f) + (Utility.fastCos(this.rotationSpeed) * 0.4f);
+                    effectCreateEffectInternal.velocityY = Utility.randomFloatInRange(-0.05f, 0.05f) + (Utility.fastSin(this.rotationSpeed) * 0.4f);
                     effectCreateEffectInternal.useBounce = true;
-                    effectCreateEffectInternal.w = 0.2f;
-                    effectCreateEffectInternal.G = 0.4f * this.scale;
-                    effectCreateEffectInternal.F = 0.4f * this.scale;
-                    effectCreateEffectInternal.V = 90 + Utility.getRandomIntInRange(0, 40);
-                    effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+                    effectCreateEffectInternal.physicsGravity = 0.2f;
+                    effectCreateEffectInternal.scaleFrom = 0.4f * this.scale;
+                    effectCreateEffectInternal.scaleTo = 0.4f * this.scale;
+                    effectCreateEffectInternal.lifeTimer = 90 + Utility.getRandomIntInRange(0, 40);
+                    effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
                     effectCreateEffectInternal.fadeIn = true;
-                    effectCreateEffectInternal.ar = (short) 2;
+                    effectCreateEffectInternal.drawLayer = (short) 2;
                 }
             }
             float fFastCos = this.posX + (Utility.fastCos(this.rotationSpeed) * (this.et - 5));
@@ -338,30 +338,30 @@ public class Tree extends NaturalUnit {
                 gameEngine.effectManager.setOnlyOnScreen();
                 Effect effectCreateEffectInternal2 = gameEngine.effectManager.createEffectInternal(fFastCos + Utility.randomFloatInRange(-17, 17), fFastSin + Utility.randomFloatInRange(-17, 17), this.posZ, EffectType.custom, false, EffectQuality.high);
                 if (effectCreateEffectInternal2 != null) {
-                    effectCreateEffectInternal2.aq = 9;
-                    effectCreateEffectInternal2.ap = Utility.getRandomIntInRange(4, 5);
+                    effectCreateEffectInternal2.stripIndex = 9;
+                    effectCreateEffectInternal2.frameIndex = Utility.getRandomIntInRange(4, 5);
                     if (z) {
                         z = false;
-                        effectCreateEffectInternal2.ap = 3;
+                        effectCreateEffectInternal2.frameIndex = 3;
                     }
-                    effectCreateEffectInternal2.Y = Utility.randomFloatInRange(-180.0f, 180.0f);
-                    effectCreateEffectInternal2.an = true;
-                    if (effectCreateEffectInternal2.ap == 3) {
-                        effectCreateEffectInternal2.P = Utility.randomFloatInRange(-0.05f, 0.05f);
-                        effectCreateEffectInternal2.Q = Utility.randomFloatInRange(-0.05f, 0.05f);
-                        effectCreateEffectInternal2.G = 1.5f * this.scale;
-                        effectCreateEffectInternal2.F = 2.2f * this.scale;
-                        effectCreateEffectInternal2.V = 90 + Utility.getRandomIntInRange(0, 40);
-                        effectCreateEffectInternal2.ar = (short) 2;
+                    effectCreateEffectInternal2.rotation = Utility.randomFloatInRange(-180.0f, 180.0f);
+                    effectCreateEffectInternal2.isCentered = true;
+                    if (effectCreateEffectInternal2.frameIndex == 3) {
+                        effectCreateEffectInternal2.velocityX = Utility.randomFloatInRange(-0.05f, 0.05f);
+                        effectCreateEffectInternal2.velocityY = Utility.randomFloatInRange(-0.05f, 0.05f);
+                        effectCreateEffectInternal2.scaleFrom = 1.5f * this.scale;
+                        effectCreateEffectInternal2.scaleTo = 2.2f * this.scale;
+                        effectCreateEffectInternal2.lifeTimer = 90 + Utility.getRandomIntInRange(0, 40);
+                        effectCreateEffectInternal2.drawLayer = (short) 2;
                     } else {
-                        effectCreateEffectInternal2.P = Utility.randomFloatInRange(-0.05f, 0.05f);
-                        effectCreateEffectInternal2.Q = Utility.randomFloatInRange(-0.05f, 0.0f);
-                        effectCreateEffectInternal2.G = 1.3f;
-                        effectCreateEffectInternal2.F = 1.3f;
-                        effectCreateEffectInternal2.V = 60 + Utility.getRandomIntInRange(0, 40);
-                        effectCreateEffectInternal2.ar = (short) 1;
+                        effectCreateEffectInternal2.velocityX = Utility.randomFloatInRange(-0.05f, 0.05f);
+                        effectCreateEffectInternal2.velocityY = Utility.randomFloatInRange(-0.05f, 0.0f);
+                        effectCreateEffectInternal2.scaleFrom = 1.3f;
+                        effectCreateEffectInternal2.scaleTo = 1.3f;
+                        effectCreateEffectInternal2.lifeTimer = 60 + Utility.getRandomIntInRange(0, 40);
+                        effectCreateEffectInternal2.drawLayer = (short) 1;
                     }
-                    effectCreateEffectInternal2.W = effectCreateEffectInternal2.V;
+                    effectCreateEffectInternal2.lifeMax = effectCreateEffectInternal2.lifeTimer;
                     effectCreateEffectInternal2.fadeIn = true;
                 }
             }

@@ -8,30 +8,37 @@ import java.util.Iterator;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.a.h */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/a/h.class */
 public abstract class AIUnitGroupBase extends AIStrategyNode {
-    ArrayList<OrderableUnit> F;
-    ArrayList G;
-
-    public abstract void c(float f);
-
-    public int l() {
-        return this.F.size();
-    }
-
-    public boolean a() {
-        return false;
-    }
-
-    public boolean b() {
-        return false;
-    }
+    /* JADX INFO: renamed from: F */
+    ArrayList<OrderableUnit> units;
+    /* JADX INFO: renamed from: G */
+    ArrayList unitsNeedingTransport;
 
     public AIUnitGroupBase(AIController aIController) {
         super(aIController);
-        this.F = new ArrayList();
-        this.G = new ArrayList();
+        this.units = new ArrayList();
+        this.unitsNeedingTransport = new ArrayList();
     }
 
-    public boolean m() {
+    /* JADX INFO: renamed from: c */
+    public abstract void updateAI(float f);
+
+    /* JADX INFO: renamed from: l */
+    public int getUnitCount() {
+        return this.units.size();
+    }
+
+    /* JADX INFO: renamed from: a */
+    public boolean isActive() {
+        return false;
+    }
+
+    /* JADX INFO: renamed from: b */
+    public boolean isDefensive() {
+        return false;
+    }
+
+    /* JADX INFO: renamed from: m */
+    public boolean isAssignedToTransporter() {
         for (AIStrategyNode aIStrategyNode : this.aiController.strategyNodes) {
             if ((aIStrategyNode instanceof TransporterGroup) && ((TransporterGroup) aIStrategyNode).unitGroup == this) {
                 return true;
@@ -40,8 +47,9 @@ public abstract class AIUnitGroupBase extends AIStrategyNode {
         return false;
     }
 
-    public void n() {
-        Iterator it = this.F.iterator();
+    /* JADX INFO: renamed from: n */
+    public void removeDeadUnits() {
+        Iterator it = this.units.iterator();
         while (it.hasNext()) {
             OrderableUnit orderableUnit = (OrderableUnit) it.next();
             if (orderableUnit == null || orderableUnit.isDead) {
@@ -49,15 +57,16 @@ public abstract class AIUnitGroupBase extends AIStrategyNode {
                     orderableUnit.aB = null;
                 }
                 if (orderableUnit != null) {
-                    this.G.remove(orderableUnit);
+                    this.unitsNeedingTransport.remove(orderableUnit);
                 }
                 it.remove();
             }
         }
     }
 
-    public void o() {
-        Iterator it = this.G.iterator();
+    /* JADX INFO: renamed from: o */
+    public void pruneUnitsNeedingTransport() {
+        Iterator it = this.unitsNeedingTransport.iterator();
         while (it.hasNext()) {
             OrderableUnit orderableUnit = (OrderableUnit) it.next();
             if (orderableUnit == null || orderableUnit.isDead || orderableUnit.transportContainer != null || orderableUnit.parentEntity != null) {
@@ -69,39 +78,43 @@ public abstract class AIUnitGroupBase extends AIStrategyNode {
     @Override // com.corrodinggames.rts.game.ai.AIStrategyNode
     /* JADX INFO: renamed from: p */
     public void destroy() {
-        q();
-        this.G.clear();
+        clearUnits();
+        this.unitsNeedingTransport.clear();
         super.destroy();
     }
 
-    protected void a(OrderableUnit orderableUnit) {
+    /* JADX INFO: renamed from: a */
+    protected void addUnit(OrderableUnit orderableUnit) {
         if (orderableUnit.aB != null) {
-            orderableUnit.aB.b(orderableUnit);
+            orderableUnit.aB.removeUnit(orderableUnit);
         }
         if (orderableUnit.team != null && orderableUnit.team != this.aiController) {
             GameEngine.logWarningAndStack("unit.team:" + orderableUnit.team.teamId + ", ai:" + this.aiController.teamId);
         }
-        this.F.add(orderableUnit);
+        this.units.add(orderableUnit);
         orderableUnit.aB = this;
     }
 
-    public void b(OrderableUnit orderableUnit) {
-        this.F.remove(orderableUnit);
-        this.G.remove(orderableUnit);
+    /* JADX INFO: renamed from: b */
+    public void removeUnit(OrderableUnit orderableUnit) {
+        this.units.remove(orderableUnit);
+        this.unitsNeedingTransport.remove(orderableUnit);
         if (orderableUnit.aB == this) {
             orderableUnit.aB = null;
         }
     }
 
-    public void q() {
-        for (OrderableUnit orderableUnit : this.F) {
+    /* JADX INFO: renamed from: q */
+    public void clearUnits() {
+        for (OrderableUnit orderableUnit : this.units) {
             if (orderableUnit != null && orderableUnit.aB == this) {
                 orderableUnit.aB = null;
             }
         }
-        this.F.clear();
+        this.units.clear();
     }
 
-    public void b(float f) {
+    /* JADX INFO: renamed from: b */
+    public void updateCore(float f) {
     }
 }

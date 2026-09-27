@@ -284,16 +284,23 @@ public final class GameUI extends Serializable {
 
     /* JADX INFO: renamed from: bL */
     String cannotPlaceNeedsWaterText;
-    private int cf;
-    private int cg;
-    private int ch;
-    private float ci;
+    /* JADX INFO: renamed from: bR */
+    public static boolean isSidebarOnLeft;
+    /* JADX INFO: renamed from: a */
+    public static boolean isModernUiLayoutStatic = false;
+    /* JADX INFO: renamed from: bO */
+    public static boolean showModernSidebar = false;
+    /* JADX INFO: renamed from: bP */
+    public static boolean showModernActionIcons = false;
 
     /* JADX INFO: renamed from: cj */
     private int highlightOffsetX;
-    private int ck;
-    private int cl;
-    public static boolean bR;
+    /* JADX INFO: renamed from: bQ */
+    public static boolean showModernTopBar = false;
+    /* JADX INFO: renamed from: ab */
+    public final boolean unusedFlag3 = true;
+    /* JADX INFO: renamed from: at */
+    public final Paint tempTooltipPaint = new Paint();
 
     /* JADX INFO: renamed from: bW */
     long lastUpdateTime;
@@ -306,17 +313,25 @@ public final class GameUI extends Serializable {
 
     /* JADX INFO: renamed from: ce */
     static boolean selectionChanged;
-    public static boolean a = false;
-    public static boolean bO = false;
-    public static boolean bP = false;
-    public static boolean bQ = false;
+    /* JADX INFO: renamed from: bD */
+    public final Paint textureDrawPaint = new GamePaint();
+    /* JADX INFO: renamed from: bv */
+    final Rect actionTooltipRect = new Rect();
+    /* JADX INFO: renamed from: bw */
+    final Rect actionTooltipBorderRect = new Rect();
+    /* JADX INFO: renamed from: bx */
+    final Rect tempDrawRect = new Rect();
 
     /* JADX INFO: renamed from: cd */
     static int globalSelectionCounter = 1;
-    public boolean b = true;
-    public boolean c = false;
-    public float d = 0.0f;
-    public boolean e = false;
+    /* JADX INFO: renamed from: by */
+    final Rect tempButtonRect = new Rect();
+    /* JADX INFO: renamed from: bz */
+    final Rect tempInsetRect = new Rect();
+    /* JADX INFO: renamed from: bA */
+    final Paint selectionOverlayPaint = new Paint();
+    /* JADX INFO: renamed from: bB */
+    final Paint unusedPaint1 = new Paint();
 
     /* JADX INFO: renamed from: l */
     AttackMoveAction attackMoveAction = new AttackMoveAction();
@@ -410,8 +425,10 @@ public final class GameUI extends Serializable {
 
     /* JADX INFO: renamed from: V */
     boolean isRightClickDrag = false;
-    public final boolean ab = true;
-    public final Paint at = new Paint();
+    /* JADX INFO: renamed from: bC */
+    final Paint unusedPaint2 = new GamePaint();
+    /* JADX INFO: renamed from: bE */
+    final Paint screenFlashBorderPaint = new GamePaint();
 
     /* JADX INFO: renamed from: aU */
     public float tooltipX = 0.0f;
@@ -424,35 +441,54 @@ public final class GameUI extends Serializable {
 
     /* JADX INFO: renamed from: aY */
     public float tooltipHeight = 0.0f;
-    Texture ba = null;
-    Texture bb = null;
-    Texture bc = null;
-    Texture bh = null;
-    Texture bi = null;
-    public Texture bj = null;
-    public Texture bk = null;
-    public Texture bl = null;
-    Texture bm = null;
-    final Rect bv = new Rect();
-    final Rect bw = new Rect();
-    final Rect bx = new Rect();
-    final Rect by = new Rect();
-    final Rect bz = new Rect();
-    final Paint bA = new Paint();
-    final Paint bB = new Paint();
-    final Paint bC = new GamePaint();
-    public final Paint bD = new GamePaint();
-    final Paint bE = new GamePaint();
-    final Paint bF = new Paint();
+    /* JADX INFO: renamed from: bF */
+    final Paint tempStrokePaint = new Paint();
+    /* JADX INFO: renamed from: b */
+    public boolean showEndGameStatsButton = true;
+    /* JADX INFO: renamed from: c */
+    public boolean isCompactEndGameUi = false;
+    /* JADX INFO: renamed from: d */
+    public float endGameFadeIn = 0.0f;
+    /* JADX INFO: renamed from: e */
+    public boolean unusedFlag2 = false;
+    /* JADX INFO: renamed from: bj */
+    public Texture iconRallyTexture = null;
+    /* JADX INFO: renamed from: bk */
+    public Texture iconUpgradeTexture = null;
+    /* JADX INFO: renamed from: bl */
+    public Texture metalDarkTexture = null;
+    /* JADX INFO: renamed from: ba */
+    Texture buttonNoTexture = null;
+    /* JADX INFO: renamed from: bb */
+    Texture buttonYesTexture = null;
+    /* JADX INFO: renamed from: bc */
+    Texture buttonMoreTexture = null;
+    /* JADX INFO: renamed from: bh */
+    Texture buttonAddTexture = null;
+    /* JADX INFO: renamed from: bi */
+    Texture buttonSubtractTexture = null;
+    /* JADX INFO: renamed from: bm */
+    Texture touchIndicatorTexture = null;
+    /* JADX INFO: renamed from: bS */
+    UIEvent lastUIEvent = UIEvent.createMouseMove(-1, -1);
+    /* JADX INFO: renamed from: cf */
+    private int sidebarPanelOffsetY;
+    /* JADX INFO: renamed from: cg */
+    private int sidebarPanelStartY;
+    /* JADX INFO: renamed from: ch */
+    private int sidebarPanelIndex;
+    /* JADX INFO: renamed from: ci */
+    private float sidebarRowHeight;
+    /* JADX INFO: renamed from: ck */
+    private int sidebarLastPanelWidth;
 
     /* JADX INFO: renamed from: bM */
     public ArrayList selectedUnits = new ArrayList();
 
     /* JADX INFO: renamed from: bN */
     public boolean isUILoggingEnabled = false;
-
-    /* JADX INFO: renamed from: bS */
-    UIEvent lastUIEvent = UIEvent.b(-1, -1);
+    /* JADX INFO: renamed from: cl */
+    private int sidebarPanelMaxWidth;
 
     /* JADX INFO: renamed from: bT */
     StoredResources temporaryResources = new StoredResources();
@@ -507,32 +543,32 @@ public final class GameUI extends Serializable {
 
     /* JADX INFO: renamed from: a */
     public void showInfoMessageWithPriority(String str, int i) {
-        this.interfaceRenderer.a(str, i);
+        this.interfaceRenderer.setMessage(str, i);
     }
 
     /* JADX INFO: renamed from: b */
     public void showMessageWithPriority(String str, int i) {
-        this.interfaceRenderer.b(str, i);
+        this.interfaceRenderer.setMessageIfAbsent(str, i);
     }
 
     /* JADX INFO: renamed from: a */
     public void showInfoMessage(String str) {
-        this.interfaceRenderer.a(str);
+        this.interfaceRenderer.isDemoQueuableAction(str);
     }
 
     /* JADX INFO: renamed from: b */
     public void showMediumPriorityMessage(String str) {
-        this.interfaceRenderer.a(str, 100);
+        this.interfaceRenderer.setMessage(str, 100);
     }
 
     /* JADX INFO: renamed from: c */
     public void showHighPriorityMessage(String str) {
-        this.interfaceRenderer.a(str, 50);
+        this.interfaceRenderer.setMessage(str, 50);
     }
 
     /* JADX INFO: renamed from: d */
     public void showDebugMessage(String str) {
-        this.interfaceRenderer.a(str, 5);
+        this.interfaceRenderer.setMessage(str, 5);
     }
 
     /* JADX INFO: renamed from: d */
@@ -545,7 +581,7 @@ public final class GameUI extends Serializable {
     /* JADX INFO: renamed from: a */
     public boolean isWorldClickAllowedAt(float f, float f2) {
         GameEngine gameEngine = GameEngine.getInstance();
-        if (!bO || this.interfaceRenderer.showInfoText) {
+        if (!showModernSidebar || this.interfaceRenderer.showInfoText) {
             return f < gameEngine.screenWidth - gameEngine.sidebarWidth;
         }
         if (gameEngine.minimap.screenToWorld(f, f2) != null) {
@@ -564,15 +600,15 @@ public final class GameUI extends Serializable {
     /* JADX INFO: renamed from: a */
     public void toggleGameAndUIState(boolean z) {
         if (z) {
-            this.interfaceRenderer.j();
+            this.interfaceRenderer.markUnitGroupMarkersValid();
             return;
         }
         GameEngine gameEngine = GameEngine.getInstance();
-        this.interfaceRenderer.k();
+        this.interfaceRenderer.clearUnitGroupMarkers();
         clearCurrentAction();
         this.isDraggingSelection = false;
-        this.c = false;
-        this.d = 0.0f;
+        this.isCompactEndGameUi = false;
+        this.endGameFadeIn = 0.0f;
         this.selectedUnits.clear();
         if (!z) {
             gameEngine.gameSpeed = 1.0f;
@@ -584,30 +620,30 @@ public final class GameUI extends Serializable {
         if (gameEngine.isNetworkConnected() && gameEngine.isSinglePlayerGame()) {
             gameEngine.isGameStarted = gameEngine.networkEngine.isSandboxMode;
         }
-        LagHidingManager.a();
+        LagHidingManager.clearSnapshots();
         notifySelectionChanged();
     }
 
     /* JADX INFO: renamed from: f */
     public void setupInterfaceFlags() {
-        bO = false;
-        bP = false;
-        bQ = false;
+        showModernSidebar = false;
+        showModernActionIcons = false;
+        showModernTopBar = false;
         if (GameEngine.isPC()) {
-            bO = true;
-            bP = true;
-            a = true;
-            bQ = true;
+            showModernSidebar = true;
+            showModernActionIcons = true;
+            isModernUiLayoutStatic = true;
+            showModernTopBar = true;
         }
         if (GameEngine.isGDXVersion) {
-            bO = true;
-            bP = true;
-            bQ = true;
+            showModernSidebar = true;
+            showModernActionIcons = true;
+            showModernTopBar = true;
         }
         if (GameEngine.isAndroidPlatform() && !GameEngine.getInstance().settingsEngine.classicInterface) {
-            bO = true;
-            bP = true;
-            bQ = true;
+            showModernSidebar = true;
+            showModernActionIcons = true;
+            showModernTopBar = true;
         }
     }
 
@@ -631,19 +667,19 @@ public final class GameUI extends Serializable {
         this.leaderboard = new Leaderboard(gameEngine, this);
         this.endGameScreen = new EndGameScreen();
         if (GameEngine.isNonPCPlatform()) {
-            this.b = true;
+            this.showEndGameStatsButton = true;
         }
-        this.ba = gameEngine.renderGraphicsEngine.a(R.drawable.button_no);
-        this.bb = gameEngine.renderGraphicsEngine.a(R.drawable.button_yes);
-        this.bc = gameEngine.renderGraphicsEngine.a(R.drawable.button_more);
+        this.buttonNoTexture = gameEngine.renderGraphicsEngine.a(R.drawable.button_no);
+        this.buttonYesTexture = gameEngine.renderGraphicsEngine.a(R.drawable.button_yes);
+        this.buttonMoreTexture = gameEngine.renderGraphicsEngine.a(R.drawable.button_more);
         this.tooltipBackgroundPaint = new Paint();
         this.tooltipBackgroundPaint.d(true);
         this.tooltipBorderPaint = new Paint();
         this.tooltipBorderPaint.d(true);
         this.tooltipBorderPaint.a(40, 255, 255, 255);
-        this.bh = gameEngine.renderGraphicsEngine.a(R.drawable.button_add);
-        this.bi = gameEngine.renderGraphicsEngine.a(R.drawable.button_subtract);
-        this.bj = gameEngine.renderGraphicsEngine.a(R.drawable.icon_rally);
+        this.buttonAddTexture = gameEngine.renderGraphicsEngine.a(R.drawable.button_add);
+        this.buttonSubtractTexture = gameEngine.renderGraphicsEngine.a(R.drawable.button_subtract);
+        this.iconRallyTexture = gameEngine.renderGraphicsEngine.a(R.drawable.icon_rally);
         this.uiTexture1 = gameEngine.renderGraphicsEngine.a(R.drawable.rounded_glow_button);
         this.uiTexture2 = gameEngine.renderGraphicsEngine.a(R.drawable.rounded_white_button);
         this.ninePatchStyle1 = new NinePatchStyle(this.uiTexture1, 32, 27);
@@ -653,18 +689,18 @@ public final class GameUI extends Serializable {
         this.ninePatchStyle4 = new NinePatchStyle(gameEngine.renderGraphicsEngine.a(R.drawable.rounded_dark_box), 32, 27);
         this.ninePatchStyle5 = new NinePatchStyle(gameEngine.renderGraphicsEngine.a(R.drawable.rounded_dark_box_titled), 36, 36);
         this.ninePatchStyle5.normalStyle = new NinePatchStyle(gameEngine.renderGraphicsEngine.a(R.drawable.rounded_shadow), 36, 36);
-        this.ninePatchStyle5.f = true;
+        this.ninePatchStyle5.useScaledBlit = true;
         this.ninePatchStyle6 = new NinePatchStyle(gameEngine.renderGraphicsEngine.a(R.drawable.rounded_green), 36, 36);
         this.ninePatchStyle6.normalStyle = this.ninePatchStyle5.normalStyle;
         this.ninePatchStyle6.paddingSize = 20;
-        this.bk = gameEngine.renderGraphicsEngine.a(R.drawable.icon_upgrade);
-        this.bl = gameEngine.renderGraphicsEngine.a(R.drawable.metal_dark, false);
-        this.bm = gameEngine.renderGraphicsEngine.a(R.drawable.touch_indicator, false);
-        UIStyle.b();
-        this.bE.a(145, 0, 175, 0);
-        this.bE.a(6.0f);
-        GamePaint.b(this.bE);
-        this.bD.a(true);
+        this.iconUpgradeTexture = gameEngine.renderGraphicsEngine.a(R.drawable.icon_upgrade);
+        this.metalDarkTexture = gameEngine.renderGraphicsEngine.a(R.drawable.metal_dark, false);
+        this.touchIndicatorTexture = gameEngine.renderGraphicsEngine.a(R.drawable.touch_indicator, false);
+        UIStyle.createStyles();
+        this.screenFlashBorderPaint.a(145, 0, 175, 0);
+        this.screenFlashBorderPaint.a(6.0f);
+        GamePaint.b(this.screenFlashBorderPaint);
+        this.textureDrawPaint.a(true);
         this.unitHealthBarPaint = new Paint();
         this.unitHealthBarBackgroundPaint = new GamePaint();
         this.unitHealthBarBackgroundPaint.a(255, 0, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_SATELLITE_SERVICE, 0);
@@ -809,7 +845,7 @@ public final class GameUI extends Serializable {
     /* JADX INFO: renamed from: g */
     public void clearMessages() {
         this.messageManager.clear();
-        this.warLogDisplay.b();
+        this.warLogDisplay.clearEntries();
         this.isFirstUpdate = false;
     }
 
@@ -1000,7 +1036,7 @@ public final class GameUI extends Serializable {
                 clearSelection();
             }
             if (inputController.z.a()) {
-                this.warLogDisplay.d();
+                this.warLogDisplay.jumpToNextUnshownEntry();
             }
             if (inputController.A.a()) {
                 clearCurrentAction();
@@ -1028,19 +1064,19 @@ public final class GameUI extends Serializable {
                 }
             }
             if (inputController.C.a()) {
-                UnitSelectionFilter.a(this.selectedUnits, UnitSelectionFilter.a, UnitSelectionFilter.b);
+                UnitSelectionFilter.selectMatchingUnits(this.selectedUnits, UnitSelectionFilter.attackUnits, UnitSelectionFilter.attackUnitsIgnoreWaypoints);
             }
             if (inputController.D.a()) {
-                UnitSelectionFilter.a(this.selectedUnits, UnitSelectionFilter.c, null);
+                UnitSelectionFilter.selectMatchingUnits(this.selectedUnits, UnitSelectionFilter.buildingUnits, null);
             }
             if (inputController.E.a()) {
-                UnitSelectionFilter.a(this.selectedUnits, UnitSelectionFilter.d, null);
+                UnitSelectionFilter.selectMatchingUnits(this.selectedUnits, UnitSelectionFilter.fabricatorUnits, null);
             }
             if (inputController.F.a()) {
-                UnitSelectionFilter.a(this.selectedUnits, UnitSelectionFilter.e, null);
+                UnitSelectionFilter.selectMatchingUnits(this.selectedUnits, UnitSelectionFilter.landFactoryUnits, null);
             }
             if (inputController.G.a()) {
-                UnitSelectionFilter.a(this.selectedUnits, UnitSelectionFilter.f, null);
+                UnitSelectionFilter.selectMatchingUnits(this.selectedUnits, UnitSelectionFilter.airFactoryUnits, null);
             }
             if (inputController.x.a()) {
                 this.interfaceRenderer.a(12);
@@ -1252,12 +1288,12 @@ public final class GameUI extends Serializable {
         if (gameEngine.settingsEngine.mouseSupport && (this.lastUIEvent.x != ((int) gameEngine.getTouchX()) || this.lastUIEvent.y != ((int) gameEngine.getTouchY()))) {
             this.lastUIEvent.x = (int) gameEngine.getTouchX();
             this.lastUIEvent.y = (int) gameEngine.getTouchY();
-            this.rootUIElement.b(this.lastUIEvent);
+            this.rootUIElement.dispatchEvent(this.lastUIEvent);
         }
         if (this.isSelectionBoxActive && isInputEnabled()) {
-            this.rootUIElement.b(UIEvent.a((int) this.selectionBoxMinWidth, (int) this.selectionBoxMinHeight));
+            this.rootUIElement.dispatchEvent(UIEvent.createMouseClick((int) this.selectionBoxMinWidth, (int) this.selectionBoxMinHeight));
         }
-        this.rootUIElement.b(f);
+        this.rootUIElement.update(f);
         this.endGameScreen.update(f);
     }
 
@@ -1311,26 +1347,26 @@ public final class GameUI extends Serializable {
         if (this.selectionBoxStartTime > 360.0f) {
             this.selectionBoxStartTime -= 360.0f;
         }
-        this.bx.a((int) (gameEngine.screenWidth - gameEngine.sidebarWidth), 0, (int) gameEngine.screenWidth, (int) gameEngine.screenHeight);
-        if (!bO) {
+        this.tempDrawRect.a((int) (gameEngine.screenWidth - gameEngine.sidebarWidth), 0, (int) gameEngine.screenWidth, (int) gameEngine.screenHeight);
+        if (!showModernSidebar) {
             if (this.isUILoggingEnabled) {
-                this.bA.a();
-                this.bA.b(Color.a(255, 33, 40, 52));
-                this.bA.a(Paint.Style.FILL);
-                gameEngine.renderGraphicsEngine.b(this.bx, this.bA);
+                this.selectionOverlayPaint.a();
+                this.selectionOverlayPaint.b(Color.a(255, 33, 40, 52));
+                this.selectionOverlayPaint.a(Paint.Style.FILL);
+                gameEngine.renderGraphicsEngine.b(this.tempDrawRect, this.selectionOverlayPaint);
             } else {
-                gameEngine.renderGraphicsEngine.a(this.bl, this.bx, (Paint) null);
+                gameEngine.renderGraphicsEngine.a(this.metalDarkTexture, this.tempDrawRect, (Paint) null);
             }
-            this.bA.a();
-            this.bA.b(Color.a(255, 0, 0, 0));
-            this.bA.a(Paint.Style.STROKE);
-            gameEngine.renderGraphicsEngine.b(this.bx, this.bA);
+            this.selectionOverlayPaint.a();
+            this.selectionOverlayPaint.b(Color.a(255, 0, 0, 0));
+            this.selectionOverlayPaint.a(Paint.Style.STROKE);
+            gameEngine.renderGraphicsEngine.b(this.tempDrawRect, this.selectionOverlayPaint);
         }
-        this.cf = 0;
-        this.ch = 0;
-        this.cg = 0;
-        this.ck = this.cl;
-        this.cl = 0;
+        this.sidebarPanelOffsetY = 0;
+        this.sidebarPanelIndex = 0;
+        this.sidebarPanelStartY = 0;
+        this.sidebarLastPanelWidth = this.sidebarPanelMaxWidth;
+        this.sidebarPanelMaxWidth = 0;
         if (gameEngine.replayEngine.j() || (gameEngine.playerTeam != null && gameEngine.playerTeam.isSpectatorTeamColor())) {
             OrderableUnit firstSelectedUnit = getFirstSelectedUnit();
             if (firstSelectedUnit != null) {
@@ -1365,19 +1401,19 @@ public final class GameUI extends Serializable {
             if (z) {
                 str = str + "AIs frozen\n";
             }
-            this.bA.a();
-            this.bA.b(Color.a(0, 0, 0, 0));
-            this.bA.a(Paint.Style.FILL);
+            this.selectionOverlayPaint.a();
+            this.selectionOverlayPaint.b(Color.a(0, 0, 0, 0));
+            this.selectionOverlayPaint.a(Paint.Style.FILL);
             float f2 = 70.0f * gameEngine.screenScale;
             float f3 = 40.0f;
             if (gameEngine.screenWidth < 600.0f && gameEngine.screenHeight > 650.0f) {
                 f2 = 10.0f;
                 f3 = 60.0f * gameEngine.screenScale;
             }
-            gameEngine.renderGraphicsEngine.a(str, f2, f3, this.unitSelectionBorderPaint, this.bA, 6.0f);
+            gameEngine.renderGraphicsEngine.a(str, f2, f3, this.unitSelectionBorderPaint, this.selectionOverlayPaint, 6.0f);
         }
         emptyGameEngineCall();
-        this.rootUIElement.f();
+        this.rootUIElement.render();
     }
 
     /* JADX INFO: renamed from: j */
@@ -1450,28 +1486,28 @@ public final class GameUI extends Serializable {
         else {
             final Integer h = a4.h();
             if (h != null) {
-                this.at.a(paint4);
-                paint4 = this.at;
+                this.tempTooltipPaint.a(paint4);
+                paint4 = this.tempTooltipPaint;
                 paint4.b(h);
             }
         }
         final float n4 = (float)l.renderGraphicsEngine.b(string, paint4);
         final float n5 = (float)l.renderGraphicsEngine.a(string, paint4);
-        this.ci = n5 + n2;
-        if (this.cl < n4) {
-            this.cl = (int)n4;
+        this.sidebarRowHeight = n5 + n2;
+        if (this.sidebarPanelMaxWidth < n4) {
+            this.sidebarPanelMaxWidth = (int)n4;
         }
-        int ch = this.ch;
+        int ch = this.sidebarPanelIndex;
         if (a4.w) {
             ch = 0;
         }
         int cg = 0;
         int n6 = 0;
         if (ch == 0) {
-            cg = this.cg;
+            cg = this.sidebarPanelStartY;
         }
         else {
-            n6 = this.cf;
+            n6 = this.sidebarPanelOffsetY;
         }
         int b3 = 0;
         int n7 = n2;
@@ -1485,8 +1521,8 @@ public final class GameUI extends Serializable {
         }
         if (n3 < n11 && a4.i != null) {
             b4 = true;
-            this.cf += (int)this.ci;
-            n6 = this.cf;
+            this.sidebarPanelOffsetY += (int)this.sidebarRowHeight;
+            n6 = this.sidebarPanelOffsetY;
             n3 += this.highlightOffsetX;
             this.highlightOffsetX = 0;
         }
@@ -1522,15 +1558,15 @@ public final class GameUI extends Serializable {
         float float3 = n3 - n4 - cg;
         TextUtils.drawTextWithBackground(string, float3 - n2, (float)(n6 + n2), paint4, this.unitSelectionPaint, (float)n8, (float)n7, (float)n9, (float)n10);
         if (k != null) {
-            l.renderGraphicsEngine.a(k, (float)(int)(float3 - n12 / 2.0f - k.r * scale - 3.0f), (float)(int)(n6 + n2 + n5 / 2.0f - k.s * scale), this.bD, 0.0f, scale);
+            l.renderGraphicsEngine.a(k, (float)(int)(float3 - n12 / 2.0f - k.r * scale - 3.0f), (float)(int)(n6 + n2 + n5 / 2.0f - k.s * scale), this.textureDrawPaint, 0.0f, scale);
         }
         if (integer == 0) {
             if (ch == 0) {
-                this.cg += (int)(n4 + n9 + n8);
+                this.sidebarPanelStartY += (int)(n4 + n9 + n8);
             }
-            if (this.ch == ch) {
-                this.cf += (int)this.ci;
-                ++this.ch;
+            if (this.sidebarPanelIndex == ch) {
+                this.sidebarPanelOffsetY += (int)this.sidebarRowHeight;
+                ++this.sidebarPanelIndex;
             }
         }
         this.highlightOffsetX += (int)(n4 + n9 + n8 + b3);
@@ -1563,27 +1599,27 @@ public final class GameUI extends Serializable {
         int i = (int) (100.0f * f);
         int i2 = (int) (10.0f * f);
         int i3 = (int) ((gameEngine.screenHeight - ((int) (9.0f * f))) - (i * this.tooltipTimer));
-        if (bR) {
+        if (isSidebarOnLeft) {
             i3 = (int) (i3 - gameEngine.minimap.height);
         }
         if (confirmationResult == ConfirmationResult.more) {
             int i4 = ((int) (20.0f * f)) + i + ((int) (20.0f * f)) + i;
-            this.by.a(i2 + i4, i3, i2 + i4 + i, i3 + i);
-            gameEngine.renderGraphicsEngine.a(this.bc, this.by.a, this.by.b, this.tooltipBackgroundPaint, 0.0f, f);
+            this.tempButtonRect.a(i2 + i4, i3, i2 + i4 + i, i3 + i);
+            gameEngine.renderGraphicsEngine.a(this.buttonMoreTexture, this.tempButtonRect.a, this.tempButtonRect.b, this.tooltipBackgroundPaint, 0.0f, f);
         } else if (confirmationResult == ConfirmationResult.yes) {
-            this.by.a(i2, i3, i2 + i, i3 + i);
-            gameEngine.renderGraphicsEngine.a(this.bb, this.by.a, this.by.b, this.tooltipBackgroundPaint, 0.0f, f);
+            this.tempButtonRect.a(i2, i3, i2 + i, i3 + i);
+            gameEngine.renderGraphicsEngine.a(this.buttonYesTexture, this.tempButtonRect.a, this.tempButtonRect.b, this.tooltipBackgroundPaint, 0.0f, f);
         } else {
             int i5 = ((int) (20.0f * f)) + i;
-            this.by.a(i2 + i5, i3, i2 + i5 + i, i3 + i);
-            gameEngine.renderGraphicsEngine.a(this.ba, this.by.a, this.by.b, this.tooltipBackgroundPaint, 0.0f, f);
+            this.tempButtonRect.a(i2 + i5, i3, i2 + i5 + i, i3 + i);
+            gameEngine.renderGraphicsEngine.a(this.buttonNoTexture, this.tempButtonRect.a, this.tempButtonRect.b, this.tooltipBackgroundPaint, 0.0f, f);
         }
         boolean z2 = false;
-        Utility.grow(this.by, 10.0f * f);
-        if (this.isSelectionBoxActive && !this.isInputDisabled && this.by.b((int) this.selectionBoxStartX, (int) this.selectionBoxStartY)) {
+        Utility.grow(this.tempButtonRect, 10.0f * f);
+        if (this.isSelectionBoxActive && !this.isInputDisabled && this.tempButtonRect.b((int) this.selectionBoxStartX, (int) this.selectionBoxStartY)) {
             z2 = true;
         }
-        a(this.by.a, this.by.b, this.by.b(), this.by.c());
+        forceModifiersInsideRect(this.tempButtonRect.a, this.tempButtonRect.b, this.tempButtonRect.b(), this.tempButtonRect.c());
         return z2;
     }
 
@@ -1621,28 +1657,28 @@ public final class GameUI extends Serializable {
             f3 = (this.selectionBoxStartY / gameEngine.zoom) + gameEngine.viewpointYSnapped;
         }
         this.buildingRotation = Utility.moveTowardsZero(this.buildingRotation, f);
-        this.bx.a((int) (gameEngine.screenWidth - gameEngine.sidebarWidth), 0, (int) gameEngine.screenWidth, (int) gameEngine.screenHeight);
-        if (!bO && ((this.isSelectionBoxActive || this.isMousePressed) && this.bx.b((int) this.selectionBoxStartX, (int) this.selectionBoxStartY))) {
+        this.tempDrawRect.a((int) (gameEngine.screenWidth - gameEngine.sidebarWidth), 0, (int) gameEngine.screenWidth, (int) gameEngine.screenHeight);
+        if (!showModernSidebar && ((this.isSelectionBoxActive || this.isMousePressed) && this.tempDrawRect.b((int) this.selectionBoxStartX, (int) this.selectionBoxStartY))) {
             this.showDebugInfo = true;
         }
         this.interfaceRenderer.handleZoomAndGestures(f);
         this.interfaceRenderer.handleUnitSelection(f);
         this.lastSelectionTime += f;
         if (!gameEngine.isGamePaused()) {
-            this.interfaceRenderer.a(f, this.interfaceRenderer.d(f));
-            this.interfaceRenderer.e(f);
+            this.interfaceRenderer.getUnitStatusText(f, this.interfaceRenderer.drawUnitCommands(f));
+            this.interfaceRenderer.updateUnitGroupMarkers(f);
             this.messageManager.draw(f, MessageManager.MAX_MESSAGES);
-            this.warLogDisplay.a(f);
-            this.leaderboard.draw(f, Math.max((int) (this.cf + (this.ci * 2.0f)), 130));
+            this.warLogDisplay.drawWarLog(f);
+            this.leaderboard.draw(f, Math.max((int) (this.sidebarPanelOffsetY + (this.sidebarRowHeight * 2.0f)), 130));
             if (this.isDraggingSelection) {
-                this.interfaceRenderer.c(f);
+                this.interfaceRenderer.updateMessageTimer(f);
             }
             this.endGameScreen.draw(f);
-            this.interfaceRenderer.a(f, true);
+            this.interfaceRenderer.drawPauseOverlay(f, true);
         }
         drawActionPreview(f, f2, f3, pointScreenToWorld);
         if (!gameEngine.isGamePaused() && !this.isDraggingSelection) {
-            this.interfaceRenderer.c(f);
+            this.interfaceRenderer.updateMessageTimer(f);
         }
         boolean z = false;
         if (!this.isInputDisabled) {
@@ -1760,7 +1796,7 @@ public final class GameUI extends Serializable {
             for (int i = 0; i < gameEngine.getTouchPointerCount(); i++) {
                 gameEngine.renderGraphicsEngine.i();
                 gameEngine.renderGraphicsEngine.a(0.7f, 0.7f, gameEngine.getTouchX(i), gameEngine.getTouchY(i));
-                gameEngine.renderGraphicsEngine.a(this.bm, gameEngine.getTouchX(i), gameEngine.getTouchY(i), paint);
+                gameEngine.renderGraphicsEngine.a(this.touchIndicatorTexture, gameEngine.getTouchX(i), gameEngine.getTouchY(i), paint);
                 gameEngine.renderGraphicsEngine.j();
             }
         }
@@ -1779,7 +1815,7 @@ public final class GameUI extends Serializable {
     /* JADX INFO: renamed from: a */
     public void drawActionPreview(float f, float f2, float f3, Point point) {
         GameEngine gameEngine = GameEngine.getInstance();
-        BaseUnit baseUnitF = this.interfaceRenderer.f();
+        BaseUnit baseUnitF = this.interfaceRenderer.getHighestUpgradeUnitInSelection();
         if (this.isTooltipVisible) {
             this.tooltipTimer = Utility.distanceSq(this.tooltipTimer, 1.0f, 0.05f * f);
             this.tooltipTimer = (float) (((double) this.tooltipTimer) + (0.08d * ((double) (1.0f - this.tooltipTimer))));
@@ -1856,7 +1892,7 @@ public final class GameUI extends Serializable {
             }
             if (this.currentAction.getActionType() == ActionType.targetGround) {
                 drawActionTooltip(this.currentAction, false, baseUnitF, false, true);
-                BaseUnit baseUnitF2 = this.interfaceRenderer.f();
+                BaseUnit baseUnitF2 = this.interfaceRenderer.getHighestUpgradeUnitInSelection();
                 AbstractUnitAction abstractUnitAction = this.currentAction;
                 if (this.currentAction instanceof WrapperUnitAction) {
                     WrapperUnitAction wrapperUnitAction2 = (WrapperUnitAction) abstractUnitAction;
@@ -2000,10 +2036,10 @@ public final class GameUI extends Serializable {
     /* JADX INFO: renamed from: a */
     public void handleBuildingPlacement(final float float1, final float float2, final Point point) {
         final GameEngine instance = GameEngine.getInstance();
-        final BaseUnit f = this.interfaceRenderer.f();
+        final BaseUnit f = this.interfaceRenderer.getHighestUpgradeUnitInSelection();
         boolean b = false;
         if (f != null && f.validateActionId(this.currentAction.getActionId()) != null) {
-            b = (this.currentAction.canAfford(f, true) && !GameInterfaceRenderer.a(this.currentAction));
+            b = (this.currentAction.canAfford(f, true) && !GameInterfaceRenderer.getKeyBindingForAction(this.currentAction));
             if (!this.currentAction.b(f)) {
                 b = false;
             }
@@ -2167,14 +2203,14 @@ public final class GameUI extends Serializable {
             if (b) {
                 if (b3) {
                     if (GameEngine.isPC() || (GameEngine.isNonPCPlatform() && instance.getTouchPointerCount() == 2)) {
-                        instance.renderGraphicsEngine.a(screenFlashRed * instance.zoom, screenFlashGreen * instance.zoom, (screenFlashIntensity - instance.viewpointXSnapped) * instance.zoom, (screenFlashDecay - instance.viewpointYSnapped) * instance.zoom, this.bE);
+                        instance.renderGraphicsEngine.a(screenFlashRed * instance.zoom, screenFlashGreen * instance.zoom, (screenFlashIntensity - instance.viewpointXSnapped) * instance.zoom, (screenFlashDecay - instance.viewpointYSnapped) * instance.zoom, this.screenFlashBorderPaint);
                     }
                     else {
-                        instance.renderGraphicsEngine.a((y.posX - instance.viewpointXSnapped) * instance.zoom, (y.posY - instance.viewpointYSnapped) * instance.zoom, (screenFlashIntensity - instance.viewpointXSnapped) * instance.zoom, (screenFlashDecay - instance.viewpointYSnapped) * instance.zoom, this.bE);
+                        instance.renderGraphicsEngine.a((y.posX - instance.viewpointXSnapped) * instance.zoom, (y.posY - instance.viewpointYSnapped) * instance.zoom, (screenFlashIntensity - instance.viewpointXSnapped) * instance.zoom, (screenFlashDecay - instance.viewpointYSnapped) * instance.zoom, this.screenFlashBorderPaint);
                     }
                     final boolean boolean6 = true;
                     string = null;
-                    this.a(y, screenFlashIntensity, screenFlashDecay, y.posX, y.posY, boolean6, null, baseUnit2);
+                    this.drawUnitMovePreview(y, screenFlashIntensity, screenFlashDecay, y.posX, y.posY, boolean6, null, baseUnit2);
                 }
                 else {
                     this.validateBuildingPlacement(y, y.posX, y.posY, true, isKeyboardShiftPressed, baseUnit2);
@@ -2249,7 +2285,7 @@ public final class GameUI extends Serializable {
                     final float float6 = y.posY;
                     final ArrayList<PointF> arrayList = new ArrayList<PointF>();
                     if (b3) {
-                        this.a(y, screenFlashIntensity, screenFlashDecay, y.posX, y.posY, false, arrayList, null);
+                        this.drawUnitMovePreview(y, screenFlashIntensity, screenFlashDecay, y.posX, y.posY, false, arrayList, null);
                     }
                     else {
                         arrayList.add(new PointF(float5, float6));
@@ -2368,7 +2404,7 @@ public final class GameUI extends Serializable {
                         final float n11 = -y.getTileOffsetX() + 1.0f;
                         final float n12 = -y.getTileOffsetY() + 1.0f;
                         final boolean b15 = false;
-                        this.a(y, posX + n11, posY + n12, n9 + n11, n10 + n12, b15, list, null);
+                        this.drawUnitMovePreview(y, posX + n11, posY + n12, n9 + n11, n10 + n12, b15, list, null);
                         if (list.size() > 0) {
                             y.posX = ((PointF)list.get(0)).x;
                             y.posY = ((PointF)list.get(0)).y;
@@ -2377,7 +2413,7 @@ public final class GameUI extends Serializable {
                         if (n6 == 0) {
                             n9 = posX + 200.0f * -n8;
                             n10 = posY + 200.0f * -n7;
-                            this.a(y, posX + n11, posY + n12, n9 + n11, n10 + n12, b15, list, null);
+                            this.drawUnitMovePreview(y, posX + n11, posY + n12, n9 + n11, n10 + n12, b15, list, null);
                             if (list.size() > 0) {
                                 y.posX = ((PointF)list.get(0)).x;
                                 y.posY = ((PointF)list.get(0)).y;
@@ -3024,27 +3060,27 @@ public final class GameUI extends Serializable {
         }
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(worldX, worldY, 0.0f, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.ap = 8;
-            effectCreateEffect.V = 30.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.frameIndex = 8;
+            effectCreateEffect.lifeTimer = 30.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.G = 2.8f * calculateCameraOpacity();
-            effectCreateEffect.F = 1.6f * calculateCameraOpacity();
-            effectCreateEffect.H = true;
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.scaleFrom = 2.8f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 1.6f * calculateCameraOpacity();
+            effectCreateEffect.scaleWithZoom = true;
         }
         if (ScreenPoint != null) {
             Point pointWorldToScreen = gameEngine.minimap.worldToScreen(ScreenPoint.worldX, ScreenPoint.worldY);
             Effect effectCreateEffect2 = gameEngine.effectManager.createEffect(pointWorldToScreen.worldX, pointWorldToScreen.worldY, 0.0f, EffectType.custom, true, EffectQuality.critical);
             if (effectCreateEffect2 != null) {
-                effectCreateEffect2.ar = (short) 4;
-                effectCreateEffect2.ap = 8;
-                effectCreateEffect2.V = 35.0f;
-                effectCreateEffect2.W = effectCreateEffect.V;
+                effectCreateEffect2.drawLayer = (short) 4;
+                effectCreateEffect2.frameIndex = 8;
+                effectCreateEffect2.lifeTimer = 35.0f;
+                effectCreateEffect2.lifeMax = effectCreateEffect.lifeTimer;
                 effectCreateEffect2.fadeIn = true;
-                effectCreateEffect2.E = 2.0f;
-                effectCreateEffect2.G = 1.3f;
-                effectCreateEffect2.F = 0.6f;
+                effectCreateEffect2.alpha = 2.0f;
+                effectCreateEffect2.scaleFrom = 1.3f;
+                effectCreateEffect2.scaleTo = 0.6f;
             }
         }
     }
@@ -3071,29 +3107,29 @@ public final class GameUI extends Serializable {
         }
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(worldX, worldY, 0.0f, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.aq = 17;
-            effectCreateEffect.ap = 2;
-            effectCreateEffect.V = 30.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.stripIndex = 17;
+            effectCreateEffect.frameIndex = 2;
+            effectCreateEffect.lifeTimer = 30.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.Z = 1.0f;
-            effectCreateEffect.G = 1.9f * calculateCameraOpacity();
-            effectCreateEffect.F = 3.5f * calculateCameraOpacity();
-            effectCreateEffect.H = true;
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.rotationSpeed = 1.0f;
+            effectCreateEffect.scaleFrom = 1.9f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 3.5f * calculateCameraOpacity();
+            effectCreateEffect.scaleWithZoom = true;
         }
         if (screenPoint != null) {
             Point pointWorldToScreen = gameEngine.minimap.worldToScreen(screenPoint.worldX, screenPoint.worldY);
             Effect effectCreateEffect2 = gameEngine.effectManager.createEffect(pointWorldToScreen.worldX, pointWorldToScreen.worldY, 0.0f, EffectType.custom, true, EffectQuality.critical);
             if (effectCreateEffect2 != null) {
-                effectCreateEffect2.ar = (short) 4;
-                effectCreateEffect2.ap = 9;
-                effectCreateEffect2.V = 35.0f;
-                effectCreateEffect2.W = effectCreateEffect.V;
+                effectCreateEffect2.drawLayer = (short) 4;
+                effectCreateEffect2.frameIndex = 9;
+                effectCreateEffect2.lifeTimer = 35.0f;
+                effectCreateEffect2.lifeMax = effectCreateEffect.lifeTimer;
                 effectCreateEffect2.fadeIn = true;
-                effectCreateEffect2.E = 2.0f;
-                effectCreateEffect2.G = 1.3f;
-                effectCreateEffect2.F = 0.6f;
+                effectCreateEffect2.alpha = 2.0f;
+                effectCreateEffect2.scaleFrom = 1.3f;
+                effectCreateEffect2.scaleTo = 0.6f;
             }
         }
     }
@@ -3130,15 +3166,15 @@ public final class GameUI extends Serializable {
             gameEngine.soundEngine.playInterfaceSound(SoundEngine.moveSound, 0.2f);
             Effect effectCreateEffect = gameEngine.effectManager.createEffect(f, f2, 0.0f, EffectType.custom, true, EffectQuality.critical);
             if (effectCreateEffect != null) {
-                effectCreateEffect.ap = 9;
-                effectCreateEffect.V = 60.0f;
-                effectCreateEffect.W = effectCreateEffect.V;
+                effectCreateEffect.frameIndex = 9;
+                effectCreateEffect.lifeTimer = 60.0f;
+                effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
                 effectCreateEffect.fadeIn = true;
-                effectCreateEffect.E = 2.0f;
-                effectCreateEffect.G = 3.8f * calculateCameraOpacity();
-                effectCreateEffect.F = 2.0f * calculateCameraOpacity();
-                effectCreateEffect.H = true;
-                effectCreateEffect.Z = 1.5f;
+                effectCreateEffect.alpha = 2.0f;
+                effectCreateEffect.scaleFrom = 3.8f * calculateCameraOpacity();
+                effectCreateEffect.scaleTo = 2.0f * calculateCameraOpacity();
+                effectCreateEffect.scaleWithZoom = true;
+                effectCreateEffect.rotationSpeed = 1.5f;
             }
         }
     }
@@ -3152,14 +3188,14 @@ public final class GameUI extends Serializable {
         gameEngine.soundEngine.playInterfaceSound(SoundEngine.moveSound, 0.2f);
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(baseUnit.posX, baseUnit.posY, baseUnit.posZ, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.ap = 12;
-            effectCreateEffect.V = 25.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.frameIndex = 12;
+            effectCreateEffect.lifeTimer = 25.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.H = true;
-            effectCreateEffect.G = 1.2f * calculateCameraOpacity();
-            effectCreateEffect.F = 1.8f * calculateCameraOpacity();
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.scaleWithZoom = true;
+            effectCreateEffect.scaleFrom = 1.2f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 1.8f * calculateCameraOpacity();
         }
     }
 
@@ -3172,15 +3208,15 @@ public final class GameUI extends Serializable {
         gameEngine.soundEngine.playInterfaceSound(SoundEngine.moveSound, 0.2f);
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(f, f2, 0.0f, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.ap = 8;
-            effectCreateEffect.V = 65.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.frameIndex = 8;
+            effectCreateEffect.lifeTimer = 65.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.H = true;
-            effectCreateEffect.Z = 2.0f;
-            effectCreateEffect.G = 2.0f * calculateCameraOpacity();
-            effectCreateEffect.F = 1.5f * calculateCameraOpacity();
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.scaleWithZoom = true;
+            effectCreateEffect.rotationSpeed = 2.0f;
+            effectCreateEffect.scaleFrom = 2.0f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 1.5f * calculateCameraOpacity();
         }
     }
 
@@ -3214,83 +3250,83 @@ public final class GameUI extends Serializable {
         if (gameEngine.settingsEngine.showMapPingsOnBattlefield) {
             Effect effectCreateEffect2 = gameEngine.effectManager.createEffect(f, f2, 0.0f, EffectType.custom, true, EffectQuality.critical);
             if (effectCreateEffect2 != null) {
-                effectCreateEffect2.aq = 9;
-                effectCreateEffect2.ap = 6;
-                effectCreateEffect2.E = 0.7f;
-                effectCreateEffect2.V = 490.0f;
-                effectCreateEffect2.W = effectCreateEffect2.V;
+                effectCreateEffect2.stripIndex = 9;
+                effectCreateEffect2.frameIndex = 6;
+                effectCreateEffect2.alpha = 0.7f;
+                effectCreateEffect2.lifeTimer = 490.0f;
+                effectCreateEffect2.lifeMax = effectCreateEffect2.lifeTimer;
                 effectCreateEffect2.fadeIn = true;
-                effectCreateEffect2.S = 6.0f;
-                effectCreateEffect2.T = 60.0f;
-                effectCreateEffect2.J -= effectCreateEffect2.S;
-                effectCreateEffect2.G = 2.0f * 1.0f;
-                effectCreateEffect2.F = effectCreateEffect2.G;
-                effectCreateEffect2.ao = -0.5f;
-                effectCreateEffect2.H = true;
+                effectCreateEffect2.bobAmplitude = 6.0f;
+                effectCreateEffect2.bobPeriod = 60.0f;
+                effectCreateEffect2.posY -= effectCreateEffect2.bobAmplitude;
+                effectCreateEffect2.scaleFrom = 2.0f * 1.0f;
+                effectCreateEffect2.scaleTo = effectCreateEffect2.scaleFrom;
+                effectCreateEffect2.verticalAnchorOffset = -0.5f;
+                effectCreateEffect2.scaleWithZoom = true;
                 if (playerTeam != null) {
                     effectCreateEffect2.startColor = playerTeam.getTeamColorArgb();
                     if (GameEngine.isAndroidPlatform()) {
-                        effectCreateEffect2.B = new LightingColorFilter(effectCreateEffect2.startColor, 0);
+                        effectCreateEffect2.lightingColorFilter = new LightingColorFilter(effectCreateEffect2.startColor, 0);
                     }
                 }
             }
             if (iOrdinal != -1 && (effectCreateEffect = gameEngine.effectManager.createEffect(f, f2, 0.0f, EffectType.custom, true, EffectQuality.critical)) != null) {
-                effectCreateEffect.aq = 9;
-                effectCreateEffect.ap = iOrdinal;
-                effectCreateEffect.V = 490.0f;
-                effectCreateEffect.W = effectCreateEffect.V;
+                effectCreateEffect.stripIndex = 9;
+                effectCreateEffect.frameIndex = iOrdinal;
+                effectCreateEffect.lifeTimer = 490.0f;
+                effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
                 effectCreateEffect.fadeIn = true;
-                effectCreateEffect.E = 1.2f;
-                effectCreateEffect.S = 6.0f;
-                effectCreateEffect.T = 60.0f;
-                effectCreateEffect.J -= effectCreateEffect.S;
-                effectCreateEffect.G = 2.0f * 1.0f;
-                effectCreateEffect.F = effectCreateEffect.G;
-                effectCreateEffect.ao = -0.7f;
-                effectCreateEffect.H = true;
+                effectCreateEffect.alpha = 1.2f;
+                effectCreateEffect.bobAmplitude = 6.0f;
+                effectCreateEffect.bobPeriod = 60.0f;
+                effectCreateEffect.posY -= effectCreateEffect.bobAmplitude;
+                effectCreateEffect.scaleFrom = 2.0f * 1.0f;
+                effectCreateEffect.scaleTo = effectCreateEffect.scaleFrom;
+                effectCreateEffect.verticalAnchorOffset = -0.7f;
+                effectCreateEffect.scaleWithZoom = true;
             }
         }
         if (gameEngine.settingsEngine.showMapPingsOnMinimap) {
             Point pointWorldToScreen = gameEngine.minimap.worldToScreen(f, f2);
             Effect effectCreateEffect3 = gameEngine.effectManager.createEffect(pointWorldToScreen.worldX, pointWorldToScreen.worldY, 0.0f, EffectType.custom, true, EffectQuality.critical);
             if (effectCreateEffect3 != null) {
-                effectCreateEffect3.ar = (short) 4;
-                effectCreateEffect3.aq = 9;
-                effectCreateEffect3.ap = 6;
-                effectCreateEffect3.E = 0.8f;
-                effectCreateEffect3.V = 470.0f;
-                effectCreateEffect3.W = effectCreateEffect3.V;
+                effectCreateEffect3.drawLayer = (short) 4;
+                effectCreateEffect3.stripIndex = 9;
+                effectCreateEffect3.frameIndex = 6;
+                effectCreateEffect3.alpha = 0.8f;
+                effectCreateEffect3.lifeTimer = 470.0f;
+                effectCreateEffect3.lifeMax = effectCreateEffect3.lifeTimer;
                 effectCreateEffect3.fadeIn = true;
-                effectCreateEffect3.J -= 2.0f;
-                effectCreateEffect3.S = 2.0f;
-                effectCreateEffect3.T = 60.0f;
-                effectCreateEffect3.ao = -0.5f;
+                effectCreateEffect3.posY -= 2.0f;
+                effectCreateEffect3.bobAmplitude = 2.0f;
+                effectCreateEffect3.bobPeriod = 60.0f;
+                effectCreateEffect3.verticalAnchorOffset = -0.5f;
                 if (playerTeam != null) {
                     effectCreateEffect3.startColor = playerTeam.getTeamColorArgb();
                     if (GameEngine.isAndroidPlatform()) {
-                        effectCreateEffect3.B = new LightingColorFilter(effectCreateEffect3.startColor, 0);
+                        effectCreateEffect3.lightingColorFilter = new LightingColorFilter(effectCreateEffect3.startColor, 0);
                     }
                 }
-                effectCreateEffect3.G = 1.0f;
-                effectCreateEffect3.F = 1.0f;
+                effectCreateEffect3.scaleFrom = 1.0f;
+                effectCreateEffect3.scaleTo = 1.0f;
             }
             Effect effectCreateEffect4 = gameEngine.effectManager.createEffect(pointWorldToScreen.worldX, pointWorldToScreen.worldY, 0.0f, EffectType.custom, true, EffectQuality.critical);
             if (effectCreateEffect4 != null) {
-                effectCreateEffect4.ar = (short) 4;
-                effectCreateEffect4.aq = 9;
-                effectCreateEffect4.ap = iOrdinal;
-                effectCreateEffect4.V = 470.0f;
-                effectCreateEffect4.W = effectCreateEffect4.V;
+                effectCreateEffect4.drawLayer = (short) 4;
+                effectCreateEffect4.stripIndex = 9;
+                effectCreateEffect4.frameIndex = iOrdinal;
+                effectCreateEffect4.lifeTimer = 470.0f;
+                effectCreateEffect4.lifeMax = effectCreateEffect4.lifeTimer;
                 effectCreateEffect4.fadeIn = true;
-                effectCreateEffect4.E = 0.8f;
-                effectCreateEffect4.J -= 2.0f;
-                effectCreateEffect4.S = 2.0f;
-                effectCreateEffect4.T = 60.0f;
+                effectCreateEffect4.alpha = 0.8f;
+                effectCreateEffect4.posY -= 2.0f;
+                effectCreateEffect4.bobAmplitude = 2.0f;
+                effectCreateEffect4.bobPeriod = 60.0f;
                 if (playerTeam != null) {
                 }
-                effectCreateEffect4.G = 1.0f;
-                effectCreateEffect4.F = 1.0f;
-                effectCreateEffect4.ao = -0.7f;
+                effectCreateEffect4.scaleFrom = 1.0f;
+                effectCreateEffect4.scaleTo = 1.0f;
+                effectCreateEffect4.verticalAnchorOffset = -0.7f;
             }
         }
     }
@@ -3327,35 +3363,35 @@ public final class GameUI extends Serializable {
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(baseUnit.posX, baseUnit.posY, baseUnit.posZ, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
             effectCreateEffect.parentObject = baseUnit;
-            effectCreateEffect.I = 0.0f;
-            effectCreateEffect.J = 0.0f;
-            effectCreateEffect.K = 0.0f;
-            effectCreateEffect.ap = 9;
-            effectCreateEffect.V = 35.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.posX = 0.0f;
+            effectCreateEffect.posY = 0.0f;
+            effectCreateEffect.posZ = 0.0f;
+            effectCreateEffect.frameIndex = 9;
+            effectCreateEffect.lifeTimer = 35.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 1.5f;
-            effectCreateEffect.H = true;
-            effectCreateEffect.Z = 0.8f;
-            effectCreateEffect.G = 1.9f * calculateCameraOpacity();
-            effectCreateEffect.F = 3.3f * calculateCameraOpacity();
+            effectCreateEffect.alpha = 1.5f;
+            effectCreateEffect.scaleWithZoom = true;
+            effectCreateEffect.rotationSpeed = 0.8f;
+            effectCreateEffect.scaleFrom = 1.9f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 3.3f * calculateCameraOpacity();
         }
         Effect effectCreateEffect2 = gameEngine.effectManager.createEffect(baseUnit.posX, baseUnit.posY, baseUnit.posZ, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect2 != null) {
             effectCreateEffect2.parentObject = baseUnit;
-            effectCreateEffect2.I = 0.0f;
-            effectCreateEffect2.J = 0.0f;
-            effectCreateEffect2.K = 0.0f;
-            effectCreateEffect2.aq = 17;
-            effectCreateEffect2.ap = 0;
-            effectCreateEffect2.V = 25.0f;
-            effectCreateEffect2.W = effectCreateEffect2.V;
+            effectCreateEffect2.posX = 0.0f;
+            effectCreateEffect2.posY = 0.0f;
+            effectCreateEffect2.posZ = 0.0f;
+            effectCreateEffect2.stripIndex = 17;
+            effectCreateEffect2.frameIndex = 0;
+            effectCreateEffect2.lifeTimer = 25.0f;
+            effectCreateEffect2.lifeMax = effectCreateEffect2.lifeTimer;
             effectCreateEffect2.fadeIn = true;
-            effectCreateEffect2.E = 1.0f;
-            effectCreateEffect2.H = true;
-            effectCreateEffect2.Z = 0.8f;
-            effectCreateEffect2.G = 2.2f * calculateCameraOpacity();
-            effectCreateEffect2.F = 1.1f * calculateCameraOpacity();
+            effectCreateEffect2.alpha = 1.0f;
+            effectCreateEffect2.scaleWithZoom = true;
+            effectCreateEffect2.rotationSpeed = 0.8f;
+            effectCreateEffect2.scaleFrom = 2.2f * calculateCameraOpacity();
+            effectCreateEffect2.scaleTo = 1.1f * calculateCameraOpacity();
         }
     }
 
@@ -3368,14 +3404,14 @@ public final class GameUI extends Serializable {
         gameEngine.soundEngine.playInterfaceSound(SoundEngine.attack2Sound, 1.0f);
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(baseUnit.posX, baseUnit.posY, baseUnit.posZ, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.ap = 10;
-            effectCreateEffect.V = 35.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.frameIndex = 10;
+            effectCreateEffect.lifeTimer = 35.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.H = true;
-            effectCreateEffect.G = 1.5f * calculateCameraOpacity();
-            effectCreateEffect.F = 2.2f * calculateCameraOpacity();
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.scaleWithZoom = true;
+            effectCreateEffect.scaleFrom = 1.5f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 2.2f * calculateCameraOpacity();
         }
     }
 
@@ -3388,16 +3424,16 @@ public final class GameUI extends Serializable {
         gameEngine.soundEngine.playInterfaceSound(SoundEngine.attack2Sound, 1.0f);
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(baseUnit.posX, baseUnit.posY, baseUnit.posZ, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.aq = 17;
-            effectCreateEffect.ap = 1;
-            effectCreateEffect.V = 40.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.stripIndex = 17;
+            effectCreateEffect.frameIndex = 1;
+            effectCreateEffect.lifeTimer = 40.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 1.0f;
-            effectCreateEffect.H = true;
-            effectCreateEffect.Z = 0.0f;
-            effectCreateEffect.G = 1.2f * calculateCameraOpacity();
-            effectCreateEffect.F = 1.9f * calculateCameraOpacity();
+            effectCreateEffect.alpha = 1.0f;
+            effectCreateEffect.scaleWithZoom = true;
+            effectCreateEffect.rotationSpeed = 0.0f;
+            effectCreateEffect.scaleFrom = 1.2f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 1.9f * calculateCameraOpacity();
         }
     }
 
@@ -3407,16 +3443,16 @@ public final class GameUI extends Serializable {
         gameEngine.soundEngine.playInterfaceSound(SoundEngine.interfaceErrorSound, 0.2f);
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(f, f2, f3, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.aq = 9;
-            effectCreateEffect.ap = 14;
-            effectCreateEffect.V = 10.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.stripIndex = 9;
+            effectCreateEffect.frameIndex = 14;
+            effectCreateEffect.lifeTimer = 10.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.Z = 0.0f;
-            effectCreateEffect.G = 1.1f * calculateCameraOpacity();
-            effectCreateEffect.F = 1.6f * calculateCameraOpacity();
-            effectCreateEffect.H = true;
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.rotationSpeed = 0.0f;
+            effectCreateEffect.scaleFrom = 1.1f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 1.6f * calculateCameraOpacity();
+            effectCreateEffect.scaleWithZoom = true;
         }
     }
 
@@ -3432,29 +3468,29 @@ public final class GameUI extends Serializable {
         gameEngine.soundEngine.playInterfaceSound(SoundEngine.moveSound, 0.2f);
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(f, f2, 0.0f, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.aq = 17;
-            effectCreateEffect.ap = 0;
-            effectCreateEffect.V = 40.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.stripIndex = 17;
+            effectCreateEffect.frameIndex = 0;
+            effectCreateEffect.lifeTimer = 40.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.Z = 8.0f;
-            effectCreateEffect.G = 1.1f * calculateCameraOpacity();
-            effectCreateEffect.F = 1.9f * calculateCameraOpacity();
-            effectCreateEffect.H = true;
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.rotationSpeed = 8.0f;
+            effectCreateEffect.scaleFrom = 1.1f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 1.9f * calculateCameraOpacity();
+            effectCreateEffect.scaleWithZoom = true;
         }
         if (point != null) {
             Point pointWorldToScreen = gameEngine.minimap.worldToScreen(point.worldX, point.worldY);
             Effect effectCreateEffect2 = gameEngine.effectManager.createEffect(pointWorldToScreen.worldX, pointWorldToScreen.worldY, 0.0f, EffectType.custom, true, EffectQuality.critical);
             if (effectCreateEffect2 != null) {
-                effectCreateEffect2.ar = (short) 4;
-                effectCreateEffect2.ap = 9;
-                effectCreateEffect2.V = 35.0f;
-                effectCreateEffect2.W = effectCreateEffect.V;
+                effectCreateEffect2.drawLayer = (short) 4;
+                effectCreateEffect2.frameIndex = 9;
+                effectCreateEffect2.lifeTimer = 35.0f;
+                effectCreateEffect2.lifeMax = effectCreateEffect.lifeTimer;
                 effectCreateEffect2.fadeIn = true;
-                effectCreateEffect2.E = 2.0f;
-                effectCreateEffect2.G = 1.3f;
-                effectCreateEffect2.F = 0.6f;
+                effectCreateEffect2.alpha = 2.0f;
+                effectCreateEffect2.scaleFrom = 1.3f;
+                effectCreateEffect2.scaleTo = 0.6f;
             }
         }
     }
@@ -3468,14 +3504,14 @@ public final class GameUI extends Serializable {
         gameEngine.soundEngine.playInterfaceSound(SoundEngine.attack2Sound, 1.0f);
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(baseUnit.posX, baseUnit.posY, baseUnit.posZ, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.ap = 11;
-            effectCreateEffect.V = 25.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.frameIndex = 11;
+            effectCreateEffect.lifeTimer = 25.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.H = true;
-            effectCreateEffect.G = 1.8f * calculateCameraOpacity();
-            effectCreateEffect.F = 1.6f * calculateCameraOpacity();
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.scaleWithZoom = true;
+            effectCreateEffect.scaleFrom = 1.8f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 1.6f * calculateCameraOpacity();
         }
     }
 
@@ -3488,14 +3524,14 @@ public final class GameUI extends Serializable {
         gameEngine.soundEngine.playInterfaceSound(SoundEngine.attack2Sound, 1.0f);
         Effect effectCreateEffect = gameEngine.effectManager.createEffect(baseUnit.posX, baseUnit.posY, baseUnit.posZ, EffectType.custom, true, EffectQuality.critical);
         if (effectCreateEffect != null) {
-            effectCreateEffect.ap = 11;
-            effectCreateEffect.V = 25.0f;
-            effectCreateEffect.W = effectCreateEffect.V;
+            effectCreateEffect.frameIndex = 11;
+            effectCreateEffect.lifeTimer = 25.0f;
+            effectCreateEffect.lifeMax = effectCreateEffect.lifeTimer;
             effectCreateEffect.fadeIn = true;
-            effectCreateEffect.E = 2.0f;
-            effectCreateEffect.H = true;
-            effectCreateEffect.G = 1.8f * calculateCameraOpacity();
-            effectCreateEffect.F = 1.6f * calculateCameraOpacity();
+            effectCreateEffect.alpha = 2.0f;
+            effectCreateEffect.scaleWithZoom = true;
+            effectCreateEffect.scaleFrom = 1.8f * calculateCameraOpacity();
+            effectCreateEffect.scaleTo = 1.6f * calculateCameraOpacity();
         }
     }
 
@@ -3554,7 +3590,7 @@ public final class GameUI extends Serializable {
         for (GameObject gameObject : GameObject.fastGameObjectList) {
             if (gameObject instanceof BaseUnit) {
                 BaseUnit baseUnit2 = (BaseUnit) gameObject;
-                if (!baseUnit2.isDead && baseUnit2.transportContainer == null && baseUnit2.team == baseUnit.team && baseUnit2.isVisibleOnScreen() && GameInterfaceRenderer.a(baseUnit2, baseUnit) && (baseUnit2.team == gameEngine.playerTeam || baseUnit2.isVisibleToLocalPlayer())) {
+                if (!baseUnit2.isDead && baseUnit2.transportContainer == null && baseUnit2.team == baseUnit.team && baseUnit2.isVisibleOnScreen() && GameInterfaceRenderer.isActionVisibleForSelection(baseUnit2, baseUnit) && (baseUnit2.team == gameEngine.playerTeam || baseUnit2.isVisibleToLocalPlayer())) {
                     selectUnit(baseUnit2);
                 }
             }
@@ -3814,7 +3850,8 @@ public final class GameUI extends Serializable {
         }
     }
 
-    public void a(OrderableUnit orderableUnit, float f, float f2, float f3, float f4, boolean z, ArrayList arrayList, BaseUnit baseUnit) {
+    /* JADX INFO: renamed from: a */
+    public void drawUnitMovePreview(OrderableUnit orderableUnit, float f, float f2, float f3, float f4, boolean z, ArrayList arrayList, BaseUnit baseUnit) {
         GameEngine gameEngine = GameEngine.getInstance();
         float f5 = orderableUnit.posX;
         float f6 = orderableUnit.posY;
@@ -3958,7 +3995,8 @@ public final class GameUI extends Serializable {
         this.currentAction = this.pingMapAction;
     }
 
-    public void a(String str, Rect rect, Paint paint, Paint paint2) {
+    /* JADX INFO: renamed from: a */
+    public void drawMultilineText(String str, Rect rect, Paint paint, Paint paint2) {
         Paint paint3;
         GameEngine gameEngine = GameEngine.getInstance();
         int i = 0;
@@ -3997,7 +4035,7 @@ public final class GameUI extends Serializable {
         }
         boolean b3 = false;
         boolean b4 = false;
-        if (GameInterfaceRenderer.a(s)) {
+        if (GameInterfaceRenderer.getKeyBindingForAction(s)) {
             b3 = true;
             b4 = true;
         }
@@ -4016,7 +4054,7 @@ public final class GameUI extends Serializable {
             }
         }
         if (s2 == null) {
-            final float b5 = this.interfaceRenderer.b(s);
+            final float b5 = this.interfaceRenderer.getActionBlockDuration(s);
             if (b5 > 0.0f) {
                 s2 = Utility.formatSeconds(b5 / 1000.0f);
             }
@@ -4035,21 +4073,21 @@ public final class GameUI extends Serializable {
         if (b6) {
             effectIconTexture = this.effectIconPaint;
         }
-        textRenderQueue.a(true);
+        textRenderQueue.setUseHighlightPaint(true);
         s.renderDisplayText(am, textRenderQueue, paint3, effectIconTexture);
         if (s2 != null) {
-            textRenderQueue.a("\n" + s2, this.effectIconPaint);
+            textRenderQueue.addText("\n" + s2, this.effectIconPaint);
         }
-        textRenderQueue.a(false);
+        textRenderQueue.setUseHighlightPaint(false);
         s.onPurchase(am, textRenderQueue);
         if (b4) {
-            textRenderQueue.b();
-            textRenderQueue.a(this.notAvailableInDemoText, this.buildingIconPaint);
+            textRenderQueue.clearElements();
+            textRenderQueue.addText(this.notAvailableInDemoText, this.buildingIconPaint);
         }
         final int a = 20;
-        this.bv.a = a;
+        this.actionTooltipRect.a = a;
         final int c = (int)(instance.screenWidth - instance.sidebarWidth - a);
-        this.bv.c = c;
+        this.actionTooltipRect.c = c;
         final boolean shouldShowActionInfoHoverNearMouse = instance.settingsEngine.showActionInfoHoverNearMouse;
         int b7;
         if (boolean2) {
@@ -4065,8 +4103,8 @@ public final class GameUI extends Serializable {
         if (GameEngine.isPC() && shouldShowActionInfoHoverNearMouse && boolean5) {
             b7 = (int)(instance.getTouchY() - 40.0f);
         }
-        this.bv.b = b7;
-        this.bv.d = this.bv.b;
+        this.actionTooltipRect.b = b7;
+        this.actionTooltipRect.d = this.actionTooltipRect.b;
         boolean boolean8 = true;
         boolean b8 = true;
         final boolean b9 = false;
@@ -4091,77 +4129,77 @@ public final class GameUI extends Serializable {
         if (boolean4) {
             final GamePaint effectIconTexture2 = this.effectIconPaint;
         }
-        final TextRenderLayout a2 = textRenderQueue.a(this.bv.b(), boolean8);
-        final float n2 = (float)this.bv.d();
-        this.bv.a = (int)(n2 - a2.rect.b() / 2);
-        this.bv.c = (int)(n2 + a2.rect.b() / 2);
-        this.bv.d = this.bv.b + a2.rect.c();
+        final TextRenderLayout a2 = textRenderQueue.createTextLayout(this.actionTooltipRect.b(), boolean8);
+        final float n2 = (float)this.actionTooltipRect.d();
+        this.actionTooltipRect.a = (int)(n2 - a2.rect.b() / 2);
+        this.actionTooltipRect.c = (int)(n2 + a2.rect.b() / 2);
+        this.actionTooltipRect.d = this.actionTooltipRect.b + a2.rect.c();
         if (boolean8) {
-            final Rect bv = this.bv;
+            final Rect bv = this.actionTooltipRect;
             bv.a -= (int)(n * instance.screenScale);
-            final Rect bv2 = this.bv;
+            final Rect bv2 = this.actionTooltipRect;
             bv2.c += (int)(n * instance.screenScale);
         }
         if (b8) {
-            final int active = (int)(c - 7.0f * instance.screenScale - this.bv.c);
-            this.bv.a(active, 0);
+            final int active = (int)(c - 7.0f * instance.screenScale - this.actionTooltipRect.c);
+            this.actionTooltipRect.a(active, 0);
         }
-        this.bw.a(this.bv);
-        final Rect bw = this.bw;
+        this.actionTooltipBorderRect.a(this.actionTooltipRect);
+        final Rect bw = this.actionTooltipBorderRect;
         bw.b -= 20;
-        final Rect bw2 = this.bw;
+        final Rect bw2 = this.actionTooltipBorderRect;
         bw2.d += 15;
         int active = -1;
         if (am != null) {
             active = s.getActiveCount(am, true);
         }
         if (am != null && b2 && active != -1) {
-            final Rect bw3 = this.bw;
+            final Rect bw3 = this.actionTooltipBorderRect;
             bw3.d += (int)(55.0f * instance.screenScale);
         }
-        if (this.bw.d > instance.screenHeight) {
-            final int n3 = (int)(instance.screenHeight - this.bw.d);
-            this.bv.a(0, n3);
-            this.bw.a(0, n3);
+        if (this.actionTooltipBorderRect.d > instance.screenHeight) {
+            final int n3 = (int)(instance.screenHeight - this.actionTooltipBorderRect.d);
+            this.actionTooltipRect.a(0, n3);
+            this.actionTooltipBorderRect.a(0, n3);
         }
         UnitType unitType = s.getUnitType();
         if (!s.shouldShowUnitPreview()) {
             unitType = null;
         }
         if (unitType != null && am != null) {
-            final Rect bw4 = this.bw;
+            final Rect bw4 = this.actionTooltipBorderRect;
             bw4.b -= (int)(40.0f * instance.screenScale);
         }
         if (b) {
-            final int n4 = -this.bv.c();
-            this.bv.a(0, n4);
-            this.bw.a(0, n4);
+            final int n4 = -this.actionTooltipRect.c();
+            this.actionTooltipRect.a(0, n4);
+            this.actionTooltipBorderRect.a(0, n4);
         }
         if (b9) {
             final float float7 = instance.screenHeight - 30.0f;
-            final int n5 = (int)(float7 - this.bw.d);
-            this.bw.a(0, n5);
-            this.bv.a(0, n5);
+            final int n5 = (int)(float7 - this.actionTooltipBorderRect.d);
+            this.actionTooltipBorderRect.a(0, n5);
+            this.actionTooltipRect.a(0, n5);
         }
-        if (this.bw.b < 0) {
-            final int n4 = 0 - this.bw.b;
-            this.bw.a(0, n4);
-            this.bv.a(0, n4);
+        if (this.actionTooltipBorderRect.b < 0) {
+            final int n4 = 0 - this.actionTooltipBorderRect.b;
+            this.actionTooltipBorderRect.a(0, n4);
+            this.actionTooltipRect.a(0, n4);
         }
-        if (this.bw.d > instance.screenHeight - 20.0f) {
+        if (this.actionTooltipBorderRect.d > instance.screenHeight - 20.0f) {
             final float float7 = instance.screenHeight - 20.0f;
-            final int n5 = (int)(float7 - this.bw.d);
-            this.bw.a(0, n5);
-            this.bv.a(0, n5);
+            final int n5 = (int)(float7 - this.actionTooltipBorderRect.d);
+            this.actionTooltipBorderRect.a(0, n5);
+            this.actionTooltipRect.a(0, n5);
         }
-        instance.renderGraphicsEngine.b(this.bw, this.minimapViewportBorderPaint);
-        instance.renderGraphicsEngine.b(this.bw, this.minimapPaint);
+        instance.renderGraphicsEngine.b(this.actionTooltipBorderRect, this.minimapViewportBorderPaint);
+        instance.renderGraphicsEngine.b(this.actionTooltipBorderRect, this.minimapPaint);
         if (b3) {}
         if (unitType != null && am != null) {
             final float float7 = 30.0f * instance.screenScale;
-            UnitTypeEnum.drawUnit(unitType, (float)this.bw.d(), this.bw.b + 22.0f * instance.screenScale, this.selectionBoxStartTime, 0.0f, am.team, float7, 100.0f * instance.screenScale, false, false, s.getQueueSize(), null);
+            UnitTypeEnum.drawUnit(unitType, (float)this.actionTooltipBorderRect.d(), this.actionTooltipBorderRect.b + 22.0f * instance.screenScale, this.selectionBoxStartTime, 0.0f, am.team, float7, 100.0f * instance.screenScale, false, false, s.getQueueSize(), null);
         }
-        a2.a((float)this.bv.d(), (float)this.bv.b);
+        a2.draw((float)this.actionTooltipRect.d(), (float)this.actionTooltipRect.b);
         if (am != null && active != -1 && b2) {
             final float float7 = instance.screenScale * 0.5f;
             final int n5 = (int)(60.0f * float7);
@@ -4180,22 +4218,22 @@ public final class GameUI extends Serializable {
                     }
                     Utility.lerpColor(integer1, this.fogOfWarPaint.e(), clampTo255);
                 }
-                float clampTo255 = this.bw.d - 65.0f * float7 / 2.0f + TextUtils.getCharWidth(this.fogOfWarPaint) / 2;
+                float clampTo255 = this.actionTooltipBorderRect.d - 65.0f * float7 / 2.0f + TextUtils.getCharWidth(this.fogOfWarPaint) / 2;
                 if (timerValue > 0.5) {
                     ++clampTo255;
                 }
                 if (timerValue < -0.5) {
                     --clampTo255;
                 }
-                instance.renderGraphicsEngine.a("" + active, (float)this.bw.d(), clampTo255, this.fogOfWarPaint);
+                instance.renderGraphicsEngine.a("" + active, (float)this.actionTooltipBorderRect.d(), clampTo255, this.fogOfWarPaint);
             }
             boolean b10 = false;
             boolean b11 = false;
             final boolean b12 = !b3 && this.canAffordActionForSelectedUnits(s, true);
             final boolean b13 = active > 0 && s.canPlayerCancel(am, true);
-            int n6 = (int)(this.bw.d() + 60.0f * float7);
-            int i = (int)(this.bw.d - 65.0f * float7);
-            this.by.a(n6, i, n6 + n5, i + n5);
+            int n6 = (int)(this.actionTooltipBorderRect.d() + 60.0f * float7);
+            int i = (int)(this.actionTooltipBorderRect.d - 65.0f * float7);
+            this.tempButtonRect.a(n6, i, n6 + n5, i + n5);
             Paint paint4;
             if (b12) {
                 paint4 = this.tooltipBackgroundPaint;
@@ -4214,21 +4252,21 @@ public final class GameUI extends Serializable {
                     n8 = Color.a(110, 210, 110, 110);
                 }
                 final int n9 = Utility.lerpColor(n8, paint4.e(), n7);
-                paint4 = this.bA;
+                paint4 = this.selectionOverlayPaint;
                 paint4.b(n9);
             }
             if (timerValue > 0.5) {
-                this.by.a(0, 1);
+                this.tempButtonRect.a(0, 1);
             }
-            instance.renderGraphicsEngine.a(this.bh, (float)this.by.a, (float)this.by.b, paint4, 0.0f, float7);
-            Utility.grow(this.by, this.by.b() * 0.8f);
-            if (this.isSelectionBoxActive && !this.isInputDisabled && !b4 && this.by.b((int)this.selectionBoxStartX, (int)this.selectionBoxStartY)) {
+            instance.renderGraphicsEngine.a(this.buttonAddTexture, (float)this.tempButtonRect.a, (float)this.tempButtonRect.b, paint4, 0.0f, float7);
+            Utility.grow(this.tempButtonRect, this.tempButtonRect.b() * 0.8f);
+            if (this.isSelectionBoxActive && !this.isInputDisabled && !b4 && this.tempButtonRect.b((int)this.selectionBoxStartX, (int)this.selectionBoxStartY)) {
                 this.isSelectionBoxActive = false;
                 b10 = true;
             }
-            n6 = (int)(this.bw.d() - n5 - 60.0f * float7);
-            i = (int)(this.bw.d - 65.0f * float7);
-            this.by.a(n6, i, n6 + n5, i + n5);
+            n6 = (int)(this.actionTooltipBorderRect.d() - n5 - 60.0f * float7);
+            i = (int)(this.actionTooltipBorderRect.d - 65.0f * float7);
+            this.tempButtonRect.a(n6, i, n6 + n5, i + n5);
             Paint paint5;
             if (b13) {
                 paint5 = this.tooltipBackgroundPaint;
@@ -4247,15 +4285,15 @@ public final class GameUI extends Serializable {
                     n8 = Color.a(110, 210, 110, 110);
                 }
                 final int n9 = Utility.lerpColor(n8, paint5.e(), n7);
-                paint5 = this.bA;
+                paint5 = this.selectionOverlayPaint;
                 paint5.b(n9);
             }
             if (timerValue < -0.5) {
-                this.by.a(0, 1);
+                this.tempButtonRect.a(0, 1);
             }
-            instance.renderGraphicsEngine.a(this.bi, (float)this.by.a, (float)this.by.b, paint5, 0.0f, float7);
-            Utility.grow(this.by, this.by.b() * 0.8f);
-            if (this.isSelectionBoxActive && !this.isInputDisabled && this.by.b((int)this.selectionBoxStartX, (int)this.selectionBoxStartY)) {
+            instance.renderGraphicsEngine.a(this.buttonSubtractTexture, (float)this.tempButtonRect.a, (float)this.tempButtonRect.b, paint5, 0.0f, float7);
+            Utility.grow(this.tempButtonRect, this.tempButtonRect.b() * 0.8f);
+            if (this.isSelectionBoxActive && !this.isInputDisabled && this.tempButtonRect.b((int)this.selectionBoxStartX, (int)this.selectionBoxStartY)) {
                 this.isSelectionBoxActive = false;
                 b11 = true;
             }
@@ -4298,17 +4336,18 @@ public final class GameUI extends Serializable {
                     baseCommand2.setActionId(s.getQueueId());
                 }
             }
-            if (!b10 && !b11 && this.isSelectionBoxActive && !this.isInputDisabled && !this.bw.b((int)this.selectionBoxStartX, (int)this.selectionBoxStartY)) {
+            if (!b10 && !b11 && this.isSelectionBoxActive && !this.isInputDisabled && !this.actionTooltipBorderRect.b((int)this.selectionBoxStartX, (int)this.selectionBoxStartY)) {
                 return true;
             }
         }
-        return !b2 && GameEngine.isNonPCPlatform() && this.isSelectionBoxActive && !this.isInputDisabled && !this.bw.b((int)this.selectionBoxStartX, (int)this.selectionBoxStartY);
+        return !b2 && GameEngine.isNonPCPlatform() && this.isSelectionBoxActive && !this.isInputDisabled && !this.actionTooltipBorderRect.b((int)this.selectionBoxStartX, (int)this.selectionBoxStartY);
     }
 
-    public void a(Rect rect, Paint paint, Paint paint2) {
+    /* JADX INFO: renamed from: a */
+    public void drawTopBarBackground(Rect rect, Paint paint, Paint paint2) {
         GameEngine gameEngine = GameEngine.getInstance();
-        if (bO) {
-            gameEngine.renderGraphicsEngine.a(this.bl, rect, paint2, rect.a, rect.b, 0, 0);
+        if (showModernSidebar) {
+            gameEngine.renderGraphicsEngine.a(this.metalDarkTexture, rect, paint2, rect.a, rect.b, 0, 0);
             if (paint != null) {
                 int iF = paint.f();
                 if (iF > 255) {
@@ -4322,57 +4361,60 @@ public final class GameUI extends Serializable {
         }
     }
 
-    public void a(Rect rect, int i, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public void drawTooltipInset(Rect rect, int i, boolean z) {
         GameEngine gameEngine = GameEngine.getInstance();
-        this.bF.b(i);
-        this.bF.a(Paint.Style.STROKE);
-        this.bF.a(1.0f);
-        gameEngine.renderGraphicsEngine.b(rect, this.bF);
+        this.tempStrokePaint.b(i);
+        this.tempStrokePaint.a(Paint.Style.STROKE);
+        this.tempStrokePaint.a(1.0f);
+        gameEngine.renderGraphicsEngine.b(rect, this.tempStrokePaint);
         if (this.isUILoggingEnabled) {
-            this.bF.b(Color.a(255, 116, 136, 160));
+            this.tempStrokePaint.b(Color.a(255, 116, 136, 160));
             int i2 = 1;
             if (z && rect.b() > 100) {
                 i2 = 2;
             }
-            this.bF.a(i2);
-            this.bz.a(rect);
-            this.bz.d -= i2;
-            this.bz.b += i2;
-            this.bz.a += i2;
-            this.bz.c -= i2;
-            gameEngine.renderGraphicsEngine.b(this.bz, this.bF);
+            this.tempStrokePaint.a(i2);
+            this.tempInsetRect.a(rect);
+            this.tempInsetRect.d -= i2;
+            this.tempInsetRect.b += i2;
+            this.tempInsetRect.a += i2;
+            this.tempInsetRect.c -= i2;
+            gameEngine.renderGraphicsEngine.b(this.tempInsetRect, this.tempStrokePaint);
         }
     }
 
-    public void a(int i, int i2, int i3, int i4, String str, int i5, Paint paint, boolean z, UIStyle uIStyle, UIState uIState) {
+    /* JADX INFO: renamed from: a */
+    public void drawStyledButtonBackground(int i, int i2, int i3, int i4, String str, int i5, Paint paint, boolean z, UIStyle uIStyle, UIState uIState) {
         GameEngine gameEngine = GameEngine.getInstance();
-        this.bx.a(i, i2, i + i3, i2 + i4);
-        this.bF.b(i5);
+        this.tempDrawRect.a(i, i2, i + i3, i2 + i4);
+        this.tempStrokePaint.b(i5);
         if (uIStyle != null) {
-            uIStyle.a(gameEngine.renderGraphicsEngine, this.bx, uIState);
+            uIStyle.draw(gameEngine.renderGraphicsEngine, this.tempDrawRect, uIState);
         } else if (!z) {
-            this.bF.a(Paint.Style.FILL);
-            gameEngine.renderGraphicsEngine.b(this.bx, this.bF);
+            this.tempStrokePaint.a(Paint.Style.FILL);
+            gameEngine.renderGraphicsEngine.b(this.tempDrawRect, this.tempStrokePaint);
         } else {
-            a(this.bx, (Paint) null, this.bF);
+            drawTopBarBackground(this.tempDrawRect, (Paint) null, this.tempStrokePaint);
         }
         if (uIStyle == null) {
             int iA = Color.a(255, 0, 0, 0);
-            if (bO) {
+            if (showModernSidebar) {
                 iA = Color.a(100, 0, 0, 0);
             }
-            a(this.bx, iA, false);
+            drawTooltipInset(this.tempDrawRect, iA, false);
         }
-        a(i, i2, i3, i4, str, i5, paint);
+        drawButtonBackground(i, i2, i3, i4, str, i5, paint);
     }
 
-    public void a(int i, int i2, int i3, int i4, String str, int i5, Paint paint) {
+    /* JADX INFO: renamed from: a */
+    public void drawButtonBackground(int i, int i2, int i3, int i4, String str, int i5, Paint paint) {
         GameEngine gameEngine = GameEngine.getInstance();
-        this.bx.a(i, i2, i + i3, i2 + i4);
+        this.tempDrawRect.a(i, i2, i + i3, i2 + i4);
         if (GameEngine.isPCOrIOSVersion) {
-            gameEngine.renderGraphicsEngine.a(str, this.bx.d(), this.bx.e() + (gameEngine.renderGraphicsEngine.a(str, paint) / 2), paint);
+            gameEngine.renderGraphicsEngine.a(str, this.tempDrawRect.d(), this.tempDrawRect.e() + (gameEngine.renderGraphicsEngine.a(str, paint) / 2), paint);
         } else {
-            gameEngine.renderGraphicsEngine.a(str, this.bx.d(), this.bx.e() - ((paint.l() + paint.m()) / 2.0f), paint);
+            gameEngine.renderGraphicsEngine.a(str, this.tempDrawRect.d(), this.tempDrawRect.e() - ((paint.l() + paint.m()) / 2.0f), paint);
         }
     }
 
@@ -4384,30 +4426,35 @@ public final class GameUI extends Serializable {
         return true;
     }
 
-    public boolean a(int i, int i2, int i3, int i4, String str, IconGroup iconGroup, boolean z, int i5) {
-        return a(i, i2, i3, i4, str, iconGroup, z, i5, this.buildingPreviewPaint, false, null);
+    /* JADX INFO: renamed from: a */
+    public boolean isButtonPressed(int i, int i2, int i3, int i4, String str, IconGroup iconGroup, boolean z, int i5) {
+        return isButtonPressedFull(i, i2, i3, i4, str, iconGroup, z, i5, this.buildingPreviewPaint, false, null);
     }
 
-    public boolean b(int i, int i2, int i3, int i4, String str, IconGroup iconGroup, boolean z, int i5) {
-        return a(i, i2, i3, i4, str, iconGroup, z, i5, this.buildingPreviewPaint, true, null);
+    /* JADX INFO: renamed from: b */
+    public boolean isButtonPressedWithRightClick(int i, int i2, int i3, int i4, String str, IconGroup iconGroup, boolean z, int i5) {
+        return isButtonPressedFull(i, i2, i3, i4, str, iconGroup, z, i5, this.buildingPreviewPaint, true, null);
     }
 
-    public boolean a(int i, int i2, int i3, int i4, String str, IconGroup iconGroup, boolean z, int i5, Paint paint, UIStyle uIStyle) {
-        return a(i, i2, i3, i4, str, iconGroup, z, i5, paint, false, uIStyle);
+    /* JADX INFO: renamed from: a */
+    public boolean isButtonPressedStyled(int i, int i2, int i3, int i4, String str, IconGroup iconGroup, boolean z, int i5, Paint paint, UIStyle uIStyle) {
+        return isButtonPressedFull(i, i2, i3, i4, str, iconGroup, z, i5, paint, false, uIStyle);
     }
 
-    public boolean a(int i, int i2, int i3, int i4, String str, IconGroup iconGroup, boolean z, int i5, Paint paint, boolean z2, UIStyle uIStyle) {
-        boolean zA = a(i, i2, i3, i4, iconGroup);
-        boolean zA2 = a(i, i2, i3, i4, iconGroup, z);
+    /* JADX INFO: renamed from: a */
+    public boolean isButtonPressedFull(int i, int i2, int i3, int i4, String str, IconGroup iconGroup, boolean z, int i5, Paint paint, boolean z2, UIStyle uIStyle) {
+        boolean zA = isRectHovered(i, i2, i3, i4, iconGroup);
+        boolean zA2 = isRectPressed(i, i2, i3, i4, iconGroup, z);
         UIState uIState = UIState.normal;
         if (zA) {
             uIState = UIState.hovered;
         }
-        a(i, i2, i3, i4, str, i5, paint, z2, uIStyle, uIState);
+        drawStyledButtonBackground(i, i2, i3, i4, str, i5, paint, z2, uIStyle, uIState);
         return zA2;
     }
 
-    public void a(Rect rect) {
+    /* JADX INFO: renamed from: a */
+    public void forceModifiersInsideRect(Rect rect) {
         if (rect.b((int) this.selectionBoxMinWidth, (int) this.selectionBoxMinHeight)) {
             this.isKeyboardShiftPressed = true;
             this.isKeyboardCtrlPressed = true;
@@ -4417,32 +4464,36 @@ public final class GameUI extends Serializable {
         }
     }
 
-    public void a(float f, float f2, float f3, float f4) {
+    /* JADX INFO: renamed from: a */
+    public void forceModifiersInsideRect(float f, float f2, float f3, float f4) {
         this.debugTextRect.a((int) f, (int) f2, (int) (f + f3), (int) (f2 + f4));
-        a(this.debugTextRect);
+        forceModifiersInsideRect(this.debugTextRect);
     }
 
-    public boolean a(int i, int i2, int i3, int i4, IconGroup iconGroup, boolean z) {
-        a(i, i2, i3, i4);
-        this.bx.a(i, i2, i + i3, i2 + i4);
-        if (((z && this.isMousePressed) || this.isSelectionBoxActive) && this.bx.b((int) this.selectionBoxStartX, (int) this.selectionBoxStartY)) {
+    /* JADX INFO: renamed from: a */
+    public boolean isRectPressed(int i, int i2, int i3, int i4, IconGroup iconGroup, boolean z) {
+        forceModifiersInsideRect(i, i2, i3, i4);
+        this.tempDrawRect.a(i, i2, i + i3, i2 + i4);
+        if (((z && this.isMousePressed) || this.isSelectionBoxActive) && this.tempDrawRect.b((int) this.selectionBoxStartX, (int) this.selectionBoxStartY)) {
             return true;
         }
         return false;
     }
 
-    public boolean a(int i, int i2, int i3, int i4, IconGroup iconGroup) {
-        this.bx.a(i, i2, i + i3, i2 + i4);
+    /* JADX INFO: renamed from: a */
+    public boolean isRectHovered(int i, int i2, int i3, int i4, IconGroup iconGroup) {
+        this.tempDrawRect.a(i, i2, i + i3, i2 + i4);
         GameEngine gameEngine = GameEngine.getInstance();
-        if (GameEngine.isDesktopMouseInput() && gameEngine.settingsEngine.mouseSupport && this.bx.b((int) gameEngine.getTouchX(), (int) gameEngine.getTouchY())) {
+        if (GameEngine.isDesktopMouseInput() && gameEngine.settingsEngine.mouseSupport && this.tempDrawRect.b((int) gameEngine.getTouchX(), (int) gameEngine.getTouchY())) {
             return true;
         }
         return false;
     }
 
-    public boolean b(int i, int i2, int i3, int i4, IconGroup iconGroup) {
-        this.bx.a(i, i2, i + i3, i2 + i4);
-        if (this.isRightClickDrag && this.bx.b((int) this.selectionBoxStartX, (int) this.selectionBoxStartY)) {
+    /* JADX INFO: renamed from: b */
+    public boolean isRectHoveredRightClick(int i, int i2, int i3, int i4, IconGroup iconGroup) {
+        this.tempDrawRect.a(i, i2, i + i3, i2 + i4);
+        if (this.isRightClickDrag && this.tempDrawRect.b((int) this.selectionBoxStartX, (int) this.selectionBoxStartY)) {
             return true;
         }
         return false;
@@ -4457,12 +4508,13 @@ public final class GameUI extends Serializable {
         return GameEngine.getInstance().unitSelectionFadeBase;
     }
 
-    public void a(MenuDialog menuDialog) {
+    /* JADX INFO: renamed from: a */
+    public void centerAndShowDialog(MenuDialog menuDialog) {
         GameEngine gameEngine = GameEngine.getInstance();
-        menuDialog.u_();
-        menuDialog.c(gameEngine.halfScreenWidth);
-        menuDialog.d(gameEngine.halfScreenHeight);
-        this.rootUIElement.a(menuDialog);
+        menuDialog.layoutIfNeeded();
+        menuDialog.setCenterX(gameEngine.halfScreenWidth);
+        menuDialog.setCenterY(gameEngine.halfScreenHeight);
+        this.rootUIElement.addChild(menuDialog);
     }
 
     /* JADX INFO: renamed from: K */

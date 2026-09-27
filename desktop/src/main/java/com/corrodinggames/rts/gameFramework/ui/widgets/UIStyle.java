@@ -22,101 +22,120 @@ public class UIStyle {
     public UIStyle hoverStyle;
     /* JADX INFO: renamed from: p */
     Texture backgroundTexture;
-    public static final UIStyle j = new UIStyle();
-    public static final UIStyle k = new UIStyle();
-    public static final UIStyle l = new UIStyle();
-    public static final UIStyle m = new UIStyle();
-    public static final UIStyle n = new UIStyle();
-    static Rect w = new Rect();
-    static Rect x = new Rect();
-    static Rect y = new Rect();
-    Paint o = new GamePaint();
-    Paint q = new GamePaint();
-    public int s = 3;
-    public int t = 3;
+    /* JADX INFO: renamed from: j */
+    public static final UIStyle defaultStyle = new UIStyle();
+    /* JADX INFO: renamed from: k */
+    public static final UIStyle hoveredStyle = new UIStyle();
+    /* JADX INFO: renamed from: l */
+    public static final UIStyle noBackgroundStyle = new UIStyle();
+    /* JADX INFO: renamed from: m */
+    public static final UIStyle debugStyle = new UIStyle();
+    /* JADX INFO: renamed from: n */
+    public static final UIStyle solidPanelStyle = new UIStyle();
+    /* JADX INFO: renamed from: w */
+    static Rect workRect = new Rect();
+    /* JADX INFO: renamed from: x */
+    static Rect intRectFromRectF = new Rect();
+    /* JADX INFO: renamed from: y */
+    static Rect growRect = new Rect();
+    /* JADX INFO: renamed from: s */
+    public int shadowOffsetX = 3;
+    /* JADX INFO: renamed from: t */
+    public int shadowOffsetY = 3;
+    /* JADX INFO: renamed from: o */
+    Paint backgroundPaint = new GamePaint();
+    /* JADX INFO: renamed from: q */
+    Paint borderPaint = new GamePaint();
 
-    public static void b() {
-        UIStyle uIStyle = j;
-        uIStyle.o.b(Color.a(140, 100, 100, 100));
-        uIStyle.q.b(-16777216);
-        uIStyle.q.a(Paint.Style.STROKE);
-        UIStyle uIStyle2 = k;
-        uIStyle2.o.b(Color.a(SlickToAndroidKeycodes.AndroidCodes.KEYCODE_STB_INPUT, 100, 100, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_BUTTON_3));
-        uIStyle2.q.b(-16777216);
-        uIStyle2.q.a(Paint.Style.STROKE);
-        UIStyle uIStyle3 = l;
-        uIStyle3.o = null;
-        uIStyle3.q = null;
-        UIStyle uIStyle4 = m;
-        uIStyle4.o = null;
-        uIStyle4.q.b(-65536);
-        uIStyle4.q.c(127);
-        uIStyle4.q.a(Paint.Style.STROKE);
-        UIStyle uIStyle5 = n;
-        uIStyle5.o.c(255);
-        uIStyle5.backgroundTexture = GameEngine.getInstance().gameUI.bl;
-        uIStyle5.q.b(-7829368);
-        uIStyle5.q.c(255);
-        uIStyle5.q.a(Paint.Style.STROKE);
+    /* JADX INFO: renamed from: b */
+    public static void createStyles() {
+        UIStyle uIStyle = defaultStyle;
+        uIStyle.backgroundPaint.b(Color.a(140, 100, 100, 100));
+        uIStyle.borderPaint.b(-16777216);
+        uIStyle.borderPaint.a(Paint.Style.STROKE);
+        UIStyle uIStyle2 = hoveredStyle;
+        uIStyle2.backgroundPaint.b(Color.a(SlickToAndroidKeycodes.AndroidCodes.KEYCODE_STB_INPUT, 100, 100, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_BUTTON_3));
+        uIStyle2.borderPaint.b(-16777216);
+        uIStyle2.borderPaint.a(Paint.Style.STROKE);
+        UIStyle uIStyle3 = noBackgroundStyle;
+        uIStyle3.backgroundPaint = null;
+        uIStyle3.borderPaint = null;
+        UIStyle uIStyle4 = debugStyle;
+        uIStyle4.backgroundPaint = null;
+        uIStyle4.borderPaint.b(-65536);
+        uIStyle4.borderPaint.c(127);
+        uIStyle4.borderPaint.a(Paint.Style.STROKE);
+        UIStyle uIStyle5 = solidPanelStyle;
+        uIStyle5.backgroundPaint.c(255);
+        uIStyle5.backgroundTexture = GameEngine.getInstance().gameUI.metalDarkTexture;
+        uIStyle5.borderPaint.b(-7829368);
+        uIStyle5.borderPaint.c(255);
+        uIStyle5.borderPaint.a(Paint.Style.STROKE);
     }
 
-    public void a(Texture texture) {
+    /* JADX INFO: renamed from: a */
+    public void setBackgroundTexture(Texture texture) {
         this.backgroundTexture = texture;
     }
 
-    public void a(UIStyle uIStyle) {
+    /* JADX INFO: renamed from: a */
+    public void copyFrom(UIStyle uIStyle) {
         this.backgroundTexture = uIStyle.backgroundTexture;
-        if (uIStyle.o != null) {
-            this.o = new Paint(uIStyle.o);
+        if (uIStyle.backgroundPaint != null) {
+            this.backgroundPaint = new Paint(uIStyle.backgroundPaint);
         } else {
-            this.o = null;
+            this.backgroundPaint = null;
         }
-        if (uIStyle.q != null) {
-            this.q = new Paint(uIStyle.q);
+        if (uIStyle.borderPaint != null) {
+            this.borderPaint = new Paint(uIStyle.borderPaint);
         } else {
-            this.q = null;
+            this.borderPaint = null;
         }
     }
 
-    public void a(GraphicsEngine graphicsEngine, RectF rectF) {
-        x.a = (int) rectF.a;
-        x.b = (int) rectF.b;
-        x.c = (int) rectF.c;
-        x.d = (int) rectF.d;
-        a(graphicsEngine, x, UIState.normal);
+    /* JADX INFO: renamed from: a */
+    public void draw(GraphicsEngine graphicsEngine, RectF rectF) {
+        intRectFromRectF.a = (int) rectF.a;
+        intRectFromRectF.b = (int) rectF.b;
+        intRectFromRectF.c = (int) rectF.c;
+        intRectFromRectF.d = (int) rectF.d;
+        draw(graphicsEngine, intRectFromRectF, UIState.normal);
     }
 
-    public void c(GraphicsEngine graphicsEngine, Rect rect) {
-        a(graphicsEngine, rect, UIState.normal);
+    /* JADX INFO: renamed from: c */
+    public void drawNormal(GraphicsEngine graphicsEngine, Rect rect) {
+        draw(graphicsEngine, rect, UIState.normal);
     }
 
-    public void a(GraphicsEngine graphicsEngine, Rect rect, UIState uIState) {
+    /* JADX INFO: renamed from: a */
+    public void draw(GraphicsEngine graphicsEngine, Rect rect, UIState uIState) {
         if (this.paddingSize > 0) {
-            y.a(rect);
-            rect = y;
+            growRect.a(rect);
+            rect = growRect;
             Utility.grow(rect, this.paddingSize);
         }
         if (this.normalStyle != null) {
-            w.a(rect);
-            w.a(this.s, this.t);
-            this.normalStyle.a(graphicsEngine, w);
+            workRect.a(rect);
+            workRect.a(this.shadowOffsetX, this.shadowOffsetY);
+            this.normalStyle.drawBackground(graphicsEngine, workRect);
         }
         if (uIState == UIState.hovered && this.hoverStyle != null) {
-            this.hoverStyle.a(graphicsEngine, rect);
+            this.hoverStyle.drawBackground(graphicsEngine, rect);
         } else {
-            a(graphicsEngine, rect);
+            drawBackground(graphicsEngine, rect);
         }
     }
 
-    public void a(GraphicsEngine graphicsEngine, Rect rect) {
+    /* JADX INFO: renamed from: a */
+    public void drawBackground(GraphicsEngine graphicsEngine, Rect rect) {
         GameEngine gameEngine = GameEngine.getInstance();
         if (this.backgroundTexture != null) {
-            gameEngine.renderGraphicsEngine.a(this.backgroundTexture, rect, this.o, 0, 0, 0, 0);
-        } else if (this.o != null) {
-            graphicsEngine.b(rect, this.o);
+            gameEngine.renderGraphicsEngine.a(this.backgroundTexture, rect, this.backgroundPaint, 0, 0, 0, 0);
+        } else if (this.backgroundPaint != null) {
+            graphicsEngine.b(rect, this.backgroundPaint);
         }
-        if (this.q != null) {
-            graphicsEngine.b(rect, this.q);
+        if (this.borderPaint != null) {
+            graphicsEngine.b(rect, this.borderPaint);
         }
     }
 }

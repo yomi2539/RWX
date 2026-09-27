@@ -253,12 +253,12 @@ public class PowerFabricator extends FactoryWithQueue {
         gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
         Effect effectCreateSmallExplosion = gameEngine.effectManager.createSmallExplosion(this.posX, this.posY, this.posZ, -1127220);
         if (effectCreateSmallExplosion != null) {
-            effectCreateSmallExplosion.G = 0.15f;
-            effectCreateSmallExplosion.F = 1.0f;
-            effectCreateSmallExplosion.ar = (short) 2;
-            effectCreateSmallExplosion.V = 35.0f;
-            effectCreateSmallExplosion.W = effectCreateSmallExplosion.V;
-            effectCreateSmallExplosion.U = 0.0f;
+            effectCreateSmallExplosion.scaleFrom = 0.15f;
+            effectCreateSmallExplosion.scaleTo = 1.0f;
+            effectCreateSmallExplosion.drawLayer = (short) 2;
+            effectCreateSmallExplosion.lifeTimer = 35.0f;
+            effectCreateSmallExplosion.lifeMax = effectCreateSmallExplosion.lifeTimer;
+            effectCreateSmallExplosion.delayedStartTimer = 0.0f;
             effectCreateSmallExplosion.startColor = -14492382;
         }
         bo();

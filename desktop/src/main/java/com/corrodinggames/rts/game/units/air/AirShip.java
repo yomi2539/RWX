@@ -120,7 +120,7 @@ public class AirShip extends AirUnit {
         GameEngine gameEngine = GameEngine.getInstance();
         Effect effectCreateFlameEffect = gameEngine.effectManager.createFlameEffect(pointFE.x, pointFE.y, this.posZ, this.movementLevels[i].targetX);
         if (effectCreateFlameEffect != null) {
-            effectCreateFlameEffect.aq = 10;
+            effectCreateFlameEffect.stripIndex = 10;
         }
         gameEngine.soundEngine.playSoundAt(SoundEngine.plasmaFireSound, 0.14f, 1.0f + Utility.randomFloatInRange(-0.1f, 0.1f), pointFE.x, pointFE.y);
     }

@@ -816,7 +816,7 @@ public abstract class PlayerTeam extends Serializable implements Comparable<Play
             if (!playerTeam.isTeamActive) {
                 playerTeam.isTeamActive = true;
             }
-            playerTeam.T();
+            playerTeam.onTeamActivated();
         }
     }
 
@@ -959,22 +959,13 @@ public abstract class PlayerTeam extends Serializable implements Comparable<Play
         return z;
     }
 
-    public void d(boolean z) {
-        if (!z && !this.isTeamReady) {
-            return;
+    public static void b(OrderableUnit orderableUnit) {
+        for (int i = 0; i < TEAM_NEUTRAL; i++) {
+            PlayerTeam playerTeam = teamColorArray[i];
+            if (playerTeam != null) {
+                playerTeam.onUnitBuilt(orderableUnit);
+            }
         }
-        this.teamStatistics = e(true);
-        this.isTeamReady = false;
-        if (this.maxNonBuildingUnitCountIncludingQueued < this.teamStatistics.unitCount) {
-            this.maxNonBuildingUnitCountIncludingQueued = this.teamStatistics.unitCount;
-        }
-        if (!this.isTeamControlledByAI && this.teamStatistics.hasAdvancedUnit) {
-            this.isTeamControlledByAI = true;
-        }
-        if (!this.isTeamActive && getTotalUnitCountIncludingQueued() > 0) {
-            this.isTeamActive = true;
-        }
-        T();
     }
 
     /* JADX INFO: renamed from: v */
@@ -1702,16 +1693,26 @@ public abstract class PlayerTeam extends Serializable implements Comparable<Play
         }
     }
 
-    public void a(OrderableUnit orderableUnit) {
+    public void d(boolean z) {
+        if (!z && !this.isTeamReady) {
+            return;
+        }
+        this.teamStatistics = e(true);
+        this.isTeamReady = false;
+        if (this.maxNonBuildingUnitCountIncludingQueued < this.teamStatistics.unitCount) {
+            this.maxNonBuildingUnitCountIncludingQueued = this.teamStatistics.unitCount;
+        }
+        if (!this.isTeamControlledByAI && this.teamStatistics.hasAdvancedUnit) {
+            this.isTeamControlledByAI = true;
+        }
+        if (!this.isTeamActive && getTotalUnitCountIncludingQueued() > 0) {
+            this.isTeamActive = true;
+        }
+        onTeamActivated();
     }
 
-    public static void b(OrderableUnit orderableUnit) {
-        for (int i = 0; i < TEAM_NEUTRAL; i++) {
-            PlayerTeam playerTeam = teamColorArray[i];
-            if (playerTeam != null) {
-                playerTeam.a(orderableUnit);
-            }
-        }
+    /* JADX INFO: renamed from: a */
+    public void onUnitBuilt(OrderableUnit orderableUnit) {
     }
 
     public static void a(BaseUnit baseUnit) {
@@ -1874,7 +1875,8 @@ public abstract class PlayerTeam extends Serializable implements Comparable<Play
         return i;
     }
 
-    public void T() {
+    /* JADX INFO: renamed from: T */
+    public void onTeamActivated() {
     }
 
     public void a(AnimationSet animationSet) {
@@ -1946,7 +1948,8 @@ public abstract class PlayerTeam extends Serializable implements Comparable<Play
         throw new RuntimeException("Unsupported type: " + teamRelation);
     }
 
-    public void d(BaseUnit baseUnit) {
+    /* JADX INFO: renamed from: d */
+    public void onUnitRemoved(BaseUnit baseUnit) {
     }
 
     /* JADX INFO: renamed from: W */

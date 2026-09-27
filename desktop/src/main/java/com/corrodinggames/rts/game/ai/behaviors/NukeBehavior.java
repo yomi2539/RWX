@@ -13,29 +13,34 @@ import com.corrodinggames.rts.game.units.custom.logic.ActionType;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.a.a.d */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/a/a/d.class */
 public class NukeBehavior extends UnitAIBehavior {
-    public final boolean b = true;
-    static final AnimationTag c = AnimationTag.c("nukeLauncher");
+    /* JADX INFO: renamed from: c */
+    static final AnimationTag nukeLauncherTag = AnimationTag.c("nukeLauncher");
+    /* JADX INFO: renamed from: b */
+    public final boolean isNukeBehavior = true;
 
     @Override // com.corrodinggames.rts.game.ai.behaviors.AIBehavior
-    public AIBehaviorType a() {
+    /* JADX INFO: renamed from: a */
+    public AIBehaviorType getBehaviorType() {
         return AIBehaviorType.nuking;
     }
 
     @Override // com.corrodinggames.rts.game.ai.behaviors.UnitAIBehavior
     /* JADX INFO: renamed from: c */
     public boolean isApplicableToUnit(AIController aIController, OrderableUnit orderableUnit) {
-        return a(orderableUnit);
+        return isNukeLauncher(orderableUnit);
     }
 
-    public PointF d(AIController aIController, OrderableUnit orderableUnit) {
+    /* JADX INFO: renamed from: d */
+    public PointF getNukeTargetPosition(AIController aIController, OrderableUnit orderableUnit) {
         return aIController.getRandomEligibleUnitPosition();
     }
 
-    public void e(AIController aIController, OrderableUnit orderableUnit) {
-        AbstractUnitAction abstractUnitActionA = AIUnitActionUtils.a(aIController, orderableUnit, ActionType.launch);
+    /* JADX INFO: renamed from: e */
+    public void tryLaunchNuke(AIController aIController, OrderableUnit orderableUnit) {
+        AbstractUnitAction abstractUnitActionA = AIUnitActionUtils.findAvailableAction(aIController, orderableUnit, ActionType.launch);
         if (abstractUnitActionA != null) {
             if (abstractUnitActionA.b(orderableUnit) && abstractUnitActionA.canAfford((BaseUnit) orderableUnit, false)) {
-                PointF pointFD = d(aIController, orderableUnit);
+                PointF pointFD = getNukeTargetPosition(aIController, orderableUnit);
                 if (pointFD != null) {
                     aIController.c("nuke: launching at:" + pointFD.x + ", " + pointFD.y);
                     aIController.pathCheck(orderableUnit, abstractUnitActionA, pointFD, (BaseUnit) null);
@@ -50,29 +55,32 @@ public class NukeBehavior extends UnitAIBehavior {
     }
 
     /* JADX WARN: Multi-variable type inference failed */
-    public void f(AIController aIController, OrderableUnit orderableUnit) {
+    /* JADX INFO: renamed from: f */
+    public void tryLaunchAmmo(AIController aIController, OrderableUnit orderableUnit) {
         AbstractUnitAction abstractUnitActionA;
-        if ((orderableUnit instanceof FactoryQueueInterface) && ((FactoryQueueInterface) orderableUnit).dy() && (abstractUnitActionA = AIUnitActionUtils.a(aIController, orderableUnit, ActionType.launchAmmo)) != null && aIController.isPathPossibleBetweenPoints(abstractUnitActionA.getPrice(), orderableUnit)) {
+        if ((orderableUnit instanceof FactoryQueueInterface) && ((FactoryQueueInterface) orderableUnit).dy() && (abstractUnitActionA = AIUnitActionUtils.findAvailableAction(aIController, orderableUnit, ActionType.launchAmmo)) != null && aIController.isPathPossibleBetweenPoints(abstractUnitActionA.getPrice(), orderableUnit)) {
             aIController.c("ai nuke building");
             aIController.issueUnitAction(orderableUnit, abstractUnitActionA);
         }
     }
 
-    public boolean a(OrderableUnit orderableUnit) {
-        if (AIUnitActionUtils.a(orderableUnit, c)) {
+    /* JADX INFO: renamed from: a */
+    public boolean isNukeLauncher(OrderableUnit orderableUnit) {
+        if (AIUnitActionUtils.hasAiTag(orderableUnit, nukeLauncherTag)) {
             return true;
         }
         return false;
     }
 
     @Override // com.corrodinggames.rts.game.ai.behaviors.AIBehavior
-    public void b(float f, AIController aIController) {
+    /* JADX INFO: renamed from: b */
+    public void updateCore(float f, AIController aIController) {
         BaseUnit[] baseUnitArrA = this.managedUnits.a();
         int size = this.managedUnits.size();
         for (int i = 0; i < size; i++) {
             OrderableUnit orderableUnit = (OrderableUnit) baseUnitArrA[i];
-            f(aIController, orderableUnit);
-            e(aIController, orderableUnit);
+            tryLaunchAmmo(aIController, orderableUnit);
+            tryLaunchNuke(aIController, orderableUnit);
         }
     }
 }

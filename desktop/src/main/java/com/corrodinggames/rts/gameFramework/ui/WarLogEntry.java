@@ -27,9 +27,11 @@ abstract class WarLogEntry implements Comparable<WarLogEntry> {
     /* JADX INFO: renamed from: i */
     boolean alwaysShow;
 
-    public abstract void b(WarLogEntry warLogEntry);
+    /* JADX INFO: renamed from: b */
+    public abstract void mergeWith(WarLogEntry warLogEntry);
 
-    public abstract String a();
+    /* JADX INFO: renamed from: a */
+    public abstract String getDisplayText();
 
     public WarLogEntry(float f, float f2) {
         this.x = f;
@@ -42,14 +44,14 @@ abstract class WarLogEntry implements Comparable<WarLogEntry> {
         return (int) (warLogEntry.timestamp - this.timestamp);
     }
 
-    public boolean a(WarLogEntry warLogEntry) {
-        if (this.timestamp + b() < System.currentTimeMillis() || Utility.distanceSq(this.x, this.y, warLogEntry.x, warLogEntry.y) > 90000.0f) {
+    public boolean canMergeWith(WarLogEntry warLogEntry) {
+        if (this.timestamp + getDisplayDurationMs() < System.currentTimeMillis() || Utility.distanceSq(this.x, this.y, warLogEntry.x, warLogEntry.y) > 90000.0f) {
             return false;
         }
         return true;
     }
 
-    protected long b() {
+    protected long getDisplayDurationMs() {
         return 5000L;
     }
 }

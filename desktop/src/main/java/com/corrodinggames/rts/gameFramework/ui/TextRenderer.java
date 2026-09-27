@@ -17,20 +17,23 @@ public class TextRenderer extends RenderElement {
         this.text = str;
     }
 
-    public Paint b(Paint paint) {
+    /* JADX INFO: renamed from: b */
+    public Paint resolvePaint(Paint paint) {
         return paint;
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.RenderElement
-    public int a(Paint paint) {
+    /* JADX INFO: renamed from: a */
+    public int measureWidth(Paint paint) {
         GameEngine gameEngine = GameEngine.getInstance();
-        int iB = gameEngine.renderGraphicsEngine.b(this.text, b(paint));
+        int iB = gameEngine.renderGraphicsEngine.b(this.text, resolvePaint(paint));
         if (GameEngine.isAndroidPlatform()) {
         }
         return iB;
     }
 
-    public TextRenderer b(String str) {
+    /* JADX INFO: renamed from: b */
+    public TextRenderer withText(String str) {
         return new TextRenderer(this.e, str);
     }
 }

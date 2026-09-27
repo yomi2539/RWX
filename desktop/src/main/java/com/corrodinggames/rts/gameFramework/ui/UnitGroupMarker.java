@@ -14,7 +14,8 @@ import java.util.Iterator;
 /* JADX INFO: renamed from: com.corrodinggames.rts.gameFramework.f.am */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/gameFramework/f/am.class */
 public class UnitGroupMarker extends Serializable {
-    private final GameInterfaceRenderer i;
+    /* JADX INFO: renamed from: i */
+    private final GameInterfaceRenderer interfaceRenderer;
 
     /* JADX INFO: renamed from: a */
     public ArrayList<BaseUnit> units = new ArrayList();
@@ -25,38 +26,45 @@ public class UnitGroupMarker extends Serializable {
     /* JADX INFO: renamed from: c */
     public long lastClickTime;
 
-    public float d;
-    public float e;
-    public float f;
+    /* JADX INFO: renamed from: d */
+    public float posX;
+    /* JADX INFO: renamed from: e */
+    public float posY;
+    /* JADX INFO: renamed from: f */
+    public float drawScale;
 
     /* JADX INFO: renamed from: g */
     public boolean isHotkey;
 
-    public boolean h;
+    /* JADX INFO: renamed from: h */
+    public boolean isValid;
 
     public UnitGroupMarker(GameInterfaceRenderer gameInterfaceRenderer, boolean z) {
-        this.i = gameInterfaceRenderer;
+        this.interfaceRenderer = gameInterfaceRenderer;
         this.isHotkey = z;
     }
 
-    public void a() {
+    /* JADX INFO: renamed from: a */
+    public void selectGroup() {
         BaseUnit baseUnit = null;
         for (BaseUnit baseUnit2 : this.units) {
-            if (!baseUnit2.isDead && baseUnit2.transportContainer == null && this.i.gameUI.selectUnit(baseUnit2) && baseUnit2.isVisibleToLocalPlayer()) {
+            if (!baseUnit2.isDead && baseUnit2.transportContainer == null && this.interfaceRenderer.gameUI.selectUnit(baseUnit2) && baseUnit2.isVisibleToLocalPlayer()) {
                 baseUnit = baseUnit2;
             }
         }
         if (this.lastClickTime > GameEngine.getCurrentTimeMillis() - 700 && baseUnit != null) {
-            this.i.gameEngine.centerViewpoint(baseUnit.posX, baseUnit.posY);
+            this.interfaceRenderer.gameEngine.centerViewpoint(baseUnit.posX, baseUnit.posY);
         }
         this.lastClickTime = GameEngine.getCurrentTimeMillis();
     }
 
-    public void b() {
+    /* JADX INFO: renamed from: b */
+    public void clearUnits() {
         this.units.clear();
     }
 
-    public void c() {
+    /* JADX INFO: renamed from: c */
+    public void addSelectedUnits() {
         for (GameObject gameObject : GameObject.fastGameObjectList) {
             if (gameObject instanceof OrderableUnit) {
                 OrderableUnit orderableUnit = (OrderableUnit) gameObject;
@@ -69,7 +77,7 @@ public class UnitGroupMarker extends Serializable {
 
     @Override // com.corrodinggames.rts.gameFramework.Serializable
     public void a(GameOutputStream gameOutputStream) throws IOException {
-        d();
+        removeDeadUnits();
         gameOutputStream.writeFloat(this.radius);
         gameOutputStream.writeLong(this.lastClickTime);
         gameOutputStream.writeInt(this.units.size());
@@ -94,7 +102,7 @@ public class UnitGroupMarker extends Serializable {
         gameInputStream.readByte();
     }
 
-    public void d() {
+    public void removeDeadUnits() {
         if (this.units.size() == 0) {
             return;
         }
@@ -106,7 +114,7 @@ public class UnitGroupMarker extends Serializable {
         }
     }
 
-    public void e() {
+    public void refreshUnitReferences() {
         if (this.units.size() == 0) {
             return;
         }

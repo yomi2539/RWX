@@ -9,16 +9,18 @@ class StringLogEntry extends WarLogEntry {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public boolean a(WarLogEntry warLogEntry) {
+    /* JADX INFO: renamed from: a */
+    public boolean canMergeWith(WarLogEntry warLogEntry) {
         return false;
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public void b(WarLogEntry warLogEntry) {
+    /* JADX INFO: renamed from: b */
+    public void mergeWith(WarLogEntry warLogEntry) {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public String a() {
+    public String getDisplayText() {
         return this.text;
     }
 }

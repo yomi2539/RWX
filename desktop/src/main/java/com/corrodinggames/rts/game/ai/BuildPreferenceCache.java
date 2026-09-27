@@ -7,45 +7,54 @@ import java.util.HashMap;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.a.c */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/a/c.class */
 public class BuildPreferenceCache {
-    HashMap a = new HashMap();
-    HashMap b = new HashMap();
-    HashMap c = new HashMap();
+    /* JADX INFO: renamed from: a */
+    HashMap unitCountWithQueueCache = new HashMap();
+    /* JADX INFO: renamed from: b */
+    HashMap unitCountCache = new HashMap();
+    /* JADX INFO: renamed from: c */
+    HashMap buildingUnitCountCache = new HashMap();
 
-    public Integer a(boolean z, UnitType unitType, boolean z2) {
+    /* JADX INFO: renamed from: a */
+    public Integer getCachedCount(boolean z, UnitType unitType, boolean z2) {
         if (z) {
-            return (Integer) this.c.get(unitType);
+            return (Integer) this.buildingUnitCountCache.get(unitType);
         }
         if (!z2) {
-            return (Integer) this.b.get(unitType);
+            return (Integer) this.unitCountCache.get(unitType);
         }
-        return (Integer) this.a.get(unitType);
+        return (Integer) this.unitCountWithQueueCache.get(unitType);
     }
 
-    public void a(boolean z, UnitType unitType, boolean z2, Integer num) {
+    /* JADX INFO: renamed from: a */
+    public void putCachedCount(boolean z, UnitType unitType, boolean z2, Integer num) {
         if (z) {
-            this.c.put(unitType, num);
+            this.buildingUnitCountCache.put(unitType, num);
         } else if (!z2) {
-            this.b.put(unitType, num);
+            this.unitCountCache.put(unitType, num);
         } else {
-            this.a.put(unitType, num);
+            this.unitCountWithQueueCache.put(unitType, num);
         }
     }
 
-    public void a() {
-        this.a.clear();
-        this.b.clear();
+    /* JADX INFO: renamed from: a */
+    public void clearUnitCountCaches() {
+        this.unitCountWithQueueCache.clear();
+        this.unitCountCache.clear();
     }
 
-    public void a(UnitType unitType) {
-        this.a.put(unitType, null);
-        this.b.put(unitType, null);
+    /* JADX INFO: renamed from: a */
+    public void invalidateUnitType(UnitType unitType) {
+        this.unitCountWithQueueCache.put(unitType, null);
+        this.unitCountCache.put(unitType, null);
     }
 
-    public void a(OrderableUnit orderableUnit) {
-        this.c.put(orderableUnit.unitType, null);
+    /* JADX INFO: renamed from: a */
+    public void invalidateBuiltUnit(OrderableUnit orderableUnit) {
+        this.buildingUnitCountCache.put(orderableUnit.unitType, null);
     }
 
-    public void b() {
-        this.c.clear();
+    /* JADX INFO: renamed from: b */
+    public void clearBuildingCaches() {
+        this.buildingUnitCountCache.clear();
     }
 }

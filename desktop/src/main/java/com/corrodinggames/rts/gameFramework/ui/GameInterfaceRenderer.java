@@ -78,7 +78,8 @@ public class GameInterfaceRenderer extends Serializable {
 
     /* JADX INFO: renamed from: G */
     float mouseWheelZoomAccumulator;
-    int H;
+    /* JADX INFO: renamed from: H */
+    int nextKeyBindingIndex;
 
     /* JADX INFO: renamed from: I */
     boolean isMultiTouchZooming;
@@ -250,7 +251,8 @@ public class GameInterfaceRenderer extends Serializable {
 
     /* JADX INFO: renamed from: aq */
     ArrayList unitList = new ArrayList();
-    UnitInfoAction ar = new UnitInfoAction(false);
+    /* JADX INFO: renamed from: ar */
+    UnitInfoAction unitInfoActionDefault = new UnitInfoAction(false);
 
     /* JADX INFO: renamed from: as */
     UnitInfoAction unitInfoAction = new UnitInfoAction(true);
@@ -272,7 +274,8 @@ public class GameInterfaceRenderer extends Serializable {
 
     /* JADX INFO: renamed from: ay */
     RectF rectF = new RectF();
-    HashMap az = new HashMap();
+    /* JADX INFO: renamed from: az */
+    HashMap keyBindingActionMap = new HashMap();
 
     /* JADX INFO: renamed from: aA */
     ArrayList unitGroupMarkers = new ArrayList();
@@ -357,6 +360,229 @@ public class GameInterfaceRenderer extends Serializable {
         return this.gameEngine.currentScreenHeightPixels / this.gameEngine.tileMap.getWorldHeight();
     }
 
+    public static String clearMessageIfSame(BaseUnit baseUnit, boolean z, boolean z2, boolean z3) {
+        String str;
+        ModInfo modInfo;
+        if (z2) {
+            str = "\n";
+        } else {
+            str = " | ";
+        }
+        String str2 = VariableScope.nullOrMissingString;
+        CustomUnit customUnit = null;
+        CustomUnitConfig customUnitConfig = null;
+        if (baseUnit instanceof CustomUnit) {
+            customUnit = (CustomUnit) baseUnit;
+            customUnitConfig = customUnit.unitConfig;
+        }
+        if (z) {
+            str2 = str2 + baseUnit.r().getUnitName() + str;
+        }
+        if (customUnitConfig == null || !customUnitConfig.canNotBeDirectlyAttacked) {
+            if (!z3) {
+                str2 = str2 + "HP: " + ((int) Math.ceil(baseUnit.currentHealth)) + "/" + ((int) baseUnit.maxHealth) + str;
+            } else {
+                str2 = str2 + "HP: " + ((int) baseUnit.maxHealth) + str;
+            }
+        }
+        if (baseUnit.unitEnergyMax != 0.0f) {
+            if (!z3) {
+                str2 = str2 + "Shield: " + ((int) baseUnit.shield) + "/" + ((int) baseUnit.unitEnergyMax) + str;
+            } else {
+                str2 = str2 + "Shield: " + ((int) baseUnit.unitEnergyMax) + str;
+            }
+        }
+        if (customUnit != null) {
+            float f = customUnit.y.armour;
+            if (f >= 1.0f) {
+                str2 = str2 + "Armour: " + ((int) f) + str;
+            }
+        }
+        UnitPrice unitPriceDq = baseUnit.dq();
+        float fCy = baseUnit.getCreditIncomeRate();
+        if (unitPriceDq != null) {
+            fCy += unitPriceDq.a();
+        }
+        if (fCy != 0.0f) {
+            if (fCy < 0.0f) {
+                str2 = str2 + "Income: -$" + Utility.padString(-fCy, 1) + str;
+            } else {
+                str2 = str2 + "Income: +$" + Utility.padString(fCy, 1) + str;
+            }
+        }
+        if (baseUnit instanceof OrderableUnit) {
+            OrderableUnit orderableUnit = (OrderableUnit) baseUnit;
+            if (orderableUnit.bd() != 0.0f && !z3) {
+                str2 = str2 + "Energy: " + Utility.padString(baseUnit.currentEnergy) + "/" + Utility.padString(orderableUnit.bd()) + str;
+            }
+            float moveSpeed = orderableUnit.getMoveSpeed();
+            if (!orderableUnit.canExecuteMovementCommands()) {
+                moveSpeed = 0.0f;
+            }
+            if (moveSpeed != 0.0f) {
+                str2 = str2 + "Speed: " + Utility.padString(moveSpeed) + str;
+            }
+            if (orderableUnit.canAttack()) {
+                ArrayList<UnitStatistics> arrayListCollectMovementLevelStatistics = orderableUnit.collectMovementLevelStatistics();
+                if (arrayListCollectMovementLevelStatistics.size() > 0) {
+                    String str3 = str2 + "Attack: ";
+                    boolean z4 = true;
+                    for (UnitStatistics unitStatistics : arrayListCollectMovementLevelStatistics) {
+                        if (!z4) {
+                            str3 = str3 + ", ";
+                        }
+                        z4 = false;
+                        String str4 = str3 + Utility.padString(unitStatistics.a);
+                        if (unitStatistics.count > 1) {
+                            str4 = str4 + "x" + unitStatistics.count;
+                        }
+                        str3 = str4 + "/" + Utility.padString(unitStatistics.a()) + "s";
+                    }
+                    str2 = str3 + str;
+                }
+            }
+            float fM = orderableUnit.m();
+            if (!orderableUnit.canAttack()) {
+                fM = 0.0f;
+            }
+            if (fM != 0.0f) {
+                str2 = str2 + "Range: " + Utility.padString(fM) + str;
+            }
+            if (z3 && orderableUnit.isUpgradeable()) {
+                str2 = str2 + "Upgradable" + str;
+            }
+        }
+        if (!z3 && baseUnit.killCount > 0) {
+            str2 = str2 + "Kills: " + baseUnit.killCount + str;
+        }
+        boolean z5 = false;
+        if (GameEngine.getInstance().isDebugTempMode) {
+            UnitType unitTypeR = baseUnit.r();
+            str2 = ((str2 + "\n") + "--Debug--" + str) + "name: " + unitTypeR.getUnitTypeDescriptionShort() + str;
+            if ((unitTypeR instanceof CustomUnitConfig) && (modInfo = ((CustomUnitConfig) unitTypeR).modInfo) != null) {
+                str2 = str2 + "(mod: " + Utility.truncateToLength(modInfo.getDisplayTitle(), 30) + ")" + str;
+            }
+            if (baseUnit.objectId != 0) {
+                str2 = str2 + "id: " + baseUnit.objectId + str;
+            }
+            if (baseUnit.unitFlags != 0) {
+                String str5 = VariableScope.nullOrMissingString;
+                for (int i = 0; i < 32; i++) {
+                    if (UnitPrice.a(baseUnit.unitFlags, i)) {
+                        if (str5.length() > 0) {
+                            str5 = str5 + ",";
+                        }
+                        str5 = str5 + i;
+                    }
+                }
+                str2 = str2 + "flags: " + str5 + str;
+            }
+            if (baseUnit.ammo != 0) {
+                str2 = str2 + "ammo: " + baseUnit.ammo + str;
+            }
+            if (!baseUnit.isUnitParalyzed) {
+                str2 = (str2 + "x: " + Utility.padString(baseUnit.posX) + str) + "y: " + Utility.padString(baseUnit.posY) + str;
+            }
+            if (baseUnit.velocityX != 0.0f || baseUnit.velocityY != 0.0f) {
+                str2 = str2 + "x/y speed: " + Utility.padString(baseUnit.velocityX) + ", " + Utility.padString(baseUnit.velocityY) + str;
+            }
+            if (!baseUnit.isUnitParalyzed) {
+                str2 = (str2 + "height: " + Utility.padString(baseUnit.posZ) + str) + "dir: " + Utility.padString(baseUnit.rotationSpeed) + str;
+            }
+            if (baseUnit.buildProgress < 1.0f) {
+                str2 = str2 + "built: " + Utility.padString(baseUnit.buildProgress) + str;
+            }
+            if (baseUnit instanceof CustomUnit) {
+                CustomUnit customUnit2 = (CustomUnit) baseUnit;
+                str2 = (str2 + "frame: " + customUnit2.animationFrameIndex + str) + "drawLayer: " + customUnit2.drawLayer + str;
+                if (customUnit2.getTags() != null) {
+                    str2 = str2 + "tags: " + customUnit2.getTags() + str;
+                }
+                if (customUnit2.parentEntity != null) {
+                    str2 = str2 + "attachedTo: " + customUnit2.parentEntity.getUnitDebugName() + str;
+                }
+                if (customUnit2.unitTarget2 != null && !customUnit2.unitTarget2.isDead) {
+                    str2 = str2 + "customTarget1: " + customUnit2.unitTarget2.getUnitDebugName() + str;
+                }
+                if (customUnit2.unitTarget3 != null && !customUnit2.unitTarget3.isDead) {
+                    str2 = str2 + "customTarget2: " + customUnit2.unitTarget3.getUnitDebugName() + str;
+                }
+                if (customUnit2.customTimerStamp != -9999) {
+                    str2 = str2 + "customTimer: " + Utility.formatSeconds(customUnit2.customTimerStamp / 1000.0f) + str;
+                }
+                if (customUnit2.unitVariables != null && !customUnit2.unitVariables.isEmpty()) {
+                    str2 = str2 + "-- memory --: " + str + customUnit2.unitVariables.debugMemory(true, true) + str;
+                }
+            }
+            z5 = true;
+        }
+        StoredResources unitAICombatRange = baseUnit.getCustomResources();
+        if (unitAICombatRange != null && !unitAICombatRange.c()) {
+            String strA = unitAICombatRange.a(z2, true, 10, z5, false);
+            if (!strA.equals(VariableScope.nullOrMissingString)) {
+                str2 = str2 + strA + str;
+            }
+        }
+        return Utility.removeSuffix(str2, str);
+    }
+
+    public static boolean getKeyBindingForAction(AbstractUnitAction abstractUnitAction) {
+        return GameEngine.getInstance().isDemo && abstractUnitAction.isQueuable();
+    }
+
+    public static boolean isActionVisibleForSelection(BaseUnit baseUnit, BaseUnit baseUnit2) {
+        UnitType unitTypeR = baseUnit.r();
+        UnitType unitTypeR2 = baseUnit2.r();
+        if (unitTypeR == unitTypeR2) {
+            return true;
+        }
+        if ((unitTypeR instanceof CustomUnitConfig) && (unitTypeR2 instanceof CustomUnitConfig)) {
+            CustomUnitConfig customUnitConfig = (CustomUnitConfig) unitTypeR;
+            CustomUnitConfig customUnitConfig2 = (CustomUnitConfig) unitTypeR2;
+            if (customUnitConfig.relatedUnits.contains(unitTypeR2)) {
+                return true;
+            }
+            if (customUnitConfig.showActionsWithMixedSelectionIfOtherUnitsHaveTag != null && AnimationTag.a(customUnitConfig.showActionsWithMixedSelectionIfOtherUnitsHaveTag, customUnitConfig2.x())) {
+                return true;
+            }
+            if (customUnitConfig2.showActionsWithMixedSelectionIfOtherUnitsHaveTag != null && AnimationTag.a(customUnitConfig2.showActionsWithMixedSelectionIfOtherUnitsHaveTag, customUnitConfig.x())) {
+                return true;
+            }
+            return false;
+        }
+        return false;
+    }
+
+    public static String isUnitOnScreen(AbstractUnitAction abstractUnitAction, boolean z) {
+        String str;
+        if (z) {
+            str = "\n";
+        } else {
+            str = " | ";
+        }
+        String str2 = VariableScope.nullOrMissingString;
+        if (abstractUnitAction instanceof PopupQueueAction) {
+            PopupQueueAction popupQueueAction = (PopupQueueAction) abstractUnitAction;
+            if (popupQueueAction.K() < 1.0f) {
+                GameEngine gameEngine = GameEngine.getInstance();
+                float f = -1.0f;
+                BaseUnit[] baseUnitArrA = gameEngine.gameUI.selectedUnitsList.a();
+                int size = gameEngine.gameUI.selectedUnitsList.size();
+                for (int i = 0; i < size; i++) {
+                    float unitAIPathfindMemory = baseUnitArrA[i].getNanoFactorySpeed();
+                    if (f == -1.0f || unitAIPathfindMemory < f) {
+                        f = unitAIPathfindMemory;
+                    }
+                }
+                if (f == -1.0f) {
+                    f = 1.0f;
+                }
+                str2 = str2 + Utility.formatSeconds((1.0f / ((popupQueueAction.K() * f) * 60.0f)) + 1.0E-4f) + str;
+            }
+        }
+        return Utility.removeSuffix(str2, str);
+    }
+
     /* JADX INFO: renamed from: a */
     void handleZoomAndGestures(float f) {
         float touchPointerCount;
@@ -401,7 +627,7 @@ public class GameInterfaceRenderer extends Serializable {
             }
             this.gameEngine.renderGraphicsEngine.a(this.zoomButtonTexture, this.zoomButtonRect.a, this.zoomButtonRect.b, staticPaint, 0.0f, f3);
             boolean z = this.isZoomButtonPressed;
-            if (!this.isZoomButtonPressed && this.gameUI.b(this.zoomButtonRect.a, this.zoomButtonRect.b, this.zoomButtonRect.b(), this.zoomButtonRect.c(), IconGroup.zoomButton)) {
+            if (!this.isZoomButtonPressed && this.gameUI.isRectHoveredRightClick(this.zoomButtonRect.a, this.zoomButtonRect.b, this.zoomButtonRect.b(), this.zoomButtonRect.c(), IconGroup.zoomButton)) {
                 this.isZoomButtonPressed = true;
                 this.initialTouchY = this.gameUI.selectionBoxStartY;
             }
@@ -659,7 +885,7 @@ public class GameInterfaceRenderer extends Serializable {
                     for (GameObject gameObject2 : GameObject.fastGameObjectList) {
                         if (gameObject2 instanceof OrderableUnit) {
                             OrderableUnit orderableUnit = (OrderableUnit) gameObject2;
-                            if (a(orderableUnit) && (!zDrawRectWithBorder || !orderableUnit.wasSelectedBeforeDrag)) {
+                            if (drawUnitCountBadge(orderableUnit) && (!zDrawRectWithBorder || !orderableUnit.wasSelectedBeforeDrag)) {
                                 if (!orderableUnit.bI()) {
                                     z6 = false;
                                 }
@@ -677,7 +903,7 @@ public class GameInterfaceRenderer extends Serializable {
                     if (gameObject3 instanceof UnitBase) {
                         UnitBase unitBase2 = (UnitBase) gameObject3;
                         boolean z9 = false;
-                        if (a(unitBase2)) {
+                        if (drawUnitCountBadge(unitBase2)) {
                             z9 = true;
                             if (!z6 && unitBase2.bI()) {
                                 z9 = false;
@@ -717,206 +943,40 @@ public class GameInterfaceRenderer extends Serializable {
         }
     }
 
-    public static String a(BaseUnit baseUnit, boolean z, boolean z2, boolean z3) {
-        String str;
-        ModInfo modInfo;
-        if (z2) {
-            str = "\n";
-        } else {
-            str = " | ";
-        }
-        String str2 = VariableScope.nullOrMissingString;
-        CustomUnit customUnit = null;
-        CustomUnitConfig customUnitConfig = null;
-        if (baseUnit instanceof CustomUnit) {
-            customUnit = (CustomUnit) baseUnit;
-            customUnitConfig = customUnit.unitConfig;
-        }
-        if (z) {
-            str2 = str2 + baseUnit.r().getUnitName() + str;
-        }
-        if (customUnitConfig == null || !customUnitConfig.canNotBeDirectlyAttacked) {
-            if (!z3) {
-                str2 = str2 + "HP: " + ((int) Math.ceil(baseUnit.currentHealth)) + "/" + ((int) baseUnit.maxHealth) + str;
-            } else {
-                str2 = str2 + "HP: " + ((int) baseUnit.maxHealth) + str;
-            }
-        }
-        if (baseUnit.unitEnergyMax != 0.0f) {
-            if (!z3) {
-                str2 = str2 + "Shield: " + ((int) baseUnit.shield) + "/" + ((int) baseUnit.unitEnergyMax) + str;
-            } else {
-                str2 = str2 + "Shield: " + ((int) baseUnit.unitEnergyMax) + str;
-            }
-        }
-        if (customUnit != null) {
-            float f = customUnit.y.armour;
-            if (f >= 1.0f) {
-                str2 = str2 + "Armour: " + ((int) f) + str;
-            }
-        }
-        UnitPrice unitPriceDq = baseUnit.dq();
-        float fCy = baseUnit.getCreditIncomeRate();
-        if (unitPriceDq != null) {
-            fCy += unitPriceDq.a();
-        }
-        if (fCy != 0.0f) {
-            if (fCy < 0.0f) {
-                str2 = str2 + "Income: -$" + Utility.padString(-fCy, 1) + str;
-            } else {
-                str2 = str2 + "Income: +$" + Utility.padString(fCy, 1) + str;
-            }
-        }
-        if (baseUnit instanceof OrderableUnit) {
-            OrderableUnit orderableUnit = (OrderableUnit) baseUnit;
-            if (orderableUnit.bd() != 0.0f && !z3) {
-                str2 = str2 + "Energy: " + Utility.padString(baseUnit.currentEnergy) + "/" + Utility.padString(orderableUnit.bd()) + str;
-            }
-            float moveSpeed = orderableUnit.getMoveSpeed();
-            if (!orderableUnit.canExecuteMovementCommands()) {
-                moveSpeed = 0.0f;
-            }
-            if (moveSpeed != 0.0f) {
-                str2 = str2 + "Speed: " + Utility.padString(moveSpeed) + str;
-            }
-            if (orderableUnit.canAttack()) {
-                ArrayList<UnitStatistics> arrayListCollectMovementLevelStatistics = orderableUnit.collectMovementLevelStatistics();
-                if (arrayListCollectMovementLevelStatistics.size() > 0) {
-                    String str3 = str2 + "Attack: ";
-                    boolean z4 = true;
-                    for (UnitStatistics unitStatistics : arrayListCollectMovementLevelStatistics) {
-                        if (!z4) {
-                            str3 = str3 + ", ";
-                        }
-                        z4 = false;
-                        String str4 = str3 + Utility.padString(unitStatistics.a);
-                        if (unitStatistics.count > 1) {
-                            str4 = str4 + "x" + unitStatistics.count;
-                        }
-                        str3 = str4 + "/" + Utility.padString(unitStatistics.a()) + "s";
-                    }
-                    str2 = str3 + str;
-                }
-            }
-            float fM = orderableUnit.m();
-            if (!orderableUnit.canAttack()) {
-                fM = 0.0f;
-            }
-            if (fM != 0.0f) {
-                str2 = str2 + "Range: " + Utility.padString(fM) + str;
-            }
-            if (z3 && orderableUnit.isUpgradeable()) {
-                str2 = str2 + "Upgradable" + str;
-            }
-        }
-        if (!z3 && baseUnit.killCount > 0) {
-            str2 = str2 + "Kills: " + baseUnit.killCount + str;
-        }
-        boolean z5 = false;
-        if (GameEngine.getInstance().isDebugTempMode) {
-            UnitType unitTypeR = baseUnit.r();
-            str2 = ((str2 + "\n") + "--Debug--" + str) + "name: " + unitTypeR.getUnitTypeDescriptionShort() + str;
-            if ((unitTypeR instanceof CustomUnitConfig) && (modInfo = ((CustomUnitConfig) unitTypeR).modInfo) != null) {
-                str2 = str2 + "(mod: " + Utility.truncateToLength(modInfo.getDisplayTitle(), 30) + ")" + str;
-            }
-            if (baseUnit.objectId != 0) {
-                str2 = str2 + "id: " + baseUnit.objectId + str;
-            }
-            if (baseUnit.unitFlags != 0) {
-                String str5 = VariableScope.nullOrMissingString;
-                for (int i = 0; i < 32; i++) {
-                    if (UnitPrice.a(baseUnit.unitFlags, i)) {
-                        if (str5.length() > 0) {
-                            str5 = str5 + ",";
-                        }
-                        str5 = str5 + i;
-                    }
-                }
-                str2 = str2 + "flags: " + str5 + str;
-            }
-            if (baseUnit.ammo != 0) {
-                str2 = str2 + "ammo: " + baseUnit.ammo + str;
-            }
-            if (!baseUnit.isUnitParalyzed) {
-                str2 = (str2 + "x: " + Utility.padString(baseUnit.posX) + str) + "y: " + Utility.padString(baseUnit.posY) + str;
-            }
-            if (baseUnit.velocityX != 0.0f || baseUnit.velocityY != 0.0f) {
-                str2 = str2 + "x/y speed: " + Utility.padString(baseUnit.velocityX) + ", " + Utility.padString(baseUnit.velocityY) + str;
-            }
-            if (!baseUnit.isUnitParalyzed) {
-                str2 = (str2 + "height: " + Utility.padString(baseUnit.posZ) + str) + "dir: " + Utility.padString(baseUnit.rotationSpeed) + str;
-            }
-            if (baseUnit.buildProgress < 1.0f) {
-                str2 = str2 + "built: " + Utility.padString(baseUnit.buildProgress) + str;
-            }
-            if (baseUnit instanceof CustomUnit) {
-                CustomUnit customUnit2 = (CustomUnit) baseUnit;
-                str2 = (str2 + "frame: " + customUnit2.animationFrameIndex + str) + "drawLayer: " + customUnit2.drawLayer + str;
-                if (customUnit2.getTags() != null) {
-                    str2 = str2 + "tags: " + customUnit2.getTags() + str;
-                }
-                if (customUnit2.parentEntity != null) {
-                    str2 = str2 + "attachedTo: " + customUnit2.parentEntity.getUnitDebugName() + str;
-                }
-                if (customUnit2.unitTarget2 != null && !customUnit2.unitTarget2.isDead) {
-                    str2 = str2 + "customTarget1: " + customUnit2.unitTarget2.getUnitDebugName() + str;
-                }
-                if (customUnit2.unitTarget3 != null && !customUnit2.unitTarget3.isDead) {
-                    str2 = str2 + "customTarget2: " + customUnit2.unitTarget3.getUnitDebugName() + str;
-                }
-                if (customUnit2.customTimerStamp != -9999) {
-                    str2 = str2 + "customTimer: " + Utility.formatSeconds(customUnit2.customTimerStamp / 1000.0f) + str;
-                }
-                if (customUnit2.unitVariables != null && !customUnit2.unitVariables.isEmpty()) {
-                    str2 = str2 + "-- memory --: " + str + customUnit2.unitVariables.debugMemory(true, true) + str;
-                }
-            }
-            z5 = true;
-        }
-        StoredResources unitAICombatRange = baseUnit.getCustomResources();
-        if (unitAICombatRange != null && !unitAICombatRange.c()) {
-            String strA = unitAICombatRange.a(z2, true, 10, z5, false);
-            if (!strA.equals(VariableScope.nullOrMissingString)) {
-                str2 = str2 + strA + str;
-            }
-        }
-        return Utility.removeSuffix(str2, str);
-    }
-
-    public void a(String str, int i) {
+    /* JADX INFO: renamed from: a */
+    public void setMessage(String str, int i) {
         this.messageText = str;
         this.messageTimer = i;
     }
 
-    public void b(String str, int i) {
+    /* JADX INFO: renamed from: b */
+    public void setMessageIfAbsent(String str, int i) {
         if (this.messageTimer <= 0.0f || str.equals(this.messageText)) {
             this.messageText = str;
             this.messageTimer = i;
         }
     }
 
-    public void a(String str) {
+    public void isDemoQueuableAction(String str) {
         if (this.messageTimer > 0.0f && str.equals(this.messageText)) {
             this.messageTimer = 0.0f;
         }
     }
 
-    public void c(float f) {
+    /* JADX INFO: renamed from: c */
+    public void updateMessageTimer(float f) {
         if (this.messageTimer > 0.0f && this.messageText != null) {
             this.messageTimer = Utility.moveTowardsZero(this.messageTimer, f);
             this.gameEngine.renderGraphicsEngine.a(this.messageText, this.gameEngine.halfScreenWidth, this.gameEngine.halfScreenHeight, this.gameUI.buildingPreviewInvalidPaint, this.gameUI.unitTargetLinePaint, 8.0f);
         }
     }
 
-    public static boolean a(AbstractUnitAction abstractUnitAction) {
-        return GameEngine.getInstance().isDemo && abstractUnitAction.isQueuable();
+    /* JADX INFO: renamed from: c */
+    public void resetKeyBindingIndex() {
+        this.nextKeyBindingIndex = 0;
     }
 
-    public void c() {
-        this.H = 0;
-    }
-
-    public KeyBinding a(AbstractUnitAction abstractUnitAction, int i, ArrayList arrayList) {
+    public KeyBinding getAvailableActions(AbstractUnitAction abstractUnitAction, int i, ArrayList arrayList) {
         GameEngine gameEngine = GameEngine.getInstance();
         if (!GameEngine.isPC()) {
             return null;
@@ -958,14 +1018,15 @@ public class GameInterfaceRenderer extends Serializable {
         }
         KeyBinding keyBinding = null;
         KeyBinding[] keyBindingArr = gameEngine.inputController.ag;
-        if (this.H < keyBindingArr.length) {
-            keyBinding = keyBindingArr[this.H];
-            this.H++;
+        if (this.nextKeyBindingIndex < keyBindingArr.length) {
+            keyBinding = keyBindingArr[this.nextKeyBindingIndex];
+            this.nextKeyBindingIndex++;
         }
         return keyBinding;
     }
 
-    public ArrayList d() {
+    /* JADX INFO: renamed from: d */
+    public ArrayList getSelectedUnitTypes() {
         this.unitList2.clear();
         BaseUnit[] baseUnitArrA = this.gameUI.selectedUnitsList.a();
         int size = this.gameUI.selectedUnitsList.size();
@@ -978,7 +1039,7 @@ public class GameInterfaceRenderer extends Serializable {
         return this.unitList2;
     }
 
-    public ArrayList a(BaseUnit baseUnit, ArrayList arrayList) {
+    public ArrayList canShowActionsForBothUnits(BaseUnit baseUnit, ArrayList arrayList) {
         FastArrayList<AbstractUnitAction> fastArrayListE;
         ArrayList<AbstractUnitAction> availableActions;
         int size = 0;
@@ -991,8 +1052,8 @@ public class GameInterfaceRenderer extends Serializable {
             }
             return this.unitList;
         }
-        if (GameUI.bO && baseUnit != null && !(baseUnit instanceof EditorOrBuilder)) {
-            this.unitList.add(this.ar);
+        if (GameUI.showModernSidebar && baseUnit != null && !(baseUnit instanceof EditorOrBuilder)) {
+            this.unitList.add(this.unitInfoActionDefault);
             this.unitList.add(this.unitInfoAction);
         }
         if (baseUnit == null) {
@@ -1039,13 +1100,13 @@ public class GameInterfaceRenderer extends Serializable {
                 z2 = true;
             }
         }
-        BaseUnit baseUnitE = e();
+        BaseUnit baseUnitE = getFirstSelectedUnit();
         if (!z2 && baseUnitE != null && this.gameUI.canControlUnit(baseUnitE)) {
             this.unitList.add(size, this.gameUI.guardUnitAction);
             this.unitList.add(size, this.gameUI.patrolAction);
         }
         boolean z3 = false;
-        if (GameUI.bO && (this.gameEngine.settingsEngine.showSelectedUnitsList || selectedUnitCount == 1)) {
+        if (GameUI.showModernSidebar && (this.gameEngine.settingsEngine.showSelectedUnitsList || selectedUnitCount == 1)) {
             z3 = true;
         }
         if (GameEngine.isAndroidPlatform() && selectedUnitCount > 0) {
@@ -1072,7 +1133,7 @@ public class GameInterfaceRenderer extends Serializable {
                     this.unitList.add(abstractUnitAction3);
                 }
             }
-            ArrayList arrayListD = d();
+            ArrayList arrayListD = getSelectedUnitTypes();
             this.unitList3.clear();
             Iterator it2 = arrayListD.iterator();
             while (it2.hasNext()) {
@@ -1081,11 +1142,11 @@ public class GameInterfaceRenderer extends Serializable {
                 this.unitList3.add(selectUnitTypeActionD);
             }
             Collections.sort(this.unitList3);
-            if (GameUI.bO) {
+            if (GameUI.showModernSidebar) {
                 Collections.reverse(this.unitList3);
             }
             for (SelectUnitTypeAction selectUnitTypeAction : this.unitList3) {
-                if (GameUI.bO) {
+                if (GameUI.showModernSidebar) {
                     this.unitList.add(0, selectUnitTypeAction);
                 } else {
                     this.unitList.add(selectUnitTypeAction);
@@ -1095,14 +1156,16 @@ public class GameInterfaceRenderer extends Serializable {
         return this.unitList;
     }
 
-    BaseUnit e() {
+    /* JADX INFO: renamed from: e */
+    BaseUnit getFirstSelectedUnit() {
         if (this.gameUI.selectedUnitsList.size() > 0) {
             return this.gameUI.selectedUnitsList.get(0);
         }
         return null;
     }
 
-    BaseUnit f() {
+    /* JADX INFO: renamed from: f */
+    BaseUnit getHighestUpgradeUnitInSelection() {
         BaseUnit baseUnit = null;
         if (this.gameUI.selectedUnitCount > 0) {
             BaseUnit[] baseUnitArrA = this.gameUI.selectedUnitsList.a();
@@ -1117,7 +1180,7 @@ public class GameInterfaceRenderer extends Serializable {
                     if (baseUnit == null) {
                         baseUnit = baseUnit2;
                     } else {
-                        if (!a(baseUnit, baseUnit2)) {
+                        if (!isActionVisibleForSelection(baseUnit, baseUnit2)) {
                             baseUnit = null;
                             break;
                         }
@@ -1132,30 +1195,8 @@ public class GameInterfaceRenderer extends Serializable {
         return baseUnit;
     }
 
-    public static boolean a(BaseUnit baseUnit, BaseUnit baseUnit2) {
-        UnitType unitTypeR = baseUnit.r();
-        UnitType unitTypeR2 = baseUnit2.r();
-        if (unitTypeR == unitTypeR2) {
-            return true;
-        }
-        if ((unitTypeR instanceof CustomUnitConfig) && (unitTypeR2 instanceof CustomUnitConfig)) {
-            CustomUnitConfig customUnitConfig = (CustomUnitConfig) unitTypeR;
-            CustomUnitConfig customUnitConfig2 = (CustomUnitConfig) unitTypeR2;
-            if (customUnitConfig.relatedUnits.contains(unitTypeR2)) {
-                return true;
-            }
-            if (customUnitConfig.showActionsWithMixedSelectionIfOtherUnitsHaveTag != null && AnimationTag.a(customUnitConfig.showActionsWithMixedSelectionIfOtherUnitsHaveTag, customUnitConfig2.x())) {
-                return true;
-            }
-            if (customUnitConfig2.showActionsWithMixedSelectionIfOtherUnitsHaveTag != null && AnimationTag.a(customUnitConfig2.showActionsWithMixedSelectionIfOtherUnitsHaveTag, customUnitConfig.x())) {
-                return true;
-            }
-            return false;
-        }
-        return false;
-    }
-
-    ArrayList g() {
+    /* JADX INFO: renamed from: g */
+    ArrayList getSelectedOrderableUnits() {
         this.unitList4.clear();
         BaseUnit[] baseUnitArrA = this.gameUI.selectedUnitsList.a();
         int size = this.gameUI.selectedUnitsList.size();
@@ -1168,18 +1209,20 @@ public class GameInterfaceRenderer extends Serializable {
         return this.unitList4;
     }
 
-    float h() {
+    /* JADX INFO: renamed from: h */
+    float getActionIconBaseSize() {
         return Utility.clampTo255((this.gameEngine.screenHeight / 14.0f) / this.gameEngine.screenScale, 25.0f * this.gameEngine.screenScale, 40.0f * this.gameEngine.screenScale);
     }
 
-    private boolean c(AbstractUnitAction abstractUnitAction) {
+    /* JADX INFO: renamed from: c */
+    private boolean isWaitingForTargetOrUnit(AbstractUnitAction abstractUnitAction) {
         if (abstractUnitAction.isWaitingForTarget()) {
             return true;
         }
         if (abstractUnitAction instanceof WrapperUnitAction) {
             return this.gameUI.canControlUnit(((WrapperUnitAction) abstractUnitAction).unit);
         }
-        ArrayList<OrderableUnit> arrayListG = g();
+        ArrayList<OrderableUnit> arrayListG = getSelectedOrderableUnits();
         ActionId actionId = abstractUnitAction.getActionId();
         for (OrderableUnit orderableUnit : arrayListG) {
             if (orderableUnit.validateActionId(actionId) != null && this.gameUI.canControlUnit(orderableUnit)) {
@@ -1189,7 +1232,7 @@ public class GameInterfaceRenderer extends Serializable {
         return false;
     }
 
-    private boolean a(AbstractUnitAction abstractUnitAction, ArrayList arrayList) {
+    private boolean drawUnselectAllButton(AbstractUnitAction abstractUnitAction, ArrayList arrayList) {
         FilteredUnitAction filteredUnitAction = null;
         if (abstractUnitAction instanceof FilteredUnitAction) {
             filteredUnitAction = (FilteredUnitAction) abstractUnitAction;
@@ -1197,7 +1240,7 @@ public class GameInterfaceRenderer extends Serializable {
         if (filteredUnitAction != null && filteredUnitAction.d == GameUI.globalSelectionCounter) {
             return filteredUnitAction.e;
         }
-        boolean zB = b(abstractUnitAction, arrayList);
+        boolean zB = isActionAvailableForSelection(abstractUnitAction, arrayList);
         if (filteredUnitAction != null) {
             filteredUnitAction.d = GameUI.globalSelectionCounter;
             filteredUnitAction.e = zB;
@@ -1205,7 +1248,8 @@ public class GameInterfaceRenderer extends Serializable {
         return zB;
     }
 
-    private boolean b(AbstractUnitAction abstractUnitAction, ArrayList arrayList) {
+    /* JADX INFO: renamed from: b */
+    private boolean isActionAvailableForSelection(AbstractUnitAction abstractUnitAction, ArrayList arrayList) {
         if (abstractUnitAction.isWaitingForTarget()) {
             return true;
         }
@@ -1231,7 +1275,8 @@ public class GameInterfaceRenderer extends Serializable {
         return false;
     }
 
-    private boolean c(AbstractUnitAction abstractUnitAction, ArrayList arrayList) {
+    /* JADX INFO: renamed from: c */
+    private boolean canAffordActionForSelection(AbstractUnitAction abstractUnitAction, ArrayList arrayList) {
         if (abstractUnitAction.isWaitingForTarget()) {
             return true;
         }
@@ -1252,7 +1297,8 @@ public class GameInterfaceRenderer extends Serializable {
         return false;
     }
 
-    private float d(AbstractUnitAction abstractUnitAction, ArrayList arrayList) {
+    /* JADX INFO: renamed from: d */
+    private float getActionProgressForSelection(AbstractUnitAction abstractUnitAction, ArrayList arrayList) {
         int i = 0;
         float f = -1.0f;
         if (abstractUnitAction.isLockedAndDisabled()) {
@@ -1273,7 +1319,8 @@ public class GameInterfaceRenderer extends Serializable {
         return f;
     }
 
-    private SpecialActionBlockEffect d(AbstractUnitAction abstractUnitAction) {
+    /* JADX INFO: renamed from: d */
+    private SpecialActionBlockEffect getActionBlockEffect(AbstractUnitAction abstractUnitAction) {
         float fA = -1.0f;
         SpecialActionBlockEffect specialActionBlockEffect = null;
         if (abstractUnitAction.isLockedAndDisabled()) {
@@ -1312,72 +1359,75 @@ public class GameInterfaceRenderer extends Serializable {
         return specialActionBlockEffect;
     }
 
-    private float e(AbstractUnitAction abstractUnitAction) {
-        SpecialActionBlockEffect specialActionBlockEffectD = d(abstractUnitAction);
+    /* JADX INFO: renamed from: e */
+    private float getActionBlockCooldownRatio(AbstractUnitAction abstractUnitAction) {
+        SpecialActionBlockEffect specialActionBlockEffectD = getActionBlockEffect(abstractUnitAction);
         if (specialActionBlockEffectD == null) {
             return 0.0f;
         }
         return specialActionBlockEffectD.c();
     }
 
-    float b(final AbstractUnitAction s) {
-        final SpecialActionBlockEffect d = this.d(s);
-        if (d == null) {
+    /* JADX INFO: renamed from: b */
+    float getActionBlockDuration(final AbstractUnitAction s) {
+        final SpecialActionBlockEffect drawUnitCommands = this.getActionBlockEffect(s);
+        if (drawUnitCommands == null) {
             return 0.0f;
         }
-        return (float)d.d();
+        return (float) drawUnitCommands.d();
     }
 
-    int d(final float float1) {
+    /* JADX INFO: renamed from: d */
+    int drawUnitCommands(final float float1) {
         this.showInfoText = false;
         int n = 1;
-        if (GameUI.bP) {
+        if (GameUI.showModernActionIcons) {
             n = 2;
         }
         int n2 = 0;
         boolean b = false;
         UnitActionTimer.updateTimers(float1);
-        final ArrayList<BaseUnit> g = this.g();
-        BaseUnit baseUnit = this.f();
+        final ArrayList<BaseUnit> g = this.getSelectedOrderableUnits();
+        BaseUnit baseUnit = this.getHighestUpgradeUnitInSelection();
         ArrayList purchase = null;
         if (this.gameUI.currentAction != null) {
             purchase = this.gameUI.currentAction.getCandidateActionList(baseUnit);
         }
-        ArrayList a;
+        ArrayList getTeamStatusText;
         if (purchase != null) {
-            a = purchase;
+            getTeamStatusText = purchase;
         }
         else {
-            a = this.a(baseUnit, g);
+            getTeamStatusText = this.canShowActionsForBothUnits(baseUnit, g);
         }
-        if (baseUnit == null && a.size() > 0) {
-            baseUnit = this.e();
+        if (baseUnit == null && getTeamStatusText.size() > 0) {
+            baseUnit = this.getFirstSelectedUnit();
             if (baseUnit == null && CustomUnitConfig.instance != null) {
                 baseUnit = BaseUnit.getPrototypeForUnitType(CustomUnitConfig.instance);
             }
         }
         this.gameUI.isUIInitialized = false;
-        if (a.contains(this.gameUI.guardUnitAction)) {
+        if (getTeamStatusText.contains(this.gameUI.guardUnitAction)) {
             this.gameUI.isUIInitialized = true;
         }
         if (baseUnit == null) {
-            baseUnit = this.e();
+            baseUnit = this.getFirstSelectedUnit();
         }
         int n3 = 1;
         if (baseUnit == null) {
             this.lastCommandTime = -1L;
         }
-        if (baseUnit != null && a.size() > 0) {
-            final ArrayList<AbstractUnitAction> arrayList = a;
+        if (baseUnit != null && getTeamStatusText.size() > 0) {
+            final ArrayList<AbstractUnitAction> arrayList = getTeamStatusText;
             float n4 = 2.0f;
-            float h = this.h();
+            float h = this.getActionIconBaseSize();
             float n5 = 2.0f;
             float n6 = h + n5;
             boolean b2 = false;
             float y;
             float width;
             float n7;
-            if (!GameUI.bR) {
+            if (!GameUI.isSidebarOnLeft) {
                 y = (float)(this.gameEngine.minimap.getBottomY() + 2);
                 width = this.gameEngine.screenWidth - this.gameEngine.minimap.width;
                 n7 = this.gameEngine.minimap.width;
@@ -1388,7 +1438,7 @@ public class GameInterfaceRenderer extends Serializable {
                 n7 = this.gameEngine.minimap.width;
                 b2 = true;
             }
-            if (GameUI.bO) {
+            if (GameUI.showModernSidebar) {
                 h += 15.0f * this.gameEngine.screenScale;
                 n6 += 15.0f * this.gameEngine.screenScale;
                 n4 = 2.0f * this.gameEngine.screenScale;
@@ -1399,13 +1449,13 @@ public class GameInterfaceRenderer extends Serializable {
                 n5 += 2.0f;
                 y += 3.0f;
             }
-            if (!GameUI.a) {
+            if (!GameUI.isModernUiLayoutStatic) {
                 boolean b3 = true;
                 if (this.gameUI.editorOrBuilder != null && this.gameUI.selectedUnitCount == 1 && this.gameUI.editorOrBuilder.isSelected) {
                     b3 = false;
                 }
                 if (b3) {
-                    final float i = this.i();
+                    final float i = this.getActionIconTopOffset();
                     y += i;
                     y += 2.0f;
                 }
@@ -1415,7 +1465,7 @@ public class GameInterfaceRenderer extends Serializable {
             float n9 = 0.0f;
             float n10 = 0.0f;
             for (final AbstractUnitAction s : arrayList) {
-                if (!this.a(s, g)) {
+                if (!this.drawUnselectAllButton(s, g)) {
                     continue;
                 }
                 ++n8;
@@ -1481,7 +1531,7 @@ public class GameInterfaceRenderer extends Serializable {
                 this.zoomButtonRect.c = (int)(width + n7 - 2.0f);
                 this.zoomButtonRect.b = (int)(currentScreenHeightPixels - h * n17);
                 this.zoomButtonRect.d = (int)(this.zoomButtonRect.b + h * n17);
-                if (this.gameUI.a(this.zoomButtonRect.a, this.zoomButtonRect.b, this.zoomButtonRect.b(), this.zoomButtonRect.c(), "\\/", IconGroup.none, false, Color.a(80, 100, 150, 100), this.gameUI.buildingPreviewPaint, null) && this.gameUI.isInputEnabled()) {
+                if (this.gameUI.isButtonPressedStyled(this.zoomButtonRect.a, this.zoomButtonRect.b, this.zoomButtonRect.b(), this.zoomButtonRect.c(), "\\/", IconGroup.none, false, Color.a(80, 100, 150, 100), this.gameUI.buildingPreviewPaint, null) && this.gameUI.isInputEnabled()) {
                     n16 += 3.0f * n6;
                     this.gameUI.isSelectionBoxActive = false;
                 }
@@ -1493,7 +1543,7 @@ public class GameInterfaceRenderer extends Serializable {
                 this.zoomButtonRect.c = (int)(width + n7 - 2.0f);
                 this.zoomButtonRect.b = (int)n14;
                 this.zoomButtonRect.d = (int)(this.zoomButtonRect.b + h * n17);
-                if (this.gameUI.a(this.zoomButtonRect.a, this.zoomButtonRect.b, this.zoomButtonRect.b(), this.zoomButtonRect.c(), "/\\", IconGroup.none, false, Color.a(80, 100, 150, 100), this.gameUI.buildingPreviewPaint, null) && this.gameUI.isInputEnabled()) {
+                if (this.gameUI.isButtonPressedStyled(this.zoomButtonRect.a, this.zoomButtonRect.b, this.zoomButtonRect.b(), this.zoomButtonRect.c(), "/\\", IconGroup.none, false, Color.a(80, 100, 150, 100), this.gameUI.buildingPreviewPaint, null) && this.gameUI.isInputEnabled()) {
                     n16 -= 3.0f * n6;
                     this.gameUI.isSelectionBoxActive = false;
                 }
@@ -1537,13 +1587,13 @@ public class GameInterfaceRenderer extends Serializable {
             float n19 = 0.0f;
             i = 0.0f;
             n9 = 0.0f;
-            this.c();
+            this.resetKeyBindingIndex();
             for (final AbstractUnitAction unitCommand : arrayList) {
-                if (!this.a(unitCommand, g)) {
+                if (!this.drawUnselectAllButton(unitCommand, g)) {
                     continue;
                 }
                 ++n2;
-                final boolean c = this.c(unitCommand, g);
+                final boolean c = this.canAffordActionForSelection(unitCommand, g);
                 ++integer;
                 final float n20 = h * unitCommand.getBuildSpeed();
                 int keyBinding2 = n;
@@ -1602,7 +1652,7 @@ public class GameInterfaceRenderer extends Serializable {
                     b6 = true;
                 }
                 final boolean b7 = c;
-                final boolean a2 = a(unitCommand);
+                final boolean a2 = getKeyBindingForAction(unitCommand);
                 final boolean buildOption = unitCommand.isBuildOption();
                 Paint paint2 = this.paintUnitName;
                 boolean b8 = b7;
@@ -1665,8 +1715,8 @@ public class GameInterfaceRenderer extends Serializable {
                             paint2 = this.paintUnitInfo;
                             paint2.b(randomIntInRange);
                         }
-                        this.gameUI.a(this.zoomButtonRect, paint2, paint3);
-                        float n25 = this.d(unitCommand, g);
+                        this.gameUI.drawTopBarBackground(this.zoomButtonRect, paint2, paint3);
+                        float n25 = this.getActionProgressForSelection(unitCommand, g);
                         if (n25 >= 0.0f) {
                             this.paintUnitTeam.a(80, 0, 0, 100);
                             this.minimapRect.a(this.zoomButtonRect);
@@ -1677,7 +1727,7 @@ public class GameInterfaceRenderer extends Serializable {
                             this.gameEngine.renderGraphicsEngine.a((float)this.minimapRect.c, (float)this.minimapRect.b, (float)this.minimapRect.c, (float)this.minimapRect.d, this.paintUnitTeam);
                         }
                         else {
-                            final float e = this.e(unitCommand);
+                            final float e = this.getActionBlockCooldownRatio(unitCommand);
                             if (e > 0.0f) {
                                 this.paintUnitTeam.a(80, 100, 0, 0);
                                 this.minimapRect.a(this.zoomButtonRect);
@@ -1689,7 +1739,7 @@ public class GameInterfaceRenderer extends Serializable {
                             }
                         }
                         int n26 = Color.a(255, 0, 0, 0);
-                        if (GameUI.bO) {
+                        if (GameUI.showModernSidebar) {
                             n26 = Color.a(100, 0, 0, 0);
                             if (buildOption) {
                                 n26 = Color.a(50, 155, 155, 155);
@@ -1700,10 +1750,10 @@ public class GameInterfaceRenderer extends Serializable {
                             boolean3 = true;
                             n26 = Color.a((int)(100.0f + 150.0f * abs), 255, 255, 255);
                         }
-                        this.gameUI.a(this.zoomButtonRect, n26, boolean3);
+                        this.gameUI.drawTooltipInset(this.zoomButtonRect, n26, boolean3);
                     }
                 }
-                final KeyBinding a3 = this.a(unitCommand, integer, arrayList);
+                final KeyBinding a3 = this.getAvailableActions(unitCommand, integer, arrayList);
                 if (a3 != null && b5) {
                     final String c2 = a3.c();
                     final float n25 = (float)this.gameEngine.renderGraphicsEngine.a("A", this.gameUI.selectionBoxPaint);
@@ -1745,7 +1795,7 @@ public class GameInterfaceRenderer extends Serializable {
                     }
                     float float4 = this.zoomButtonRect.c() * 0.7f;
                     float float5 = this.zoomButtonRect.c() * 0.95f;
-                    if (GameUI.bO) {
+                    if (GameUI.showModernSidebar) {
                         float4 = this.zoomButtonRect.c() * 0.4f;
                         float5 = this.zoomButtonRect.c() * 0.85f;
                     }
@@ -1885,7 +1935,7 @@ public class GameInterfaceRenderer extends Serializable {
                 if (GameEngine.isNonPCPlatform()) {
                     Utility.expandRectForTouchTarget(this.unitRect, 2.0f);
                 }
-                this.gameUI.a((float)this.unitRect.a, (float)this.unitRect.b, (float)this.unitRect.b(), (float)this.unitRect.c());
+                this.gameUI.forceModifiersInsideRect((float)this.unitRect.a, (float)this.unitRect.b, (float)this.unitRect.b(), (float)this.unitRect.c());
                 if (!this.isDraggingSelectionBox && this.unitRect.b((int)this.gameUI.selectionBoxMinWidth, (int)this.gameUI.selectionBoxMinHeight) && this.rectF.b((float)(int)this.gameUI.selectionBoxMinWidth, (float)(int)this.gameUI.selectionBoxMinHeight)) {
                     b = true;
                     if (GameEngine.isPC()) {
@@ -1919,7 +1969,7 @@ public class GameInterfaceRenderer extends Serializable {
                     if (this.gameEngine.replayEngine.j()) {
                         n36 = 0;
                     }
-                    if (!this.c(unitCommand)) {
+                    if (!this.isWaitingForTargetOrUnit(unitCommand)) {
                         n36 = 0;
                     }
                 }
@@ -1964,7 +2014,7 @@ public class GameInterfaceRenderer extends Serializable {
                                     b14 = true;
                                 }
                             }
-                            if (a(unitCommand)) {
+                            if (getKeyBindingForAction(unitCommand)) {
                                 this.gameEngine.soundEngine.playInterfaceSound(SoundEngine.interfaceErrorSound, 0.8f);
                             }
                             else if (!b7 && !b14) {
@@ -2056,7 +2106,7 @@ public class GameInterfaceRenderer extends Serializable {
                         }
                     }
                     else if (unitCommand.getActionType() == ActionType.placeBuilding) {
-                        if (a(unitCommand)) {
+                        if (getKeyBindingForAction(unitCommand)) {
                             this.gameEngine.soundEngine.playInterfaceSound(SoundEngine.interfaceErrorSound, 0.8f);
                         }
                         else if (!b7) {
@@ -2141,16 +2191,17 @@ public class GameInterfaceRenderer extends Serializable {
         return n2;
     }
 
-    float i() {
+    /* JADX INFO: renamed from: i */
+    float getActionIconTopOffset() {
         return (float) (((double) Utility.clampTo255((this.gameEngine.screenHeight / 14.0f) / this.gameEngine.screenScale, 25.0f * this.gameEngine.screenScale, 40.0f * this.gameEngine.screenScale)) * 0.9d);
     }
 
-    void a(float f, int i) {
+    void getUnitStatusText(float f, int i) {
         boolean z = true;
         if (i == 0) {
             z = true;
         }
-        if (GameUI.a) {
+        if (GameUI.isModernUiLayoutStatic) {
             z = false;
         }
         if (this.gameUI.selectedUnitCount > 0) {
@@ -2158,7 +2209,7 @@ public class GameInterfaceRenderer extends Serializable {
                 z = false;
             }
             if (z) {
-                if (this.gameUI.b((int) ((this.gameEngine.screenWidth - this.gameEngine.minimap.width) + 2.0f), this.gameEngine.minimap.getBottomY() + 2, (int) (this.gameEngine.minimap.width - 4.0f), (int) i(), this.unselectAllText, IconGroup.unselectAllButton, false, Color.a(140, 100, 100, 100)) && !this.gameUI.isInputDisabled) {
+                if (this.gameUI.isButtonPressedWithRightClick((int) ((this.gameEngine.screenWidth - this.gameEngine.minimap.width) + 2.0f), this.gameEngine.minimap.getBottomY() + 2, (int) (this.gameEngine.minimap.width - 4.0f), (int) getActionIconTopOffset(), this.unselectAllText, IconGroup.unselectAllButton, false, Color.a(140, 100, 100, 100)) && !this.gameUI.isInputDisabled) {
                     this.gameUI.resetMouseState();
                     this.gameUI.clearCurrentAction();
                     this.gameUI.clearSelection();
@@ -2166,7 +2217,7 @@ public class GameInterfaceRenderer extends Serializable {
             }
             PlayerTeam playerTeam = null;
             boolean z2 = false;
-            this.az.clear();
+            this.keyBindingActionMap.clear();
             BaseUnit baseUnit = null;
             BaseUnit[] baseUnitArrA = this.gameUI.selectedUnitsList.a();
             int size = this.gameUI.selectedUnitsList.size();
@@ -2176,11 +2227,11 @@ public class GameInterfaceRenderer extends Serializable {
                     baseUnit = baseUnit2;
                     if (this.gameUI.canControlUnit(baseUnit2)) {
                         UnitType unitTypeR = baseUnit2.r();
-                        Integer num = (Integer) this.az.get(unitTypeR);
+                        Integer num = (Integer) this.keyBindingActionMap.get(unitTypeR);
                         if (num == null) {
-                            this.az.put(unitTypeR, 1);
+                            this.keyBindingActionMap.put(unitTypeR, 1);
                         } else {
-                            this.az.put(unitTypeR, Integer.valueOf(num.intValue() + 1));
+                            this.keyBindingActionMap.put(unitTypeR, Integer.valueOf(num.intValue() + 1));
                         }
                         z2 = true;
                     } else {
@@ -2192,7 +2243,7 @@ public class GameInterfaceRenderer extends Serializable {
             if (playerTeam != null && this.gameEngine.playerTeam != null && playerTeam.b(this.gameEngine.playerTeam)) {
                 z3 = true;
             }
-            int iH = (int) h();
+            int iH = (int) getActionIconBaseSize();
             int i3 = iH + 2;
             int i4 = (int) (10.0f * this.gameEngine.screenScale);
             float bottomY = this.gameEngine.minimap.getBottomY() + iH + 30;
@@ -2206,32 +2257,32 @@ public class GameInterfaceRenderer extends Serializable {
             }
             this.zoomButtonRect.a((int) f2, (int) f3, (int) ((f2 + this.gameEngine.sidebarWidth) - (i4 * 2)), (int) (f3 + iH));
             boolean z4 = false;
-            if (!GameUI.bQ) {
+            if (!GameUI.showModernTopBar) {
                 if (i < 3 && !z2 && playerTeam != null) {
                     Paint paint = this.gameUI.unitRangeBorderPaint;
                     if (this.gameEngine.playerTeam.d(playerTeam)) {
                         paint = this.gameUI.unitPathPaint;
                     }
-                    this.gameUI.a(a(playerTeam), this.zoomButtonRect, paint, paint);
+                    this.gameUI.drawMultilineText(getActionTooltipText(playerTeam), this.zoomButtonRect, paint, paint);
                     z4 = true;
                 }
                 if (this.gameUI.getSelectedUnitCount() == 1 && baseUnit != null) {
                     if (baseUnit.getAvailableActionCount() <= 3 || (playerTeam != null && !z3)) {
-                        String strA = a(baseUnit, false);
+                        String strA = getUnitInfoText(baseUnit, false);
                         if (z4) {
                             strA = "\n" + ("\n" + ("\n" + strA));
                         }
                         Paint paint2 = this.paintUnitInfo;
                         paint2.a();
                         paint2.b(Color.a(50, 100, 100, 100));
-                        this.gameUI.a(strA, this.zoomButtonRect, this.gameUI.unitPathBorderPaint, this.gameUI.unitPathBorderPaint);
+                        this.gameUI.drawMultilineText(strA, this.zoomButtonRect, this.gameUI.unitPathBorderPaint, this.gameUI.unitPathBorderPaint);
                     }
                 }
             }
         }
     }
 
-    public String a(PlayerTeam playerTeam) {
+    public String getActionTooltipText(PlayerTeam playerTeam) {
         String str = VariableScope.nullOrMissingString;
         boolean z = false;
         if (this.gameEngine.playerTeam.isSpectatorTeamColor()) {
@@ -2260,7 +2311,7 @@ public class GameInterfaceRenderer extends Serializable {
         return str2;
     }
 
-    public String a(BaseUnit baseUnit, boolean z) {
+    public String getUnitInfoText(BaseUnit baseUnit, boolean z) {
         String str;
         String str2 = VariableScope.nullOrMissingString;
         if (z) {
@@ -2290,37 +2341,7 @@ public class GameInterfaceRenderer extends Serializable {
         return Utility.removeTrailingNewline(str);
     }
 
-    public static String a(AbstractUnitAction abstractUnitAction, boolean z) {
-        String str;
-        if (z) {
-            str = "\n";
-        } else {
-            str = " | ";
-        }
-        String str2 = VariableScope.nullOrMissingString;
-        if (abstractUnitAction instanceof PopupQueueAction) {
-            PopupQueueAction popupQueueAction = (PopupQueueAction) abstractUnitAction;
-            if (popupQueueAction.K() < 1.0f) {
-                GameEngine gameEngine = GameEngine.getInstance();
-                float f = -1.0f;
-                BaseUnit[] baseUnitArrA = gameEngine.gameUI.selectedUnitsList.a();
-                int size = gameEngine.gameUI.selectedUnitsList.size();
-                for (int i = 0; i < size; i++) {
-                    float unitAIPathfindMemory = baseUnitArrA[i].getNanoFactorySpeed();
-                    if (f == -1.0f || unitAIPathfindMemory < f) {
-                        f = unitAIPathfindMemory;
-                    }
-                }
-                if (f == -1.0f) {
-                    f = 1.0f;
-                }
-                str2 = str2 + Utility.formatSeconds((1.0f / ((popupQueueAction.K() * f) * 60.0f)) + 1.0E-4f) + str;
-            }
-        }
-        return Utility.removeSuffix(str2, str);
-    }
-
-    private boolean a(UnitBase unitBase) {
+    private boolean drawUnitCountBadge(UnitBase unitBase) {
         if (!unitBase.isDead && unitBase.transportContainer == null) {
             float f = unitBase.posX;
             float f2 = unitBase.posY - unitBase.posZ;
@@ -2338,38 +2359,42 @@ public class GameInterfaceRenderer extends Serializable {
         return false;
     }
 
-    void j() {
+    /* JADX INFO: renamed from: j */
+    void markUnitGroupMarkersValid() {
         Iterator it = this.unitGroupMarkers.iterator();
         while (it.hasNext()) {
-            ((UnitGroupMarker) it.next()).h = true;
+            ((UnitGroupMarker) it.next()).isValid = true;
         }
     }
 
-    void k() {
+    /* JADX INFO: renamed from: k */
+    void clearUnitGroupMarkers() {
         Iterator it = this.unitGroupMarkers.iterator();
         while (it.hasNext()) {
-            ((UnitGroupMarker) it.next()).b();
+            ((UnitGroupMarker) it.next()).clearUnits();
         }
         this.messageText = null;
         this.messageTimer = 0.0f;
     }
 
-    void a(final int integer1, final int integer2, final int integer3, final String string4, final String string5, final Paint paint, final float float7) {
+    /* JADX INFO: renamed from: a */
+    void drawUnitCountBadge(final int integer1, final int integer2, final int integer3, final String string4, final String string5, final Paint paint, final float float7) {
         final int integer4 = (int)(integer3 * 2.5);
         final int integer5 = (int)(40.0f * this.gameEngine.screenScale);
         final int n = integer1 + integer3 / 2;
         final int integer6 = (int)(integer2 - integer5 - 35.0f * this.gameEngine.screenScale);
         this.rect.a(n - integer4 / 2, integer6, integer4, integer5);
-        this.gameUI.a(this.rect.a, this.rect.b, this.rect.c, this.rect.d, "", Color.a(180, 100, 100, 100), this.gameUI.buildingPreviewPaint, false, null, null);
+        this.gameUI.drawStyledButtonBackground(this.rect.a, this.rect.b, this.rect.c, this.rect.d, "", Color.a(180, 100, 100, 100), this.gameUI.buildingPreviewPaint, false, null, null);
         this.zoomButtonRect.a(this.rect.a, this.rect.b, this.rect.c, this.rect.d);
         final Rect zoomButtonRect = this.zoomButtonRect;
         zoomButtonRect.c *= (int)float7;
         this.gameEngine.renderGraphicsEngine.c(this.zoomButtonRect, paint);
-        this.gameEngine.renderGraphicsEngine.a(string4, (float)n, integer6 + (this.gameUI.buildingPreviewPaint.k() + 5.0f) * 1.0f, this.gameUI.buildingPreviewPaint);
-        this.gameEngine.renderGraphicsEngine.a(string5, (float)n, integer6 + (this.gameUI.buildingPreviewPaint.k() + 5.0f) * 2.0f, this.gameUI.buildingPreviewPaint);
+        this.gameEngine.renderGraphicsEngine.a(string4, (float) n, integer6 + (this.gameUI.buildingPreviewPaint.k() + 5.0f) * 1.0f, this.gameUI.buildingPreviewPaint);
+        this.gameEngine.renderGraphicsEngine.a(string5, (float) n, integer6 + (this.gameUI.buildingPreviewPaint.k() + 5.0f) * 2.0f, this.gameUI.buildingPreviewPaint);
     }
 
-    void a(final float float1, final boolean boolean2) {
+    /* JADX INFO: renamed from: a */
+    void drawPauseOverlay(final float float1, final boolean boolean2) {
         float float2 = this.gameEngine.screenScale * 0.7f;
         if (GameEngine.isNonPCPlatform() && float2 < 0.7) {
             float2 = 0.7f;
@@ -2415,7 +2440,7 @@ public class GameInterfaceRenderer extends Serializable {
             this.gameUI.isSelectionBoxActive = false;
             this.gameUI.isDraggingSelection = !this.gameUI.isDraggingSelection;
         }
-        this.gameUI.a(this.unitRect2);
+        this.gameUI.forceModifiersInsideRect(this.unitRect2);
         if (this.gameEngine.replayEngine.j()) {
             this.paintHealthBar.c(80);
             if (this.gameEngine.replayEngine.v != 1) {
@@ -2474,46 +2499,49 @@ public class GameInterfaceRenderer extends Serializable {
             this.zoomButtonRect.c = (int)(this.gameEngine.currentScreenWidthPixels / 2.0f + screenPixels / 2);
             final int screenPixels2 = this.gameEngine.toScreenPixels(34);
             final int n5 = screenPixels2 + this.gameEngine.toScreenPixels(15);
-            final Menu o = this.o();
-            final int n6 = this.gameEngine.toScreenPixels(50) + n5 * (1 + o.size());
+            final Menu buildGameMenu = this.getOpenMenuEntries();
+            final int n6 = this.gameEngine.toScreenPixels(50) + n5 * (1 + buildGameMenu.size());
             this.zoomButtonRect.b = (int)(this.gameEngine.halfScreenHeight - n6 / 2);
             this.zoomButtonRect.d = (int)(this.gameEngine.halfScreenHeight + n6 / 2);
             if (boolean2) {
-                this.gameUI.ninePatchStyle5.c(this.gameEngine.renderGraphicsEngine, this.zoomButtonRect);
+                this.gameUI.ninePatchStyle5.drawNormal(this.gameEngine.renderGraphicsEngine, this.zoomButtonRect);
             }
             final int n7 = this.zoomButtonRect.b + this.gameEngine.toScreenPixels(40);
             final int screenPixels3 = this.gameEngine.toScreenPixels(152);
             final int n8 = (int)(this.gameEngine.currentScreenWidthPixels / 2.0f - screenPixels3 / 2);
             int n9 = n7;
             final int a = Color.a(140, 100, 100, 100);
-            if (this.gameUI.a(n8, n9, screenPixels3, screenPixels2, Locale.get("menus.ingame.resume"), IconGroup.none, false, a, this.gameUI.buildingPreviewInvalidPaint, this.gameUI.ninePatchStyle3)) {
+            if (this.gameUI.isButtonPressedStyled(n8, n9, screenPixels3, screenPixels2, Locale.get("menus.ingame.resume"), IconGroup.none, false, a, this.gameUI.buildingPreviewInvalidPaint, this.gameUI.ninePatchStyle3)) {
                 this.gameUI.isSelectionBoxActive = false;
                 this.gameUI.tooltipY = 40.0f;
                 this.gameUI.isDraggingSelection = false;
             }
             n9 += n5;
-            for (int i = 0; i < o.size(); ++i) {
-                final MenuItem item = o.getItem(i);
-                if (this.gameUI.a(n8, n9, screenPixels3, screenPixels2, item.getTitle().toString(), IconGroup.none, false, a, this.gameUI.buildingPreviewInvalidPaint, this.gameUI.ninePatchStyle3)) {
+            for (int i = 0; i < buildGameMenu.size(); ++i) {
+                final MenuItem item = buildGameMenu.getItem(i);
+                if (this.gameUI.isButtonPressedStyled(n8, n9, screenPixels3, screenPixels2, item.getTitle().toString(), IconGroup.none, false, a, this.gameUI.buildingPreviewInvalidPaint, this.gameUI.ninePatchStyle3)) {
                     this.a(item.getItemId());
                     this.gameUI.isSelectionBoxActive = false;
                     this.gameUI.tooltipY = 40.0f;
                 }
                 n9 += n5;
             }
-            this.gameUI.a(this.zoomButtonRect);
+            this.gameUI.forceModifiersInsideRect(this.zoomButtonRect);
         }
     }
 
-    public void l() {
+    /* JADX INFO: renamed from: l */
+    public void restartMission() {
         a(20);
     }
 
-    public void m() {
+    /* JADX INFO: renamed from: m */
+    public void quitToMenu() {
         a(21);
     }
 
-    public void n() {
+    /* JADX INFO: renamed from: n */
+    public void showChatDialog() {
         a(16);
     }
 
@@ -2531,7 +2559,8 @@ public class GameInterfaceRenderer extends Serializable {
         }
     }
 
-    Menu o() {
+    /* JADX INFO: renamed from: o */
+    Menu getOpenMenuEntries() {
         this.vObject.clear();
         GameView gameView = this.gameEngine.activeGameView;
         if (gameView == null) {
@@ -2547,7 +2576,8 @@ public class GameInterfaceRenderer extends Serializable {
         return this.vObject;
     }
 
-    void e(float f) {
+    /* JADX INFO: renamed from: e */
+    void updateUnitGroupMarkers(float f) {
         String str;
         int i = (int) (this.gameEngine.currentScreenHeightPixels - (30.0f * this.gameEngine.screenScale));
         int i2 = (int) ((this.gameEngine.screenWidth - this.gameEngine.sidebarWidth) + 10.0f);
@@ -2555,24 +2585,24 @@ public class GameInterfaceRenderer extends Serializable {
         int i4 = i3 - 5;
         for (int i5 = 0; i5 < this.unitGroupMarkers.size(); i5++) {
             UnitGroupMarker unitGroupMarker = (UnitGroupMarker) this.unitGroupMarkers.get(i5);
-            if (unitGroupMarker.h) {
-                unitGroupMarker.e();
-                unitGroupMarker.h = false;
+            if (unitGroupMarker.isValid) {
+                unitGroupMarker.refreshUnitReferences();
+                unitGroupMarker.isValid = false;
             }
-            unitGroupMarker.d();
+            unitGroupMarker.removeDeadUnits();
             if (this.gameEngine.settingsEngine.keyboardSupport && i5 < this.gameEngine.inputController.ai.length) {
                 if (this.gameEngine.inputController.ak[i5].a()) {
-                    unitGroupMarker.b();
-                    unitGroupMarker.c();
+                    unitGroupMarker.clearUnits();
+                    unitGroupMarker.addSelectedUnits();
                 }
                 if (this.gameEngine.inputController.aj[i5].a()) {
                     this.gameUI.clearCurrentAction();
-                    unitGroupMarker.a();
+                    unitGroupMarker.selectGroup();
                 }
                 if (this.gameEngine.inputController.ai[i5].a()) {
                     this.gameUI.clearCurrentAction();
                     this.gameUI.clearSelection();
-                    unitGroupMarker.a();
+                    unitGroupMarker.selectGroup();
                 }
             }
             if (this.gameEngine.settingsEngine.showUnitGroups && i5 < 3) {
@@ -2586,10 +2616,10 @@ public class GameInterfaceRenderer extends Serializable {
                     str = VariableScope.nullOrMissingString + unitGroupMarker.units.size();
                 }
                 boolean z = false;
-                unitGroupMarker.d = Utility.moveTowardsZero(unitGroupMarker.d, 0.01f * f);
-                unitGroupMarker.e = Utility.moveTowardsZero(unitGroupMarker.e, 0.01f * f);
-                unitGroupMarker.f = Utility.moveTowardsZero(unitGroupMarker.f, 0.01f * f);
-                if (this.gameUI.a(i2, i, i4, (int) (31.0f * this.gameEngine.screenScale), str, IconGroup.none, true, Color.a(50, (int) (100.0f + (unitGroupMarker.f * 100.0f)), (int) (100.0f + (unitGroupMarker.e * 100.0f)), (int) (100.0f + (unitGroupMarker.d * 100.0f)))) && this.gameUI.currentAction == null && !this.gameUI.isInputDisabled) {
+                unitGroupMarker.posX = Utility.moveTowardsZero(unitGroupMarker.posX, 0.01f * f);
+                unitGroupMarker.posY = Utility.moveTowardsZero(unitGroupMarker.posY, 0.01f * f);
+                unitGroupMarker.drawScale = Utility.moveTowardsZero(unitGroupMarker.drawScale, 0.01f * f);
+                if (this.gameUI.isButtonPressed(i2, i, i4, (int) (31.0f * this.gameEngine.screenScale), str, IconGroup.none, true, Color.a(50, (int) (100.0f + (unitGroupMarker.drawScale * 100.0f)), (int) (100.0f + (unitGroupMarker.posY * 100.0f)), (int) (100.0f + (unitGroupMarker.posX * 100.0f)))) && this.gameUI.currentAction == null && !this.gameUI.isInputDisabled) {
                     z = true;
                     unitGroupMarker.radius += f;
                     this.gameUI.resetMouseState();
@@ -2599,13 +2629,13 @@ public class GameInterfaceRenderer extends Serializable {
                     if (unitGroupMarker.radius < 50.0f) {
                         f2 = unitGroupMarker.radius / 50.0f;
                         this.paintUnitInfo.b(Color.a((int) (150.0f + (f2 * 40.0f)), 0, 200, 0));
-                        a(i2, i, i4, "Select Group", "(Hold for more..)", this.paintUnitInfo, f2);
+                        drawUnitCountBadge(i2, i, i4, "Select Group", "(Hold for more..)", this.paintUnitInfo, f2);
                     } else if (unitGroupMarker.radius < 100.0f) {
                         f2 = (unitGroupMarker.radius - 50.0f) / 50.0f;
                         this.paintUnitInfo.b(Color.a((int) (150.0f + (f2 * 40.0f)), 200, 0, 0));
-                        a(i2, i, i4, "Add to Group", "(Hold for more..)", this.paintUnitInfo, f2);
+                        drawUnitCountBadge(i2, i, i4, "Add to Group", "(Hold for more..)", this.paintUnitInfo, f2);
                     } else {
-                        a(i2, i, i4, "Replace Group", VariableScope.nullOrMissingString, this.paintUnitInfo, 0.0f);
+                        drawUnitCountBadge(i2, i, i4, "Replace Group", VariableScope.nullOrMissingString, this.paintUnitInfo, 0.0f);
                     }
                     int i6 = (int) (31.0f * this.gameEngine.screenScale);
                     this.zoomButtonRect.a(i2, (int) ((i + i6) - (i6 * f2)), i2 + i4, i + i6);
@@ -2614,24 +2644,24 @@ public class GameInterfaceRenderer extends Serializable {
                 if (!z) {
                     if (unitGroupMarker.radius != 0.0f && !this.gameUI.isMousePressed) {
                         if (unitGroupMarker.radius > 100.0f) {
-                            unitGroupMarker.b();
-                            unitGroupMarker.c();
-                            unitGroupMarker.f = 1.0f;
+                            unitGroupMarker.clearUnits();
+                            unitGroupMarker.addSelectedUnits();
+                            unitGroupMarker.drawScale = 1.0f;
                         } else if (unitGroupMarker.radius > 50.0f) {
-                            unitGroupMarker.c();
+                            unitGroupMarker.addSelectedUnits();
                             this.gameUI.clearCurrentAction();
                             this.gameUI.clearSelection();
-                            unitGroupMarker.a();
-                            unitGroupMarker.e = 1.0f;
+                            unitGroupMarker.selectGroup();
+                            unitGroupMarker.posY = 1.0f;
                         } else if (unitGroupMarker.units.size() != 0) {
                             this.gameUI.clearCurrentAction();
                             this.gameUI.clearSelection();
-                            unitGroupMarker.a();
-                            unitGroupMarker.d = 1.0f;
+                            unitGroupMarker.selectGroup();
+                            unitGroupMarker.posX = 1.0f;
                         } else {
-                            unitGroupMarker.b();
-                            unitGroupMarker.c();
-                            unitGroupMarker.e = 1.0f;
+                            unitGroupMarker.clearUnits();
+                            unitGroupMarker.addSelectedUnits();
+                            unitGroupMarker.posY = 1.0f;
                         }
                     }
                     if (!z) {

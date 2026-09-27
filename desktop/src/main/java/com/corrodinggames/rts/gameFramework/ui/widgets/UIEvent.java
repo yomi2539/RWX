@@ -15,7 +15,8 @@ public class UIEvent {
     /* JADX INFO: renamed from: d */
     public int button = -1;
 
-    public static UIEvent a(int i, int i2) {
+    /* JADX INFO: renamed from: a */
+    public static UIEvent createMouseClick(int i, int i2) {
         UIEvent uIEvent = new UIEvent();
         uIEvent.x = i;
         uIEvent.y = i2;
@@ -24,7 +25,8 @@ public class UIEvent {
         return uIEvent;
     }
 
-    public static UIEvent b(int i, int i2) {
+    /* JADX INFO: renamed from: b */
+    public static UIEvent createMouseMove(int i, int i2) {
         UIEvent uIEvent = new UIEvent();
         uIEvent.x = i;
         uIEvent.y = i2;
@@ -33,11 +35,13 @@ public class UIEvent {
         return uIEvent;
     }
 
-    public boolean a() {
+    /* JADX INFO: renamed from: a */
+    public boolean isMouseClick() {
         return this.type == UIEventType.mouseClick;
     }
 
-    public boolean b() {
+    /* JADX INFO: renamed from: b */
+    public boolean isMouseMove() {
         return this.type == UIEventType.mouseMove;
     }
 }

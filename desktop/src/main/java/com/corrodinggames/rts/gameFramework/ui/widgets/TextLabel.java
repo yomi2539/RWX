@@ -15,61 +15,69 @@ public class TextLabel extends UIElement {
 
     /* JADX INFO: renamed from: a */
     String text;
-    Paint b = new GamePaint();
-    UIStyle c = UIStyle.l;
+    /* JADX INFO: renamed from: b */
+    Paint paint = new GamePaint();
+    /* JADX INFO: renamed from: c */
+    UIStyle style = UIStyle.noBackgroundStyle;
     /* JADX INFO: renamed from: d */
     ArrayList<String> lines;
 
     public TextLabel() {
-        this.b.a(Paint.Align.CENTER);
-        this.b.b(-16777216);
-        a(18.0f);
+        this.paint.a(Paint.Align.CENTER);
+        this.paint.b(-16777216);
+        setTextSize(18.0f);
     }
 
-    public void a(float f) {
-        GameEngine.getInstance().setScaledTextSize(this.b, f);
-        e();
+    /* JADX INFO: renamed from: a */
+    public void setTextSize(float f) {
+        GameEngine.getInstance().setScaledTextSize(this.paint, f);
+        invalidateLayout();
     }
 
-    public void a(int i) {
-        this.b.b(i);
-    }
-
-    @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIElement
-    public String a() {
-        return super.a() + " (text:" + this.text + ")";
+    /* JADX INFO: renamed from: a */
+    public void setTextColor(int i) {
+        this.paint.b(i);
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIElement
-    public void a(final float float1, final float float2) {
-        super.a(float1, float2);
-        final GraphicsEngine d = this.d();
-        final RectF a = this.a(new RectF(), float1, float2);
-        this.c.a(d, a);
+    /* JADX INFO: renamed from: a */
+    public String getTypeName() {
+        return super.getTypeName() + " (text:" + this.text + ")";
+    }
+
+    @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIElement
+    /* JADX INFO: renamed from: a */
+    public void draw(final float float1, final float float2) {
+        super.draw(float1, float2);
+        final GraphicsEngine graphicsEngine = this.getGraphicsEngine();
+        final RectF rectF = this.getRectAt(new RectF(), float1, float2);
+        this.style.draw(graphicsEngine, rectF);
         if (this.text == null) {
             return;
         }
         if (this.lines == null) {
-            d.a(this.text, a.d(), a.d - this.l, this.b);
+            graphicsEngine.a(this.text, rectF.d(), rectF.d - this.paddingBottom, this.paint);
         }
         else {
             int n = 0;
             for (final String string : this.lines) {
-                final Paint b = this.b;
-                final int lineHeight = TextUtils.getLineHeight(b);
-                d.a(string, a.d(), a.b + this.k + lineHeight + n * lineHeight, b);
+                final Paint linePaint = this.paint;
+                final int lineHeight = TextUtils.getLineHeight(linePaint);
+                graphicsEngine.a(string, rectF.d(), rectF.b + this.paddingTop + lineHeight + n * lineHeight, linePaint);
                 ++n;
             }
         }
     }
 
-    public void a(String str) {
+    /* JADX INFO: renamed from: a */
+    public void setText(String str) {
         this.text = str;
-        e();
+        invalidateLayout();
     }
 
-    public Rect c() {
-        RectF rectFA = a(new RectF(), 0.0f, 0.0f);
+    /* JADX INFO: renamed from: c */
+    public Rect getTextBounds() {
+        RectF rectFA = getRectAt(new RectF(), 0.0f, 0.0f);
         Rect rect = new Rect();
         rect.d = (int) rectFA.d;
         rect.b = (int) rectFA.b;
@@ -80,14 +88,15 @@ public class TextLabel extends UIElement {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIElement
-    public void b() {
-        super.b();
-        this.d();
-        final Rect c = this.c();
-        this.lines = new ArrayList(TextUtils.wrapText(this.text, c, this.b, this.b, true));
-        this.i = (float)c.b();
-        this.j = (float)c.c();
-        this.i += this.m + this.n;
-        this.j += this.k + this.l;
+    /* JADX INFO: renamed from: b */
+    public void layout() {
+        super.layout();
+        this.getGraphicsEngine();
+        final Rect c = this.getTextBounds();
+        this.lines = new ArrayList(TextUtils.wrapText(this.text, c, this.paint, this.paint, true));
+        this.width = (float)c.b();
+        this.height = (float)c.c();
+        this.width += this.paddingLeft + this.paddingRight;
+        this.height += this.paddingTop + this.paddingBottom;
     }
 }

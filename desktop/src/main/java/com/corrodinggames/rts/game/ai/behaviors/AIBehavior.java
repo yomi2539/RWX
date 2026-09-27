@@ -10,15 +10,19 @@ import java.io.IOException;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.a.a.a */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/a/a/a.class */
 public abstract class AIBehavior {
-    public abstract AIBehaviorType a();
+    /* JADX INFO: renamed from: a */
+    public abstract AIBehaviorType getBehaviorType();
 
-    public void a(float f, AIController aIController) {
+    /* JADX INFO: renamed from: a */
+    public void updateAI(float f, AIController aIController) {
     }
 
-    public void b(float f, AIController aIController) {
+    /* JADX INFO: renamed from: b */
+    public void updateCore(float f, AIController aIController) {
     }
 
-    public void a(GameInputStream gameInputStream) throws IOException {
+    /* JADX INFO: renamed from: a */
+    public void readFromInputStream(GameInputStream gameInputStream) throws IOException {
     }
 
     public void a(GameOutputStream gameOutputStream) throws IOException {

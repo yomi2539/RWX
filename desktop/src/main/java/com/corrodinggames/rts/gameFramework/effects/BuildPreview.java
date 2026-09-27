@@ -79,8 +79,11 @@ public class BuildPreview {
 
     /* JADX INFO: renamed from: w */
     public static TransactionalArrayList<BuildPreview> activePreviews = new TransactionalArrayList();
-    static Point x = new Point();
-    static RectF y = new RectF();
+    /* JADX INFO: renamed from: x */
+    static Point tempPoint = new Point();
+
+    /* JADX INFO: renamed from: y */
+    static RectF tempRectF = new RectF();
 
     /* JADX INFO: renamed from: z */
     static RectF tempRectF2 = new RectF();
@@ -153,22 +156,22 @@ public class BuildPreview {
         gameEngine.tileMap.setCursorTileIndexFromTileIndex(i, i2);
         float f = gameEngine.tileMap.cursorTileX + gameEngine.tileMap.halfTileWorldSizeX;
         float f2 = gameEngine.tileMap.cursorTileY + gameEngine.tileMap.halfTileWorldSizeY;
-        y.a(f, f2, f + 1.0f, f2 + 1.0f);
-        return isRectOverBlueprint(playerTeam, y, i3);
+        tempRectF.a(f, f2, f + 1.0f, f2 + 1.0f);
+        return isRectOverBlueprint(playerTeam, tempRectF, i3);
     }
 
     /* JADX INFO: renamed from: a */
     public static boolean isUnitOverBlueprint(PlayerTeam playerTeam, OrderableUnit orderableUnit, int i) {
-        y = orderableUnit.a(GameEngine.getInstance().tileMap, y);
-        return isRectOverBlueprint(playerTeam, y, i);
+        tempRectF = orderableUnit.a(GameEngine.getInstance().tileMap, tempRectF);
+        return isRectOverBlueprint(playerTeam, tempRectF, i);
     }
 
     /* JADX INFO: renamed from: a */
     public static boolean doUnitsOverlap(OrderableUnit orderableUnit, OrderableUnit orderableUnit2) {
         TileMap tileMap = GameEngine.getInstance().tileMap;
-        y = orderableUnit.a(tileMap, y);
+        tempRectF = orderableUnit.a(tileMap, tempRectF);
         tempRectF2 = orderableUnit2.a(tileMap, tempRectF2);
-        if (Utility.rectanglesOverlap(y, tempRectF2)) {
+        if (Utility.rectanglesOverlap(tempRectF, tempRectF2)) {
             return true;
         }
         return false;

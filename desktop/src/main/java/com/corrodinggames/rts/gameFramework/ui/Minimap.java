@@ -172,9 +172,11 @@ public class Minimap {
     /* JADX INFO: renamed from: Q */
     public float fogRefreshProgress = 0.0f;
 
-    int R = 30;
+    /* JADX INFO: renamed from: R */
+    int minimapHeightWhenSidebarVisible = 30;
 
-    int S = -1;
+    /* JADX INFO: renamed from: S */
+    int minimapMinHeightWhenSidebarVisible = -1;
 
     /* JADX INFO: renamed from: V */
     final Rect tempDrawRect = new Rect();
@@ -197,7 +199,7 @@ public class Minimap {
     /* JADX INFO: renamed from: ae */
     GraphicsOperation graphicsOperation = new GraphicsOperation() { // from class: com.corrodinggames.rts.gameFramework.f.o.1
         @Override // com.corrodinggames.rts.gameFramework.graphics.GraphicsOperation
-        public void a(GraphicsEngine graphicsEngine) {
+        public void draw(GraphicsEngine graphicsEngine) {
             Minimap.this.drawUnitsAndBuildings(graphicsEngine, 0, 0, 0.0f, 1.0f);
         }
     };
@@ -260,7 +262,7 @@ public class Minimap {
     /* JADX INFO: renamed from: a */
     public void updateMinimapPosition() {
         GameEngine gameEngine = GameEngine.getInstance();
-        if (!GameUI.bR) {
+        if (!GameUI.isSidebarOnLeft) {
             this.x = (int) (gameEngine.screenWidth - (this.width + 0.0f));
             this.y = 0.0f;
         } else {
@@ -713,11 +715,11 @@ public class Minimap {
         if (this.lastPingTime > 15.0f) {
             MinimapPing minimapPing = null;
             for (MinimapPing minimapPing2 : this.pingMarkers) {
-                if (minimapPing2.e != 0.0f) {
+                if (minimapPing2.fadeOutTimer != 0.0f) {
                     minimapPing2.radius = 0.0f;
                 } else if (minimapPing2.radius > 15.0f) {
                     minimapPing2.radius = 0.0f;
-                    minimapPing2.e = 300.0f;
+                    minimapPing2.fadeOutTimer = 300.0f;
                     MinimapEffect minimapEffect = new MinimapEffect(this);
                     minimapEffect.x = minimapPing2.x;
                     minimapEffect.y = minimapPing2.y;
@@ -731,8 +733,8 @@ public class Minimap {
                     this.activeEffects.add(minimapEffect);
                 }
                 minimapPing2.radius = Utility.moveTowardsZero(minimapPing2.radius, 2.0f * this.lastPingTime);
-                minimapPing2.e = Utility.moveTowardsZero(minimapPing2.e, this.lastPingTime);
-                if (minimapPing2.radius == 0.0f && minimapPing2.e == 0.0f) {
+                minimapPing2.fadeOutTimer = Utility.moveTowardsZero(minimapPing2.fadeOutTimer, this.lastPingTime);
+                if (minimapPing2.radius == 0.0f && minimapPing2.fadeOutTimer == 0.0f) {
                     minimapPing = minimapPing2;
                 }
             }
@@ -852,7 +854,7 @@ public class Minimap {
         if (!z && !z3) {
             this.borderPaint.a(255, 100, 100, 100);
             this.borderPaint.a(1.0f);
-            if (GameUI.bO) {
+            if (GameUI.showModernSidebar) {
                 this.borderPaint.a(115, 0, 0, 0);
                 this.borderPaint.a(2.0f);
             }

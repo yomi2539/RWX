@@ -403,7 +403,7 @@ public final class StoredResources {
     public String a(boolean z, boolean z2, int i, boolean z3, boolean z4) {
         TextRenderQueue textRenderQueue = new TextRenderQueue();
         a(textRenderQueue, z, z2, i, z3, z4, null, 0);
-        return textRenderQueue.a();
+        return textRenderQueue.getText();
     }
 
     public void a(TextRenderQueue textRenderQueue, boolean z, boolean z2, int i, boolean z3, boolean z4, BaseUnit baseUnit, int i2) {
@@ -427,11 +427,11 @@ public final class StoredResources {
                     boolean z5 = false;
                     if (resource.y != null && resource.z) {
                         z5 = true;
-                        int iC = textRenderQueue.c() - 2;
+                        int iC = textRenderQueue.getCharWidth() - 2;
                         if (iC < 2) {
                             iC = 2;
                         }
-                        textRenderQueue.a(resource.y, iC * 3, iC);
+                        textRenderQueue.addTexture(resource.y, iC * 3, iC);
                     }
                     String str2 = resource.a(storedResourceEntry.b, false, z5) + str;
                     boolean z6 = false;
@@ -445,9 +445,9 @@ public final class StoredResources {
                         iIntValue = i2;
                     }
                     if (z6) {
-                        textRenderQueue.a(str2, iIntValue);
+                        textRenderQueue.addColoredTextWithColor(str2, iIntValue);
                     } else {
-                        textRenderQueue.b(str2);
+                        textRenderQueue.addText(str2);
                     }
                     i4++;
                 }

@@ -93,9 +93,9 @@ public class UnitInfoAction extends AbstractUnitAction {
                 return "Editor";
             }
             if (!this.showInfo) {
-                strA = gameEngine.gameUI.interfaceRenderer.a((BaseUnit) orderableUnitK, false);
+                strA = gameEngine.gameUI.interfaceRenderer.getUnitInfoText((BaseUnit) orderableUnitK, false);
             } else {
-                strA = gameEngine.gameUI.interfaceRenderer.a(orderableUnitK.team);
+                strA = gameEngine.gameUI.interfaceRenderer.getActionTooltipText(orderableUnitK.team);
             }
         }
         return strA;
@@ -154,7 +154,7 @@ public class UnitInfoAction extends AbstractUnitAction {
     public String getDescription() {
         OrderableUnit orderableUnitK;
         if (!this.showInfo && (orderableUnitK = K()) != null) {
-            String strA = GameInterfaceRenderer.a(orderableUnitK, false, true, false);
+            String strA = GameInterfaceRenderer.clearMessageIfSame(orderableUnitK, false, true, false);
             if (0 != 0) {
                 DebugGameOutputStream debugGameOutputStream = new DebugGameOutputStream();
                 try {

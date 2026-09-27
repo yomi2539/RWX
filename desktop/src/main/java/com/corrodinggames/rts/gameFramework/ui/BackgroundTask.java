@@ -12,6 +12,7 @@ public abstract class BackgroundTask {
     abstract void run();
 
     /* JADX INFO: Access modifiers changed from: package-private */
+    /* JADX INFO: renamed from: <init> */
     protected BackgroundTask(String name) {
         this.taskName = name;
     }

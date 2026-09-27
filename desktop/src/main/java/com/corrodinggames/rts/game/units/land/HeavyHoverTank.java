@@ -122,9 +122,9 @@ public class HeavyHoverTank extends HoverLandUnit {
         GameEngine gameEngine = GameEngine.getInstance();
         Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(pointFE.x, pointFE.y, this.posZ, -56798);
         if (effectCreateLightEffect != null) {
-            effectCreateLightEffect.E = 0.7f;
-            effectCreateLightEffect.V = 30.0f;
-            effectCreateLightEffect.W = effectCreateLightEffect.V;
+            effectCreateLightEffect.alpha = 0.7f;
+            effectCreateLightEffect.lifeTimer = 30.0f;
+            effectCreateLightEffect.lifeMax = effectCreateLightEffect.lifeTimer;
             EffectManager.attachEffectToGameObject(effectCreateLightEffect, this);
         }
         gameEngine.effectManager.createLightEffect(projectileA, -1179648);

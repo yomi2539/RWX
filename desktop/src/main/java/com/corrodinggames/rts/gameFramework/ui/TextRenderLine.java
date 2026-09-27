@@ -9,9 +9,10 @@ public class TextRenderLine {
     /* JADX INFO: renamed from: a */
     FastArrayList<RenderElement> elements = new FastArrayList();
 
-    int b;
+    int widthPx;
 
-    public void a(RenderElement renderElement) {
+    /* JADX INFO: renamed from: a */
+    public void addRenderElement(RenderElement renderElement) {
         this.elements.add(renderElement);
     }
 }

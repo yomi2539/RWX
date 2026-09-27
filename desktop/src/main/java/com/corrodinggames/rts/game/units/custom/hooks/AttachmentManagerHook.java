@@ -410,7 +410,7 @@ public final class AttachmentManagerHook extends CustomUnitRenderHook {
                 if (baseUnit != null && (baseUnit instanceof OrderableUnit) && (attachmentSlotDefinitionDn = baseUnit.dn()) != null && attachmentSlotDefinitionDn.N != null) {
                     for (AbstractUnitAction abstractUnitAction : baseUnit.getAvailableActions()) {
                         if (z) {
-                            zA = LagHidingManager.a(attachmentSlotDefinitionDn.N, customUnit);
+                            zA = LagHidingManager.readLogicBooleanWithSnapshot(attachmentSlotDefinitionDn.N, customUnit);
                         } else {
                             zA = attachmentSlotDefinitionDn.N.read(customUnit);
                         }

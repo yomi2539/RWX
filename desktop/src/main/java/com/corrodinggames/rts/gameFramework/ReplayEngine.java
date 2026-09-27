@@ -670,7 +670,7 @@ public class ReplayEngine {
             gameEngine.gameTimeMillis = i5;
             gameEngine.networkEngine.stateChecksum.totalChecksum = 0L;
             if (f2 < 0.1d) {
-                NetworkEngine.a("replay setCurrentStepRate:" + f2 + " is too small", true);
+                NetworkEngine.reportDesyncVerbose("replay setCurrentStepRate:" + f2 + " is too small", true);
             }
             gameEngine.networkEngine.applyChangedSetup(f2, "replay");
             gameEngine.networkEngine.J = f3;

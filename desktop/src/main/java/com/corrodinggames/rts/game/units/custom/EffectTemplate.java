@@ -140,8 +140,8 @@ public class EffectTemplate {
             } else if (this.builtInEffect == BuiltInEffectType.medium) {
                 effectCreateSmallExplosion = gameEngine.effectManager.createFlameEffect2(f, f2, f3, f4, 0);
                 if (effectCreateSmallExplosion != null) {
-                    effectCreateSmallExplosion.G = 0.75f;
-                    effectCreateSmallExplosion.F = 0.75f;
+                    effectCreateSmallExplosion.scaleFrom = 0.75f;
+                    effectCreateSmallExplosion.scaleTo = 0.75f;
                 }
             } else if (this.builtInEffect == BuiltInEffectType.large) {
                 effectCreateSmallExplosion = gameEngine.effectManager.createFlameEffect2(f, f2, f3, f4, 0);
@@ -155,19 +155,19 @@ public class EffectTemplate {
             } else if (this.builtInEffect == BuiltInEffectType.smallExplosion) {
                 effectCreateSmallExplosion = gameEngine.effectManager.createSmallExplosion(f, f2, f3);
             } else if (this.builtInEffect == BuiltInEffectType.resourcePoolSmoke) {
-                EffectEmitter.a(f, f2).startColorOverride = -6684775;
-                EffectEmitter effectEmitterB = EffectEmitter.b(f, f2);
+                EffectEmitter.createDefaultFireEmitter(f, f2).startColorOverride = -6684775;
+                EffectEmitter effectEmitterB = EffectEmitter.createAlternateFireEmitter(f, f2);
                 effectEmitterB.duration = 500.0f;
                 effectEmitterB.startColorOverride = -6684775;
                 gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
                 Effect effectCreateSmallExplosion2 = gameEngine.effectManager.createSmallExplosion(f, f2, f3, -1127220);
                 if (effectCreateSmallExplosion2 != null) {
-                    effectCreateSmallExplosion2.G = 0.15f;
-                    effectCreateSmallExplosion2.F = 1.0f;
-                    effectCreateSmallExplosion2.ar = (short) 2;
-                    effectCreateSmallExplosion2.V = 35.0f;
-                    effectCreateSmallExplosion2.W = effectCreateSmallExplosion2.V;
-                    effectCreateSmallExplosion2.U = 0.0f;
+                    effectCreateSmallExplosion2.scaleFrom = 0.15f;
+                    effectCreateSmallExplosion2.scaleTo = 1.0f;
+                    effectCreateSmallExplosion2.drawLayer = (short) 2;
+                    effectCreateSmallExplosion2.lifeTimer = 35.0f;
+                    effectCreateSmallExplosion2.lifeMax = effectCreateSmallExplosion2.lifeTimer;
+                    effectCreateSmallExplosion2.delayedStartTimer = 0.0f;
                     effectCreateSmallExplosion2.startColor = -13378253;
                 }
                 effectCreateSmallExplosion = null;
@@ -180,7 +180,7 @@ public class EffectTemplate {
             if (effectCreateSmallExplosion == null) {
                 return null;
             }
-            effectCreateSmallExplosion.ar = (short) 2;
+            effectCreateSmallExplosion.drawLayer = (short) 2;
             if (gameObject != null) {
                 EffectManager.attachEffectToGameObject(effectCreateSmallExplosion, gameObject);
             }
@@ -210,55 +210,55 @@ public class EffectTemplate {
         if (effectCreateEffectInternal == null) {
             return null;
         }
-        effectCreateEffectInternal.a = this;
-        effectCreateEffectInternal.A = (short) (s + 1);
+        effectCreateEffectInternal.template = this;
+        effectCreateEffectInternal.emitRecursionDepth = (short) (s + 1);
         if (z2 && !this.showInFog) {
-            effectCreateEffectInternal.e = false;
+            effectCreateEffectInternal.showInFog = false;
         }
-        effectCreateEffectInternal.V = this.life;
-        effectCreateEffectInternal.V += a(this.lifeRandom);
-        effectCreateEffectInternal.W = effectCreateEffectInternal.V;
-        effectCreateEffectInternal.aq = this.stripIndex;
+        effectCreateEffectInternal.lifeTimer = this.life;
+        effectCreateEffectInternal.lifeTimer += a(this.lifeRandom);
+        effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
+        effectCreateEffectInternal.stripIndex = this.stripIndex;
         if (this.imageStrip != null) {
         }
-        effectCreateEffectInternal.ap = this.frameIndex;
+        effectCreateEffectInternal.frameIndex = this.frameIndex;
         if (this.frameIndexRandom != 0) {
-            effectCreateEffectInternal.ap += Utility.getRandomIntInRange(-this.frameIndexRandom, this.frameIndexRandom);
-            if (effectCreateEffectInternal.ap < 0) {
-                effectCreateEffectInternal.ap = 0;
+            effectCreateEffectInternal.frameIndex += Utility.getRandomIntInRange(-this.frameIndexRandom, this.frameIndexRandom);
+            if (effectCreateEffectInternal.frameIndex < 0) {
+                effectCreateEffectInternal.frameIndex = 0;
             }
         }
         float fA = f4 + this.pivotOffset + a(this.pivotOffsetRandom);
         if (this.alwayStartDirAtZero) {
-            effectCreateEffectInternal.Y = 0.0f;
+            effectCreateEffectInternal.rotation = 0.0f;
         } else {
-            effectCreateEffectInternal.Y = fA;
+            effectCreateEffectInternal.rotation = fA;
         }
-        effectCreateEffectInternal.Y += this.dirOffset;
-        effectCreateEffectInternal.Y += a(this.dirOffsetRandom);
+        effectCreateEffectInternal.rotation += this.dirOffset;
+        effectCreateEffectInternal.rotation += a(this.dirOffsetRandom);
         if (this.xOffsetAbsoluteRandom != 0.0f || this.yOffsetAbsoluteRandom != 0.0f || this.xOffsetAbsolute != 0.0f || this.yOffsetAbsolute != 0.0f) {
             float fA2 = this.xOffsetAbsolute + a(this.xOffsetAbsoluteRandom);
             float fA3 = this.yOffsetAbsolute + a(this.yOffsetAbsoluteRandom);
-            effectCreateEffectInternal.I += fA2;
-            effectCreateEffectInternal.J += fA3;
+            effectCreateEffectInternal.posX += fA2;
+            effectCreateEffectInternal.posY += fA3;
         }
         if (this.xOffsetRelativeRandom != 0.0f || this.yOffsetRelativeRandom != 0.0f || this.xOffsetRelative != 0.0f || this.yOffsetRelative != 0.0f) {
             float fFastCos = Utility.fastCos(fA);
             float fFastSin = Utility.fastSin(fA);
             float fA4 = this.xOffsetRelative + a(this.xOffsetRelativeRandom);
             float fA5 = this.yOffsetRelative + a(this.yOffsetRelativeRandom);
-            effectCreateEffectInternal.I += (fFastCos * fA5) - (fFastSin * fA4);
-            effectCreateEffectInternal.J += (fFastSin * fA5) + (fFastCos * fA4);
+            effectCreateEffectInternal.posX += (fFastCos * fA5) - (fFastSin * fA4);
+            effectCreateEffectInternal.posY += (fFastSin * fA5) + (fFastCos * fA4);
         }
-        effectCreateEffectInternal.K += this.hOffset + a(-this.hOffsetRandom, this.hOffsetRandom);
-        effectCreateEffectInternal.an = true;
+        effectCreateEffectInternal.posZ += this.hOffset + a(-this.hOffsetRandom, this.hOffsetRandom);
+        effectCreateEffectInternal.isCentered = true;
         effectCreateEffectInternal.fadeIn = true;
-        effectCreateEffectInternal.ar = this.drawLayer;
-        effectCreateEffectInternal.G = this.scaleFrom;
-        effectCreateEffectInternal.F = this.scaleTo;
-        effectCreateEffectInternal.E = this.alpha;
+        effectCreateEffectInternal.drawLayer = this.drawLayer;
+        effectCreateEffectInternal.scaleFrom = this.scaleFrom;
+        effectCreateEffectInternal.scaleTo = this.scaleTo;
+        effectCreateEffectInternal.alpha = this.alpha;
         effectCreateEffectInternal.startColor = this.color;
-        effectCreateEffectInternal.B = this.cachedLightingColorFilter;
+        effectCreateEffectInternal.lightingColorFilter = this.cachedLightingColorFilter;
         if (this.teamColorRatio != 0.0f && gameObject != null) {
             PlayerTeam playerTeam = null;
             if (gameObject instanceof BaseUnit) {
@@ -276,7 +276,7 @@ public class EffectTemplate {
                 int teamColorArgb = playerTeam.getTeamColorArgb();
                 effectCreateEffectInternal.startColor = Color.a(iA, Utility.distance((int) (iB + (Color.b(teamColorArgb) * this.teamColorRatio)), 0, 255), Utility.distance((int) (iC + (Color.c(teamColorArgb) * this.teamColorRatio)), 0, 255), Utility.distance((int) (iD + (Color.d(teamColorArgb) * this.teamColorRatio)), 0, 255));
                 if (GameEngine.isAndroidPlatform()) {
-                    effectCreateEffectInternal.B = new LightingColorFilter(effectCreateEffectInternal.startColor, 0);
+                    effectCreateEffectInternal.lightingColorFilter = new LightingColorFilter(effectCreateEffectInternal.startColor, 0);
                 }
             }
         }
@@ -284,39 +284,39 @@ public class EffectTemplate {
             effectCreateEffectInternal.fadeOut = true;
             effectCreateEffectInternal.fadeDuration = this.fadeInTime;
         }
-        effectCreateEffectInternal.as = this.shadow;
+        effectCreateEffectInternal.shadow = this.shadow;
         effectCreateEffectInternal.fadeIn = this.fadeOut;
-        effectCreateEffectInternal.U = this.delayedStartTimer;
-        effectCreateEffectInternal.U += a(-this.delayedStartTimerRandom, this.delayedStartTimerRandom);
+        effectCreateEffectInternal.delayedStartTimer = this.delayedStartTimer;
+        effectCreateEffectInternal.delayedStartTimer += a(-this.delayedStartTimerRandom, this.delayedStartTimerRandom);
         effectCreateEffectInternal.useGravity = this.atmospheric;
         effectCreateEffectInternal.useBounce = this.physics;
-        effectCreateEffectInternal.w = this.physicsGravity;
-        effectCreateEffectInternal.q = this.priority;
-        effectCreateEffectInternal.P = this.xSpeedAbsolute + a(this.xSpeedAbsoluteRandom);
-        effectCreateEffectInternal.Q = this.ySpeedAbsolute + a(this.ySpeedAbsoluteRandom);
+        effectCreateEffectInternal.physicsGravity = this.physicsGravity;
+        effectCreateEffectInternal.priority = this.priority;
+        effectCreateEffectInternal.velocityX = this.xSpeedAbsolute + a(this.xSpeedAbsoluteRandom);
+        effectCreateEffectInternal.velocityY = this.ySpeedAbsolute + a(this.ySpeedAbsoluteRandom);
         if (this.xSpeedRelative != 0.0f || this.ySpeedRelative != 0.0f || this.xSpeedRelativeRandom != 0.0f || this.ySpeedRelativeRandom != 0.0f) {
             float fFastCos2 = Utility.fastCos(fA);
             float fFastSin2 = Utility.fastSin(fA);
             float fA6 = this.xSpeedRelative + a(this.xSpeedRelativeRandom);
             float fA7 = this.ySpeedRelative + a(this.ySpeedRelativeRandom);
-            effectCreateEffectInternal.P += (fFastCos2 * fA7) - (fFastSin2 * fA6);
-            effectCreateEffectInternal.Q += (fFastSin2 * fA7) + (fFastCos2 * fA6);
+            effectCreateEffectInternal.velocityX += (fFastCos2 * fA7) - (fFastSin2 * fA6);
+            effectCreateEffectInternal.velocityY += (fFastSin2 * fA7) + (fFastCos2 * fA6);
         }
-        effectCreateEffectInternal.R = this.hSpeed + a(this.hSpeedRandom);
-        effectCreateEffectInternal.Z = this.dirSpeed + a(this.dirSpeedRandom);
+        effectCreateEffectInternal.velocityZ = this.hSpeed + a(this.hSpeedRandom);
+        effectCreateEffectInternal.rotationSpeed = this.dirSpeed + a(this.dirSpeedRandom);
         if (this.animateFrameStart != this.animateFrameEnd) {
-            effectCreateEffectInternal.ae = true;
+            effectCreateEffectInternal.animateFrames = true;
         }
-        effectCreateEffectInternal.af = this.animateFrameStart;
+        effectCreateEffectInternal.animateFrameStart = this.animateFrameStart;
         if (this.animateFrameStartRandomAdd != 0) {
-            effectCreateEffectInternal.af += Utility.getRandomIntInRange(0, this.animateFrameStartRandomAdd);
+            effectCreateEffectInternal.animateFrameStart += Utility.getRandomIntInRange(0, this.animateFrameStartRandomAdd);
         }
-        effectCreateEffectInternal.ag = this.animateFrameEnd;
-        effectCreateEffectInternal.ak = this.animateFrameStart;
-        effectCreateEffectInternal.ah = this.animateFramePingPong;
-        effectCreateEffectInternal.ai = this.animateFrameLooping;
-        effectCreateEffectInternal.aj = this.animateFrameSpeed;
-        effectCreateEffectInternal.aj += a(this.animateFrameSpeedRandom);
+        effectCreateEffectInternal.animateFrameEnd = this.animateFrameEnd;
+        effectCreateEffectInternal.currentFrame = this.animateFrameStart;
+        effectCreateEffectInternal.animateFramePingPong = this.animateFramePingPong;
+        effectCreateEffectInternal.animateFrameLooping = this.animateFrameLooping;
+        effectCreateEffectInternal.animateFrameSpeed = this.animateFrameSpeed;
+        effectCreateEffectInternal.animateFrameSpeed += a(this.animateFrameSpeedRandom);
         if (gameObject != null && this.attachedToUnit) {
             EffectManager.attachEffectToGameObject(effectCreateEffectInternal, gameObject);
         }
@@ -438,29 +438,29 @@ public class EffectTemplate {
         Texture textureA = customUnitConfig.a(iniFile, str, "image");
         if (textureA != null) {
             this.imageStrip = new SpriteSheet();
-            this.imageStrip.i = textureA;
-            this.imageStrip.b = this.imageStrip.i.m() / iIntValue;
-            this.imageStrip.c = this.imageStrip.i.l();
-            this.imageStrip.b = iniFile.getInt(str, "frame_width", Integer.valueOf(this.imageStrip.b)).intValue();
-            this.imageStrip.c = iniFile.getInt(str, "frame_height", Integer.valueOf(this.imageStrip.c)).intValue();
-            if (iIntValue == 1 && this.imageStrip.b >= this.imageStrip.i.m()) {
-                this.imageStrip.k = true;
-            } else if (this.imageStrip.c < this.imageStrip.i.l()) {
-                this.imageStrip.h = this.imageStrip.i.m() / this.imageStrip.b;
-                if (this.imageStrip.h < 1) {
-                    this.imageStrip.h = 1;
+            this.imageStrip.texture = textureA;
+            this.imageStrip.frameWidth = this.imageStrip.texture.m() / iIntValue;
+            this.imageStrip.frameHeight = this.imageStrip.texture.l();
+            this.imageStrip.frameWidth = iniFile.getInt(str, "frame_width", Integer.valueOf(this.imageStrip.frameWidth)).intValue();
+            this.imageStrip.frameHeight = iniFile.getInt(str, "frame_height", Integer.valueOf(this.imageStrip.frameHeight)).intValue();
+            if (iIntValue == 1 && this.imageStrip.frameWidth >= this.imageStrip.texture.m()) {
+                this.imageStrip.singleFrame = true;
+            } else if (this.imageStrip.frameHeight < this.imageStrip.texture.l()) {
+                this.imageStrip.framesPerRow = this.imageStrip.texture.m() / this.imageStrip.frameWidth;
+                if (this.imageStrip.framesPerRow < 1) {
+                    this.imageStrip.framesPerRow = 1;
                 }
             }
-            this.imageStrip.d = 0;
-            this.imageStrip.e = 0;
-            this.imageStrip.f = this.imageStrip.b;
-            this.imageStrip.g = this.imageStrip.c;
+            this.imageStrip.offsetX = 0;
+            this.imageStrip.offsetY = 0;
+            this.imageStrip.stepX = this.imageStrip.frameWidth;
+            this.imageStrip.stepY = this.imageStrip.frameHeight;
             String string4 = iniFile.getString(str, "imageShadow", (String) null);
             if (string4 != null) {
-                this.imageStrip.j = CustomUnitConfigParser.cacheTexture(customUnitConfig.resourceLoadPath, string4, customUnitConfig.imageSmoothing, customUnitConfig, str, "imageShadow");
+                this.imageStrip.shadowTexture = CustomUnitConfigParser.cacheTexture(customUnitConfig.resourceLoadPath, string4, customUnitConfig.imageSmoothing, customUnitConfig, str, "imageShadow");
                 this.shadow = true;
             }
-            if (this.shadow && this.imageStrip.j == null) {
+            if (this.shadow && this.imageStrip.shadowTexture == null) {
                 throw new ConfigParseException("imageShadow is required if image and shadow:true is used");
             }
         }
@@ -471,7 +471,7 @@ public class EffectTemplate {
         this.animateFrameLooping = iniFile.getBoolean(str, "animateFrameLooping", (Boolean) false).booleanValue();
         this.animateFrameSpeed = iniFile.getTime(str, "animateFrameSpeed", Float.valueOf(0.5f)).floatValue();
         this.animateFrameSpeedRandom = iniFile.getTime(str, "animateFrameSpeedRandom", Float.valueOf(0.0f)).floatValue();
-        if (textureA != null && ((this.imageStrip.b >= this.imageStrip.i.m() || iIntValue != 1) && this.animateFrameEnd > iIntValue)) {
+        if (textureA != null && ((this.imageStrip.frameWidth >= this.imageStrip.texture.m() || iIntValue != 1) && this.animateFrameEnd > iIntValue)) {
             throw new ConfigParseException("animateFrameEnd:" + this.animateFrameEnd + " cannot be larger than TOTAL_FRAMES: " + iIntValue + " (when using custom image)");
         }
         this.alsoEmitEffects = customUnitConfig.createSpawnList(iniFile.getString(str, "alsoEmitEffects", (String) null));

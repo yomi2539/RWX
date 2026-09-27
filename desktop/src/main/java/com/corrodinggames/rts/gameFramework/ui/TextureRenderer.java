@@ -25,7 +25,8 @@ public class TextureRenderer extends RenderElement {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.RenderElement
-    public int a(Paint paint) {
+    /* JADX INFO: renamed from: a */
+    public int measureWidth(Paint paint) {
         return this.width;
     }
 }

@@ -644,7 +644,7 @@ public class EditorOrBuilder extends LandUnit implements UnitPathPoints {
                     GameEngine gameEngine2 = GameEngine.getInstance();
                     if (!gameEngine2.replayEngine.k()) {
                         EditorOrBuilder editorOrBuilderL = EditorOrBuilder.L();
-                        gameEngine2.gameUI.e = true;
+                        gameEngine2.gameUI.unusedFlag2 = true;
                         if (!gameEngine2.networkEngine.networkGameActive) {
                             long j = gameEngine2.networkEngine.nextUnitId;
                             gameEngine2.networkEngine.requireActiveMods = true;
@@ -659,7 +659,7 @@ public class EditorOrBuilder extends LandUnit implements UnitPathPoints {
                         }
                         String str = "[sandbox]" + gameEngine2.getCurrentMapName() + " [v" + gameEngine2.getVersionString() + "] (" + Utility.formatCurrentDate("d MMM yyyy HH.mm.ss") + ").replay";
                         gameEngine2.replayEngine.d(str);
-                        gameEngine2.gameUI.e = false;
+                        gameEngine2.gameUI.unusedFlag2 = false;
                         GameEngine.addUIMessage(null, "Replay started as: " + str);
                         EditorOrBuilder editorOrBuilderL2 = EditorOrBuilder.L();
                         if (editorOrBuilderL2 != null && editorOrBuilderL != null) {
@@ -765,16 +765,16 @@ public class EditorOrBuilder extends LandUnit implements UnitPathPoints {
                         GameEngine.log("stopPlaybackRunnable: Already started");
                     }
                 };
-                final MenuDialog menuDialogA = MenuDialog.a("Start playback of last recording?", true);
-                menuDialogA.a(Locale.get("menus.common.ok", new Object[0]), new UIEventHandler() { // from class: com.corrodinggames.rts.game.units.h.3.2
+                final MenuDialog menuDialogA = MenuDialog.create("Start playback of last recording?", true);
+                menuDialogA.addButton(Locale.get("menus.common.ok", new Object[0]), new UIEventHandler() { // from class: com.corrodinggames.rts.game.units.h.3.2
                     @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIEventHandler
-                    public boolean a(UIEvent uIEvent) {
-                        menuDialogA.i();
+                    public boolean handleEvent(UIEvent uIEvent) {
+                        menuDialogA.removeFromParent();
                         gameEngine.queueGameThreadTask(runnable);
                         return true;
                     }
                 });
-                gameEngine.gameUI.a(menuDialogA);
+                gameEngine.gameUI.centerAndShowDialog(menuDialogA);
                 return false;
             }
             gameEngine.queueGameThreadTask(new Runnable() { // from class: com.corrodinggames.rts.game.units.h.3.3

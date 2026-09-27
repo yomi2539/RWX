@@ -11,7 +11,8 @@ class UnitUpgradedLogEntry extends UnitCreatedLogEntry {
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.UnitCreatedLogEntry, com.corrodinggames.rts.gameFramework.ui.WarLogEntry
-    public String a() {
+    /* JADX INFO: renamed from: a */
+    public String getDisplayText() {
         if (this.text == null) {
             this.text = String.format(Locale.get("gui.log.upgradeCompleted", new Object[0]), this.unitType.getUnitName(), Integer.valueOf(this.count));
         }

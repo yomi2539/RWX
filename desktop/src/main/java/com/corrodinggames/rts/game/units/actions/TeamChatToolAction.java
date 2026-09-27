@@ -26,7 +26,7 @@ public class TeamChatToolAction extends CustomUnitToolAction {
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction
     /* JADX INFO: renamed from: c */
     public boolean onClicked(BaseUnit baseUnit, boolean z) {
-        GameEngine.getInstance().gameUI.interfaceRenderer.n();
+        GameEngine.getInstance().gameUI.interfaceRenderer.showChatDialog();
         return true;
     }
 

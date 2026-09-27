@@ -140,7 +140,7 @@ public class CanvasGraphicsRenderer implements GraphicsInterface {
 
     @Override // com.corrodinggames.rts.gameFramework.graphics.GraphicsInterface
     public void a(GraphicsOperation graphicsOperation) {
-        graphicsOperation.a(GameEngine.getInstance().renderGraphicsEngine);
+        graphicsOperation.draw(GameEngine.getInstance().renderGraphicsEngine);
     }
 
     @Override // com.corrodinggames.rts.gameFramework.graphics.GraphicsInterface

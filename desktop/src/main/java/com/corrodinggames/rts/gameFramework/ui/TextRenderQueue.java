@@ -12,24 +12,35 @@ import com.corrodinggames.rts.gameFramework.utility.FastArrayList;
 /* JADX INFO: renamed from: com.corrodinggames.rts.gameFramework.f.ae */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/gameFramework/f/ae.class */
 public class TextRenderQueue {
-    static Paint h;
-    static GamePaint a = new GamePaint();
-    static GamePaint b = new GamePaint();
-    static GamePaint c = new GamePaint();
+    /* JADX INFO: renamed from: h */
+    static Paint debugStrikeThruPaint;
+    /* JADX INFO: renamed from: a */
+    static GamePaint sharedPaint = new GamePaint();
+    /* JADX INFO: renamed from: b */
+    static GamePaint sharedHighlightPaint = new GamePaint();
+    /* JADX INFO: renamed from: c */
+    static GamePaint sharedStrikeThruPaint = new GamePaint();
+    /* JADX INFO: renamed from: f */
     static Paint coloredTextPaint = new Paint();
-    public Paint defaultPaint = a;
-    public Paint highlightPaint = a;
-    public Paint currentPaint = this.defaultPaint;
-    FastArrayList<RenderElement> elements = new FastArrayList();
 
     static {
-        c.a(true);
-        h = new Paint();
-        h.b(-65536);
-        h.a(Paint.Style.STROKE);
+        sharedStrikeThruPaint.a(true);
+        debugStrikeThruPaint = new Paint();
+        debugStrikeThruPaint.b(-65536);
+        debugStrikeThruPaint.a(Paint.Style.STROKE);
     }
 
-    public void a(Paint paint) {
+    /* JADX INFO: renamed from: d */
+    public Paint defaultPaint = sharedPaint;
+    /* JADX INFO: renamed from: e */
+    public Paint highlightPaint = sharedPaint;
+    /* JADX INFO: renamed from: g */
+    public Paint currentPaint = this.defaultPaint;
+    /* JADX INFO: renamed from: i */
+    FastArrayList<RenderElement> elements = new FastArrayList();
+
+    /* JADX INFO: renamed from: a */
+    public void setCurrentPaint(Paint paint) {
         if (paint == null) {
             this.currentPaint = this.defaultPaint;
         } else {
@@ -37,7 +48,8 @@ public class TextRenderQueue {
         }
     }
 
-    public void a(boolean z) {
+    /* JADX INFO: renamed from: a */
+    public void setUseHighlightPaint(boolean z) {
         if (z) {
             this.currentPaint = this.highlightPaint;
         } else {
@@ -45,7 +57,8 @@ public class TextRenderQueue {
         }
     }
 
-    public String a() {
+    /* JADX INFO: renamed from: a */
+    public String getText() {
         StringBuilder sb = new StringBuilder();
         for (RenderElement renderElement : this.elements) {
             if (renderElement instanceof TextRenderer) {
@@ -55,7 +68,8 @@ public class TextRenderQueue {
         return sb.toString();
     }
 
-    public void a(String str) {
+    /* JADX INFO: renamed from: a */
+    public void trimLastTextSuffix(String str) {
         if (this.elements.size() > 0) {
             int size = this.elements.size() - 1;
             RenderElement renderElement = (RenderElement) this.elements.get(size);
@@ -63,49 +77,56 @@ public class TextRenderQueue {
                 TextRenderer textRenderer = (TextRenderer) renderElement;
                 String strBooleanToString = Utility.removeSuffix(textRenderer.text, str);
                 if (!textRenderer.text.equals(strBooleanToString)) {
-                    this.elements.set(size, textRenderer.b(strBooleanToString));
+                    this.elements.set(size, textRenderer.withText(strBooleanToString));
                 }
             }
         }
     }
 
-    public void b() {
+    /* JADX INFO: renamed from: b */
+    public void clearElements() {
         this.elements.clear();
     }
 
-    public void a(RenderElement renderElement) {
+    /* JADX INFO: renamed from: a */
+    public void addRenderElement(RenderElement renderElement) {
         this.elements.add(renderElement);
     }
 
-    public void b(String str) {
+    /* JADX INFO: renamed from: b */
+    public void addText(String str) {
         if (this.currentPaint != null && this.currentPaint != this.defaultPaint) {
-            a(str, this.currentPaint);
+            addText(str, this.currentPaint);
         } else {
-            a(new TextRenderer(this, str));
+            addRenderElement(new TextRenderer(this, str));
         }
     }
 
-    public void a(String str, Paint paint) {
-        a(new ColoredTextRenderer(this, str, paint));
+    /* JADX INFO: renamed from: a */
+    public void addText(String str, Paint paint) {
+        addRenderElement(new ColoredTextRenderer(this, str, paint));
     }
 
-    public void a(String str, int i) {
+    /* JADX INFO: renamed from: a */
+    public void addColoredTextWithColor(String str, int i) {
         if (this.currentPaint != null && this.currentPaint != this.defaultPaint) {
-            a(new ColoredTextRenderer(this, str, this.currentPaint, i));
+            addRenderElement(new ColoredTextRenderer(this, str, this.currentPaint, i));
         } else {
-            a(new ColoredTextRenderer(this, str, null, i));
+            addRenderElement(new ColoredTextRenderer(this, str, null, i));
         }
     }
 
-    public void a(String str, int i, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public void addColoredTextWithHighlightPaint(String str, int i, boolean z) {
         Paint paint = this.defaultPaint;
         if (z) {
             paint = this.highlightPaint;
         }
-        a(new ColoredTextRenderer(this, str, paint, i));
+        addRenderElement(new ColoredTextRenderer(this, str, paint, i));
     }
 
-    public void a(Texture texture, int i, int i2) {
+    /* JADX INFO: renamed from: a */
+    public void addTexture(Texture texture, int i, int i2) {
         TextureRenderer textureRenderer = new TextureRenderer(this);
         textureRenderer.texture = texture;
         float scale = TextUtils.getScale(texture, i, i2);
@@ -115,7 +136,8 @@ public class TextRenderQueue {
         this.elements.add(textureRenderer);
     }
 
-    public int c() {
+    /* JADX INFO: renamed from: c */
+    public int getCharWidth() {
         return GameEngine.getInstance().renderGraphicsEngine.a("A", this.currentPaint);
     }
 
@@ -129,7 +151,8 @@ public class TextRenderQueue {
     	at jadx.core.dex.visitors.typeinference.FixTypesVisitor.applyFieldType(FixTypesVisitor.java:309)
     	at jadx.core.dex.visitors.typeinference.FixTypesVisitor.visit(FixTypesVisitor.java:94)
      */
-    public TextRenderLayout a(int i, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public TextRenderLayout createTextLayout(int i, boolean z) {
         int iLastIndexOf;
         GameEngine.getInstance();
         Rect rect = new Rect((-i) / 2, 0, i / 2, 10);
@@ -138,15 +161,15 @@ public class TextRenderQueue {
         Paint paint = this.defaultPaint;
         int i2 = i - 5;
         for (RenderElement renderElement : this.elements) {
-            if (textRenderLine.b >= i2 - 5) {
+            if (textRenderLine.widthPx >= i2 - 5) {
                 if (textRenderLine.elements.size() > 0) {
                     fastArrayList.add(textRenderLine);
                 }
                 textRenderLine = new TextRenderLine();
             }
             if (!(renderElement instanceof TextRenderer)) {
-                textRenderLine.a(renderElement);
-                textRenderLine.b += renderElement.a(this.defaultPaint);
+                textRenderLine.addRenderElement(renderElement);
+                textRenderLine.widthPx += renderElement.measureWidth(this.defaultPaint);
             } else {
                 TextRenderer textRenderer = (TextRenderer) renderElement;
                 String str = textRenderer.text;
@@ -157,7 +180,7 @@ public class TextRenderQueue {
                         fastArrayList.add(textRenderLine);
                         textRenderLine = new TextRenderLine();
                     } else {
-                        int iA = paint.a((CharSequence) str, i3, str.length(), true, i2 - textRenderLine.b, (float[]) null);
+                        int iA = paint.a((CharSequence) str, i3, str.length(), true, i2 - textRenderLine.widthPx, (float[]) null);
                         if (iA == 0) {
                             break;
                         }
@@ -177,14 +200,14 @@ public class TextRenderQueue {
                         if (Utility.containsSubstring(strSubstring, "\\n")) {
                             strSubstring = strSubstring.replaceAll("(\\n)", VariableScope.nullOrMissingString);
                         }
-                        TextRenderer textRendererB = textRenderer.b(strSubstring);
-                        textRenderLine.a(textRendererB);
-                        textRenderLine.b += textRendererB.a(this.defaultPaint);
+                        TextRenderer textRendererB = textRenderer.withText(strSubstring);
+                        textRenderLine.addRenderElement(textRendererB);
+                        textRenderLine.widthPx += textRendererB.measureWidth(this.defaultPaint);
                         i3 += iA;
                         if (i3 < str.length() && str.charAt(i3) == '\n') {
                             i3++;
                         }
-                        if (z2 || textRenderLine.b >= i2 - 5) {
+                        if (z2 || textRenderLine.widthPx >= i2 - 5) {
                             if (textRenderLine.elements.size() > 0) {
                                 fastArrayList.add(textRenderLine);
                             }
@@ -205,8 +228,8 @@ public class TextRenderQueue {
             float fD = rect.d();
             float f2 = 0.0f;
             for (TextRenderLine textRenderLine2 : fastArrayList) {
-                if (textRenderLine2.b > f2) {
-                    f2 = textRenderLine2.b;
+                if (textRenderLine2.widthPx > f2) {
+                    f2 = textRenderLine2.widthPx;
                 }
             }
             float f3 = f2;

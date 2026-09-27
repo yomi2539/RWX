@@ -127,8 +127,8 @@ public class Artillery extends LandUnit {
         gameEngine.effectManager.createFlameEffect(pointFE.x, pointFE.y, this.posZ, this.movementLevels[i].targetX);
         Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(pointFE.x, pointFE.y, this.posZ, -1118482);
         if (effectCreateLightEffect != null) {
-            effectCreateLightEffect.V = 15.0f;
-            effectCreateLightEffect.W = effectCreateLightEffect.V;
+            effectCreateLightEffect.lifeTimer = 15.0f;
+            effectCreateLightEffect.lifeMax = effectCreateLightEffect.lifeTimer;
         }
     }
 

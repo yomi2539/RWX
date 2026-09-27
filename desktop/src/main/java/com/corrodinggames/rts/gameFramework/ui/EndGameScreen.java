@@ -75,7 +75,8 @@ public class EndGameScreen {
     /* JADX INFO: renamed from: s */
     boolean showRateGamePopup = false;
 
-    float t = 0.0f;
+    /* JADX INFO: renamed from: t */
+    float unusedFloat1 = 0.0f;
 
     public EndGameScreen() {
         GameEngine gameEngine = GameEngine.getInstance();
@@ -129,21 +130,21 @@ public class EndGameScreen {
             int screenPixels4 = screenPixels2 + gameEngine.toScreenPixels(this.buttonSpacing);
             int size = this.backgroundTasks.size();
             float realAssetPath = 0.0f;
-            if (gameUI.c) {
-                gameUI.d += (2.0f * f) / 60.0f;
-                realAssetPath = Utility.easeInOutQuad(Utility.clampTo255(gameUI.d, 0.0f, 1.0f));
+            if (gameUI.isCompactEndGameUi) {
+                gameUI.endGameFadeIn += (2.0f * f) / 60.0f;
+                realAssetPath = Utility.easeInOutQuad(Utility.clampTo255(gameUI.endGameFadeIn, 0.0f, 1.0f));
             }
             int screenPixels5 = gameEngine.toScreenPixels(40) + (screenPixels4 * size);
             int screenPixels6 = gameEngine.toScreenPixels(140);
-            if (gameUI.b) {
+            if (gameUI.showEndGameStatsButton) {
                 screenPixels6 += gameEngine.toScreenPixels(50);
             }
-            if (gameUI.c) {
+            if (gameUI.isCompactEndGameUi) {
                 screenPixels5 = (int) Utility.lerp(screenPixels5, gameEngine.currentScreenWidthPixels * 0.9f, realAssetPath);
                 screenPixels6 = (int) Utility.lerp(screenPixels6, gameEngine.currentScreenHeightPixels * 0.9f, realAssetPath);
             }
             float fFromHexString = gameEngine.halfScreenHeight - (screenPixels6 / 2);
-            if (!gameUI.c) {
+            if (!gameUI.isCompactEndGameUi) {
                 fFromHexString = Utility.lerp(fFromHexString, fFromHexString / 2.0f, 1.0f - realAssetPath);
             }
             if (fFromHexString < 20.0f) {
@@ -160,7 +161,7 @@ public class EndGameScreen {
                 this.savedMousePressed = gameUI.isMousePressed;
                 gameUI.isMousePressed = false;
             }
-            gameUI.a(this.screenBounds);
+            gameUI.forceModifiersInsideRect(this.screenBounds);
         }
     }
 
@@ -203,14 +204,14 @@ public class EndGameScreen {
             int size = this.backgroundTasks.size();
             int i = (int) ((gameEngine.currentScreenWidthPixels / 2.0f) - (((screenPixels2 * size) + ((size - 1) * screenPixels3)) / 2));
             float f2 = 0.0f;
-            if (gameUI.c) {
-                f2 = Utility.easeInOutQuad(Utility.clampTo255(gameUI.d, 0.0f, 1.0f)) >= 1.0f ? 1.0f : 0.0f;
+            if (gameUI.isCompactEndGameUi) {
+                f2 = Utility.easeInOutQuad(Utility.clampTo255(gameUI.endGameFadeIn, 0.0f, 1.0f)) >= 1.0f ? 1.0f : 0.0f;
             }
             if (z) {
-                float f3 = gameUI.ninePatchStyle5.g;
-                gameUI.ninePatchStyle5.g = f2;
-                gameUI.ninePatchStyle5.c(gameEngine.renderGraphicsEngine, this.screenBounds);
-                gameUI.ninePatchStyle5.g = f3;
+                float f3 = gameUI.ninePatchStyle5.patchScale;
+                gameUI.ninePatchStyle5.patchScale = f2;
+                gameUI.ninePatchStyle5.drawNormal(gameEngine.renderGraphicsEngine, this.screenBounds);
+                gameUI.ninePatchStyle5.patchScale = f3;
             }
             int screenPixels5 = this.screenBounds.b + gameEngine.toScreenPixels(40);
             int i2 = (int) (gameEngine.currentScreenWidthPixels / 2.0f);
@@ -236,25 +237,25 @@ public class EndGameScreen {
                     gameEngine.effectManager.setForceHighQuality();
                     Effect effectCreateLightEffectInternal = gameEngine.effectManager.createLightEffectInternal(0.0f, 0.0f, 0.0f, Color.a(255, Utility.getRandomIntInRange(0, 255), Utility.getRandomIntInRange(0, 255), Utility.getRandomIntInRange(0, 255)));
                     if (effectCreateLightEffectInternal != null) {
-                        effectCreateLightEffectInternal.ar = (short) 4;
-                        effectCreateLightEffectInternal.I = i2 + Utility.randomFloatInRange(-70.0f, 70.0f);
-                        effectCreateLightEffectInternal.J = iFastCos + Utility.randomFloatInRange(-15.0f, 15.0f);
-                        effectCreateLightEffectInternal.J += gameEngine.halfScreenHeight / 2.0f;
-                        effectCreateLightEffectInternal.K += gameEngine.halfScreenHeight / 2.0f;
-                        effectCreateLightEffectInternal.V = Utility.randomFloatInRange(140.0f, 380.0f);
-                        effectCreateLightEffectInternal.W = effectCreateLightEffectInternal.V;
+                        effectCreateLightEffectInternal.drawLayer = (short) 4;
+                        effectCreateLightEffectInternal.posX = i2 + Utility.randomFloatInRange(-70.0f, 70.0f);
+                        effectCreateLightEffectInternal.posY = iFastCos + Utility.randomFloatInRange(-15.0f, 15.0f);
+                        effectCreateLightEffectInternal.posY += gameEngine.halfScreenHeight / 2.0f;
+                        effectCreateLightEffectInternal.posZ += gameEngine.halfScreenHeight / 2.0f;
+                        effectCreateLightEffectInternal.lifeTimer = Utility.randomFloatInRange(140.0f, 380.0f);
+                        effectCreateLightEffectInternal.lifeMax = effectCreateLightEffectInternal.lifeTimer;
                         effectCreateLightEffectInternal.fadeIn = true;
                         effectCreateLightEffectInternal.fadeOut = true;
                         effectCreateLightEffectInternal.fadeDuration = 5.0f;
-                        effectCreateLightEffectInternal.E = 2.0f;
-                        effectCreateLightEffectInternal.Q = Utility.randomFloatInRange(-2.7f, 2.7f);
-                        effectCreateLightEffectInternal.P = Utility.randomFloatInRange(-12.7f, 12.7f);
-                        effectCreateLightEffectInternal.G = 0.4f;
-                        effectCreateLightEffectInternal.F = 0.2f;
-                        effectCreateLightEffectInternal.R = Utility.randomFloatInRange(2.0f, 4.0f);
-                        effectCreateLightEffectInternal.w = 2.0f;
+                        effectCreateLightEffectInternal.alpha = 2.0f;
+                        effectCreateLightEffectInternal.velocityY = Utility.randomFloatInRange(-2.7f, 2.7f);
+                        effectCreateLightEffectInternal.velocityX = Utility.randomFloatInRange(-12.7f, 12.7f);
+                        effectCreateLightEffectInternal.scaleFrom = 0.4f;
+                        effectCreateLightEffectInternal.scaleTo = 0.2f;
+                        effectCreateLightEffectInternal.velocityZ = Utility.randomFloatInRange(2.0f, 4.0f);
+                        effectCreateLightEffectInternal.physicsGravity = 2.0f;
                         effectCreateLightEffectInternal.useBounce = true;
-                        effectCreateLightEffectInternal.p = true;
+                        effectCreateLightEffectInternal.isUiEffect = true;
                     }
                 }
             }
@@ -264,19 +265,19 @@ public class EndGameScreen {
                 Rect rect2 = this.tempRect;
                 rect.a(this.screenBounds.a + gameEngine.toScreenPixels(10), this.screenBounds.b + gameEngine.toScreenPixels(60), this.screenBounds.c - gameEngine.toScreenPixels(10), screenPixels6 - gameEngine.toScreenPixels(10));
                 rect2.a(rect);
-                if (!gameUI.c) {
+                if (!gameUI.isCompactEndGameUi) {
                     rect.b = this.screenBounds.d + gameEngine.toScreenPixels(15);
                     rect.d = rect.b + gameEngine.toScreenPixels(200);
                 }
-                boolean z4 = gameUI.d >= 1.0f;
+                boolean z4 = gameUI.endGameFadeIn >= 1.0f;
                 if (this.statsView != null) {
-                    this.statsView.a(rect, rect2, f, z4, gameUI.b);
+                    this.statsView.drawChart(rect, rect2, f, z4, gameUI.showEndGameStatsButton);
                 }
             }
             for (int i4 = 0; i4 < this.backgroundTasks.size(); i4++) {
                 if (z2) {
                     BackgroundTask backgroundTask = (BackgroundTask) this.backgroundTasks.get(i4);
-                    if (gameUI.a(i, screenPixels6, screenPixels2, screenPixels, backgroundTask.getTaskName(), IconGroup.none, false, iA, gameUI.buildingPreviewInvalidPaint, (UIStyle) gameUI.ninePatchStyle3)) {
+                    if (gameUI.isButtonPressedStyled(i, screenPixels6, screenPixels2, screenPixels, backgroundTask.getTaskName(), IconGroup.none, false, iA, gameUI.buildingPreviewInvalidPaint, (UIStyle) gameUI.ninePatchStyle3)) {
                         this.showRateGamePopup = false;
                         backgroundTask.run();
                     }
@@ -288,7 +289,7 @@ public class EndGameScreen {
             }
             if (this.screenBounds.b((int) gameUI.selectionBoxMinWidth, (int) gameUI.selectionBoxMinHeight)) {
             }
-            gameUI.a(this.screenBounds);
+            gameUI.forceModifiersInsideRect(this.screenBounds);
         }
     }
 
@@ -312,7 +313,7 @@ public class EndGameScreen {
         int screenPixels4 = gameEngine.toScreenPixels(30);
         int screenPixels5 = ((i + (screenPixels / 2)) - gameEngine.toScreenPixels(10)) - screenPixels3;
         int iA = Color.a(140, 100, 100, 100);
-        if (gameUI.a(screenPixels5, iC, screenPixels3, screenPixels4, rateGameYesText, IconGroup.none, false, iA, gameUI.buildingPreviewInvalidPaint, (UIStyle) null)) {
+        if (gameUI.isButtonPressedStyled(screenPixels5, iC, screenPixels3, screenPixels4, rateGameYesText, IconGroup.none, false, iA, gameUI.buildingPreviewInvalidPaint, (UIStyle) null)) {
             this.showRateGamePopup = false;
             GameView gameView = gameEngine.activeGameView;
             if (gameView == null) {
@@ -326,13 +327,13 @@ public class EndGameScreen {
             }
             surfaceHolder.l();
         }
-        if (gameUI.a(i + (screenPixels / 2) + gameEngine.toScreenPixels(10), iC, screenPixels3, screenPixels4, rateGameNoText, IconGroup.none, false, iA, gameUI.buildingPreviewInvalidPaint, (UIStyle) null)) {
+        if (gameUI.isButtonPressedStyled(i + (screenPixels / 2) + gameEngine.toScreenPixels(10), iC, screenPixels3, screenPixels4, rateGameNoText, IconGroup.none, false, iA, gameUI.buildingPreviewInvalidPaint, (UIStyle) null)) {
             this.showRateGamePopup = false;
         }
     }
 
     /* JADX INFO: renamed from: c */
     public void loadStats() {
-        this.statsView = StatsHistoryChart.a();
+        this.statsView = StatsHistoryChart.create();
     }
 }

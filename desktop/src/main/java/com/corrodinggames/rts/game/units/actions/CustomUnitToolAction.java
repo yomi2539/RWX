@@ -102,7 +102,7 @@ public abstract class CustomUnitToolAction extends AbstractUnitAction {
     @Override // com.corrodinggames.rts.game.units.actions.AbstractUnitAction
     /* JADX INFO: renamed from: l */
     public float getBuildSpeed() {
-        if (!GameUI.bP) {
+        if (!GameUI.showModernActionIcons) {
             return 1.0f;
         }
         return 1.0f;

@@ -19,8 +19,9 @@ public abstract class UnitAIBehavior extends AIBehavior {
     public abstract boolean isApplicableToUnit(AIController aIController, OrderableUnit orderableUnit);
 
     @Override // com.corrodinggames.rts.game.ai.behaviors.AIBehavior
-    public void a(GameInputStream gameInputStream) throws IOException {
-        super.a(gameInputStream);
+    /* JADX INFO: renamed from: a */
+    public void readFromInputStream(GameInputStream gameInputStream) throws IOException {
+        super.readFromInputStream(gameInputStream);
         int i = gameInputStream.readInt();
         for (int i2 = 0; i2 < i; i2++) {
             OrderableUnit unitEntity = gameInputStream.readOrderableUnit();

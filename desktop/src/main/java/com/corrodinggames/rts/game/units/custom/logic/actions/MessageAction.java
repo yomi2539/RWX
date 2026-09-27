@@ -74,10 +74,10 @@ public class MessageAction extends LogicAction {
             NetworkEngine.a((String) null, a(customUnit, this.showMessageToAllEnemyPlayers.b(customUnit)));
         }
         if (this.showQuickWarLogToPlayer != null && customUnit.team == gameEngine.playerTeam) {
-            gameEngine.gameUI.warLogDisplay.a(a(customUnit, this.showQuickWarLogToPlayer.b(customUnit)));
+            gameEngine.gameUI.warLogDisplay.logMessage(a(customUnit, this.showQuickWarLogToPlayer.b(customUnit)));
         }
         if (this.showQuickWarLogToAllPlayers != null) {
-            gameEngine.gameUI.warLogDisplay.a(a(customUnit, this.showQuickWarLogToAllPlayers.b(customUnit)));
+            gameEngine.gameUI.warLogDisplay.logMessage(a(customUnit, this.showQuickWarLogToAllPlayers.b(customUnit)));
         }
         if (this.debugMessage != null && gameEngine.isGameStarted && gameEngine.isDebugTempMode) {
             NetworkEngine.a((String) null, customUnit.r().getUnitTypeDescriptionShort() + "(" + customUnit.objectId + ") Debug: " + a(customUnit, this.debugMessage.b(customUnit)));

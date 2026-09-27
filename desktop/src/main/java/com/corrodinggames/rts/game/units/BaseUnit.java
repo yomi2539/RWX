@@ -1470,14 +1470,14 @@ public abstract class BaseUnit extends SizedObject {
             if (this.damageEffectTimer > 10.0f && this.damageEffectDurationTimer < 300.0f && !dl()) {
                 this.damageEffectTimer = 0.0f;
                 if (this.shouldDraw && gameEngine.shouldDrawMediumDetailEffects && (effectCreateEffectInternal = gameEngine.effectManager.createEffectInternal(this.posX, this.posY, this.posZ, EffectType.custom, false, EffectQuality.verylow)) != null) {
-                    EffectEmitter.b(effectCreateEffectInternal, true);
-                    effectCreateEffectInternal.I = this.posX;
-                    effectCreateEffectInternal.J = this.posY;
-                    effectCreateEffectInternal.K = this.posZ;
-                    effectCreateEffectInternal.P += Utility.randomFloatInRange(-0.1f, 0.1f) + this.velocityX;
-                    effectCreateEffectInternal.Q += Utility.randomFloatInRange(-0.1f, 0.1f) + this.velocityY;
-                    effectCreateEffectInternal.I += Utility.randomFloatInRange(-4.0f, 4.0f);
-                    effectCreateEffectInternal.J += Utility.randomFloatInRange(-4.0f, 4.0f);
+                    EffectEmitter.setupAlternateFireEffect(effectCreateEffectInternal, true);
+                    effectCreateEffectInternal.posX = this.posX;
+                    effectCreateEffectInternal.posY = this.posY;
+                    effectCreateEffectInternal.posZ = this.posZ;
+                    effectCreateEffectInternal.velocityX += Utility.randomFloatInRange(-0.1f, 0.1f) + this.velocityX;
+                    effectCreateEffectInternal.velocityY += Utility.randomFloatInRange(-0.1f, 0.1f) + this.velocityY;
+                    effectCreateEffectInternal.posX += Utility.randomFloatInRange(-4.0f, 4.0f);
+                    effectCreateEffectInternal.posY += Utility.randomFloatInRange(-4.0f, 4.0f);
                 }
             }
             if (this.damageEffectTimer2 > 30.0f && this.damageEffectDurationTimer < 600.0f && !dm()) {
@@ -1485,14 +1485,14 @@ public abstract class BaseUnit extends SizedObject {
                 gameEngine.effectManager.setOnlyOnScreen();
                 Effect effectCreateEffectInternal2 = gameEngine.effectManager.createEffectInternal(this.posX, this.posY, this.posZ, EffectType.custom, false, EffectQuality.verylow);
                 if (effectCreateEffectInternal2 != null) {
-                    EffectEmitter.a(effectCreateEffectInternal2, true);
-                    effectCreateEffectInternal2.I = this.posX;
-                    effectCreateEffectInternal2.J = this.posY;
-                    effectCreateEffectInternal2.K = this.posZ;
-                    effectCreateEffectInternal2.P += Utility.randomFloatInRange(-0.1f, 0.1f);
-                    effectCreateEffectInternal2.Q += Utility.randomFloatInRange(-0.1f, 0.1f);
-                    effectCreateEffectInternal2.I += Utility.randomFloatInRange(-4.0f, 4.0f);
-                    effectCreateEffectInternal2.J += Utility.randomFloatInRange(-4.0f, 4.0f);
+                    EffectEmitter.setupFireEffect(effectCreateEffectInternal2, true);
+                    effectCreateEffectInternal2.posX = this.posX;
+                    effectCreateEffectInternal2.posY = this.posY;
+                    effectCreateEffectInternal2.posZ = this.posZ;
+                    effectCreateEffectInternal2.velocityX += Utility.randomFloatInRange(-0.1f, 0.1f);
+                    effectCreateEffectInternal2.velocityY += Utility.randomFloatInRange(-0.1f, 0.1f);
+                    effectCreateEffectInternal2.posX += Utility.randomFloatInRange(-4.0f, 4.0f);
+                    effectCreateEffectInternal2.posY += Utility.randomFloatInRange(-4.0f, 4.0f);
                 }
             }
         } else if (this.damageEffectDurationTimer != 0.0f) {
@@ -1716,7 +1716,7 @@ public abstract class BaseUnit extends SizedObject {
         }
         if (this.team != null) {
             PlayerTeam.b(this);
-            this.team.d(this);
+            this.team.onUnitRemoved(this);
         }
         setUnitTeam(playerTeam);
         PlayerTeam.c(this);

@@ -15,7 +15,8 @@ class MinimapPing {
 
     /* JADX INFO: renamed from: d */
     public float radius;
-    public float e;
+    /* JADX INFO: renamed from: e */
+    public float fadeOutTimer;
 
     /* JADX INFO: renamed from: f */
     final /* synthetic */ Minimap minimap;

@@ -321,12 +321,12 @@ public class AntiNukeLauncher extends FactoryWithQueue {
         gameEngine.effectManager.createLightEffect(pointFE.x, pointFE.y, this.posZ, -1127220);
         Effect effectCreateSmallExplosionInternal = gameEngine.effectManager.createSmallExplosionInternal(pointFE.x, pointFE.y, 0.0f, -1);
         if (effectCreateSmallExplosionInternal != null) {
-            effectCreateSmallExplosionInternal.G = 0.5f;
-            effectCreateSmallExplosionInternal.F = 2.1f;
-            effectCreateSmallExplosionInternal.ar = (short) 2;
-            effectCreateSmallExplosionInternal.V = 90.0f;
-            effectCreateSmallExplosionInternal.W = effectCreateSmallExplosionInternal.V;
-            effectCreateSmallExplosionInternal.U = 0.0f;
+            effectCreateSmallExplosionInternal.scaleFrom = 0.5f;
+            effectCreateSmallExplosionInternal.scaleTo = 2.1f;
+            effectCreateSmallExplosionInternal.drawLayer = (short) 2;
+            effectCreateSmallExplosionInternal.lifeTimer = 90.0f;
+            effectCreateSmallExplosionInternal.lifeMax = effectCreateSmallExplosionInternal.lifeTimer;
+            effectCreateSmallExplosionInternal.delayedStartTimer = 0.0f;
         }
         gameEngine.soundEngine.playSoundAt(SoundEngine.nukeLaunchSound, 0.15f, 1.5f, pointFE.x, pointFE.y);
     }

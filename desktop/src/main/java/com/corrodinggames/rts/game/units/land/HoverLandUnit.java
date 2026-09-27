@@ -56,16 +56,16 @@ public abstract class HoverLandUnit extends LandUnit {
                 if (isVisibleOnScreen()) {
                     Effect effectCreateEffectInternal = GameEngine.getInstance().effectManager.createEffectInternal(this.posX + (Utility.fastCos(this.rotationSpeed) * 4.0f), this.posY + (Utility.fastSin(this.rotationSpeed) * 4.0f), 0.0f, EffectType.custom, false, EffectQuality.low);
                     if (effectCreateEffectInternal != null) {
-                        effectCreateEffectInternal.aq = 0;
-                        effectCreateEffectInternal.ap = 13;
-                        effectCreateEffectInternal.ar = (short) 1;
+                        effectCreateEffectInternal.stripIndex = 0;
+                        effectCreateEffectInternal.frameIndex = 13;
+                        effectCreateEffectInternal.drawLayer = (short) 1;
                         effectCreateEffectInternal.fadeIn = true;
-                        effectCreateEffectInternal.E = 0.8f;
-                        effectCreateEffectInternal.W = 80.0f;
-                        effectCreateEffectInternal.V = 80.0f;
-                        effectCreateEffectInternal.P = (-Utility.fastCos(this.rotationSpeed)) * 0.1f;
-                        effectCreateEffectInternal.Q = (-Utility.fastSin(this.rotationSpeed)) * 0.1f;
-                        effectCreateEffectInternal.Y = Utility.randomFloatInRange(-180.0f, 180.0f);
+                        effectCreateEffectInternal.alpha = 0.8f;
+                        effectCreateEffectInternal.lifeMax = 80.0f;
+                        effectCreateEffectInternal.lifeTimer = 80.0f;
+                        effectCreateEffectInternal.velocityX = (-Utility.fastCos(this.rotationSpeed)) * 0.1f;
+                        effectCreateEffectInternal.velocityY = (-Utility.fastSin(this.rotationSpeed)) * 0.1f;
+                        effectCreateEffectInternal.rotation = Utility.randomFloatInRange(-180.0f, 180.0f);
                     }
                 }
             }

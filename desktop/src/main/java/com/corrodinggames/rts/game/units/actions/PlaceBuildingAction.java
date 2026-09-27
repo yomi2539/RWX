@@ -81,7 +81,7 @@ public class PlaceBuildingAction extends AbstractUnitAction {
         if (this.variant != 1 && (baseUnitCanAttack instanceof OrderableUnit)) {
             ((OrderableUnit) baseUnitCanAttack).a(this.variant);
         }
-        String str = strF + "\n\n" + GameInterfaceRenderer.a(baseUnitCanAttack, false, false, true);
+        String str = strF + "\n\n" + GameInterfaceRenderer.clearMessageIfSame(baseUnitCanAttack, false, false, true);
         if (this.variant != 1 && (baseUnitCanAttack instanceof OrderableUnit)) {
             ((OrderableUnit) baseUnitCanAttack).a(1);
         }

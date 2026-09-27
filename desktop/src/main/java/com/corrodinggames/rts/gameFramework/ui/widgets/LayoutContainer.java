@@ -7,21 +7,23 @@ public class LayoutContainer extends UIElement {
     }
 
     public LayoutContainer(LayoutDirection layoutDirection) {
-        this.x = layoutDirection;
+        this.layoutDirection = layoutDirection;
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIElement
-    public void a(float f, float f2) {
-        super.a(f, f2);
+    /* JADX INFO: renamed from: a */
+    public void draw(float f, float f2) {
+        super.draw(f, f2);
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIElement
-    public void b() {
-        super.b();
-        d();
-        this.i = this.layoutWidth;
-        this.j = this.layoutHeight;
-        this.i += this.m + this.n;
-        this.j += this.k + this.l;
+    /* JADX INFO: renamed from: b */
+    public void layout() {
+        super.layout();
+        getGraphicsEngine();
+        this.width = this.layoutWidth;
+        this.height = this.layoutHeight;
+        this.width += this.paddingLeft + this.paddingRight;
+        this.height += this.paddingTop + this.paddingBottom;
     }
 }

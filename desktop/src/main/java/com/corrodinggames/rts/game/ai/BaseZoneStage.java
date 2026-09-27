@@ -7,7 +7,8 @@ enum BaseZoneStage {
     Prepare,
     Active;
 
-    int a() {
+    /* JADX INFO: renamed from: a */
+    int getOrdinal() {
         return ordinal();
     }
 }

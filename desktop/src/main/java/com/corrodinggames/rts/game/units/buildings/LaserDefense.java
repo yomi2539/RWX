@@ -276,35 +276,35 @@ public class LaserDefense extends FactoryWithQueue {
                 if (z) {
                     Effect effectCreateLaserEffect = gameEngine.effectManager.createLaserEffect(f, f2, f3, projectile.posX, projectile.posY, projectile.posZ);
                     if (effectCreateLaserEffect != null) {
-                        effectCreateLaserEffect.V = 10.0f;
-                        effectCreateLaserEffect.W = effectCreateLaserEffect.V;
+                        effectCreateLaserEffect.lifeTimer = 10.0f;
+                        effectCreateLaserEffect.lifeMax = effectCreateLaserEffect.lifeTimer;
                     }
                     Effect effectCreateEffectInternal = gameEngine.effectManager.createEffectInternal(f, f2, f3, EffectType.custom, false, EffectQuality.high);
                     if (effectCreateEffectInternal != null) {
-                        effectCreateEffectInternal.P = 0.0f;
-                        effectCreateEffectInternal.Q = 0.0f;
-                        effectCreateEffectInternal.ap = 4;
-                        effectCreateEffectInternal.V = 39.0f;
-                        effectCreateEffectInternal.W = effectCreateEffectInternal.V;
+                        effectCreateEffectInternal.velocityX = 0.0f;
+                        effectCreateEffectInternal.velocityY = 0.0f;
+                        effectCreateEffectInternal.frameIndex = 4;
+                        effectCreateEffectInternal.lifeTimer = 39.0f;
+                        effectCreateEffectInternal.lifeMax = effectCreateEffectInternal.lifeTimer;
                         effectCreateEffectInternal.fadeIn = true;
-                        effectCreateEffectInternal.E = 1.3f;
-                        effectCreateEffectInternal.G = 1.1f;
-                        effectCreateEffectInternal.F = 0.7f;
+                        effectCreateEffectInternal.alpha = 1.3f;
+                        effectCreateEffectInternal.scaleFrom = 1.1f;
+                        effectCreateEffectInternal.scaleTo = 0.7f;
                     }
                     projectile.damageMultiplier -= 1.01f;
                     if (projectile.damageMultiplier <= 0.0f) {
                         projectile.d();
                         Effect effectCreateEffectInternal2 = gameEngine.effectManager.createEffectInternal(projectile.posX, projectile.posY, projectile.posZ, EffectType.custom, false, EffectQuality.high);
                         if (effectCreateEffectInternal2 != null) {
-                            effectCreateEffectInternal2.P = 0.0f;
-                            effectCreateEffectInternal2.Q = 0.0f;
-                            effectCreateEffectInternal2.ap = 4;
-                            effectCreateEffectInternal2.V = 23.0f;
-                            effectCreateEffectInternal2.W = effectCreateEffectInternal2.V;
+                            effectCreateEffectInternal2.velocityX = 0.0f;
+                            effectCreateEffectInternal2.velocityY = 0.0f;
+                            effectCreateEffectInternal2.frameIndex = 4;
+                            effectCreateEffectInternal2.lifeTimer = 23.0f;
+                            effectCreateEffectInternal2.lifeMax = effectCreateEffectInternal2.lifeTimer;
                             effectCreateEffectInternal2.fadeIn = true;
-                            effectCreateEffectInternal2.E = 0.9f;
-                            effectCreateEffectInternal2.G = 0.5f;
-                            effectCreateEffectInternal2.F = 0.2f;
+                            effectCreateEffectInternal2.alpha = 0.9f;
+                            effectCreateEffectInternal2.scaleFrom = 0.5f;
+                            effectCreateEffectInternal2.scaleTo = 0.2f;
                         }
                         gameEngine.soundEngine.playSoundAt(SoundEngine.laserDeflect2Sound, 0.2f, 1.0f + Utility.randomFloatInRange(-0.07f, 0.07f), projectile.posX, projectile.posY);
                     }

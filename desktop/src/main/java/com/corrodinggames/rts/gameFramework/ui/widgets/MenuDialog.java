@@ -10,24 +10,25 @@ public class MenuDialog extends PopupWindow {
     /* JADX INFO: renamed from: a */
     LayoutContainer layoutContainer;
 
-    public static MenuDialog a(String str, boolean z) {
+    /* JADX INFO: renamed from: a */
+    public static MenuDialog create(String str, boolean z) {
         MenuDialog menuDialog = new MenuDialog();
-        menuDialog.b = UIStyle.n;
-        menuDialog.i = 200.0f;
-        menuDialog.j = 200.0f;
+        menuDialog.style = UIStyle.solidPanelStyle;
+        menuDialog.width = 200.0f;
+        menuDialog.height = 200.0f;
         TextLabel textLabel = new TextLabel();
-        textLabel.a(str);
-        textLabel.e(5.0f);
-        textLabel.f(5.0f);
-        textLabel.a(-1);
-        menuDialog.a(textLabel);
+        textLabel.setText(str);
+        textLabel.setMargin(5.0f);
+        textLabel.setPadding(5.0f);
+        textLabel.setTextColor(-1);
+        menuDialog.addChild(textLabel);
         menuDialog.layoutContainer = new LayoutContainer(LayoutDirection.horizontal);
-        menuDialog.a(menuDialog.layoutContainer);
+        menuDialog.addChild(menuDialog.layoutContainer);
         if (z) {
-            menuDialog.b(Locale.get("menus.common.cancel")).a(new UIEventHandler() { // from class: com.corrodinggames.rts.gameFramework.f.a.f.1
+            menuDialog.addButton(Locale.get("menus.common.cancel")).setEventHandler(new UIEventHandler() { // from class: com.corrodinggames.rts.gameFramework.f.a.f.1
                 @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIEventHandler
-                public boolean a(UIEvent uIEvent) {
-                    menuDialog.i();
+                public boolean handleEvent(UIEvent uIEvent) {
+                    menuDialog.removeFromParent();
                     return true;
                 }
             });
@@ -35,40 +36,45 @@ public class MenuDialog extends PopupWindow {
         return menuDialog;
     }
 
-    public MenuButton a(String str) {
+    /* JADX INFO: renamed from: a */
+    public MenuButton createButton(String str) {
         MenuButton menuButton = new MenuButton();
-        menuButton.a(str);
-        menuButton.e(5.0f);
-        menuButton.f(5.0f);
-        menuButton.a(Color.a(255, 30, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_SATELLITE_SERVICE, 30));
+        menuButton.setText(str);
+        menuButton.setMargin(5.0f);
+        menuButton.setPadding(5.0f);
+        menuButton.setTextColor(Color.a(255, 30, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_TV_SATELLITE_SERVICE, 30));
         return menuButton;
     }
 
-    public MenuButton b(String str) {
-        return a(str, (UIEventHandler) null);
+    /* JADX INFO: renamed from: b */
+    public MenuButton addButton(String str) {
+        return addButton(str, (UIEventHandler) null);
     }
 
-    public MenuButton a(String str, UIEventHandler uIEventHandler) {
-        MenuButton menuButtonA = a(str);
-        menuButtonA.a(uIEventHandler);
-        this.layoutContainer.a(menuButtonA);
+    /* JADX INFO: renamed from: a */
+    public MenuButton addButton(String str, UIEventHandler uIEventHandler) {
+        MenuButton menuButtonA = createButton(str);
+        menuButtonA.setEventHandler(uIEventHandler);
+        this.layoutContainer.addChild(menuButtonA);
         return menuButtonA;
     }
 
-    public void u_() {
-        if (!this.s) {
+    /* JADX INFO: renamed from: u_ */
+    public void layoutIfNeeded() {
+        if (!this.needsLayout) {
             return;
         }
-        b();
+        layout();
     }
 
     @Override // com.corrodinggames.rts.gameFramework.ui.widgets.UIElement
-    public void b() {
-        super.b();
-        d();
-        this.i = this.layoutWidth;
-        this.j = this.layoutHeight;
-        this.i += this.m + this.n;
-        this.j += this.k + this.l;
+    /* JADX INFO: renamed from: b */
+    public void layout() {
+        super.layout();
+        getGraphicsEngine();
+        this.width = this.layoutWidth;
+        this.height = this.layoutHeight;
+        this.width += this.paddingLeft + this.paddingRight;
+        this.height += this.paddingTop + this.paddingBottom;
     }
 }

@@ -504,7 +504,7 @@ public class GameLogic extends GameEngine {
         loadLevel("Projectile.load");
         Projectile.c();
         loadLevel("Emitter.load");
-        EffectEmitter.b();
+        EffectEmitter.initFireEffects();
         loadLevel("Unit.loadAllUnits");
         long jA4 = PerformanceProfiler.a();
         BaseUnit.loadAllUnits();
@@ -1533,7 +1533,7 @@ public class GameLogic extends GameEngine {
         for (int i = 0; i < size; i++) {
             GameObject gameObject = (GameObject) objArrB[i];
             if (zAy && f != this.lastDelta) {
-                NetworkEngine.h("JIT bug detected, attempting to correct. before object:" + gameObject.objectId + " frame:" + this.currentTick + " deltaSpeed:" + f);
+                NetworkEngine.reportDesyncImportant("JIT bug detected, attempting to correct. before object:" + gameObject.objectId + " frame:" + this.currentTick + " deltaSpeed:" + f);
                 f = this.lastDelta;
             }
             gameObject.update(f);
@@ -2038,7 +2038,7 @@ public class GameLogic extends GameEngine {
             this.currentViewpointWidthPixels = this.screenWidth;
         } else {
             this.currentViewpointWidthPixels = (this.screenWidth - this.sidebarWidth) + 1.0f;
-            if (GameUI.bO) {
+            if (GameUI.showModernSidebar) {
                 this.currentScreenWidthPixels = this.screenWidth;
             } else {
                 this.currentScreenWidthPixels = this.currentViewpointWidthPixels;

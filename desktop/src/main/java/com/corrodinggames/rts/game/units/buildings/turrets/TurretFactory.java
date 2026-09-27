@@ -665,7 +665,7 @@ public class TurretFactory extends FactoryWithQueue {
         if (abstractUnitActionA != null) {
             abstractUnitActionA.onConfirmed(this);
         } else {
-            NetworkEngine.a("specialAction=null on completeQueueItem(turret) for item.uIndex:" + projectile.j + " id:" + this.objectId, true);
+            NetworkEngine.reportDesyncVerbose("specialAction=null on completeQueueItem(turret) for item.uIndex:" + projectile.j + " id:" + this.objectId, true);
         }
     }
 

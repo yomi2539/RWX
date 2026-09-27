@@ -379,7 +379,7 @@ public final class LayerBufferManager {
             if (GameEngine.isJavaDesktopVersion) {
                 z2 = true;
             }
-            if (GameUI.bO) {
+            if (GameUI.showModernSidebar) {
             }
             if (tileMap.fogEnabled) {
             }

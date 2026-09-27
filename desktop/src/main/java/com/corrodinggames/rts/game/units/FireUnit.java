@@ -19,7 +19,8 @@ import java.io.IOException;
 /* JADX INFO: renamed from: com.corrodinggames.rts.game.units.ai */
 /* JADX INFO: loaded from: game-lib.jar:com/corrodinggames/rts/game/units/ai.class */
 public class FireUnit extends NaturalUnit {
-    Texture b;
+    /* JADX INFO: renamed from: b */
+    Texture texture;
     /* JADX INFO: renamed from: c */
     int fireType;
     /* JADX INFO: renamed from: d */
@@ -85,7 +86,7 @@ public class FireUnit extends NaturalUnit {
     }
 
     public Texture d() {
-        return this.b;
+        return this.texture;
     }
 
     @Override // com.corrodinggames.rts.game.units.BaseUnit
@@ -123,7 +124,7 @@ public class FireUnit extends NaturalUnit {
             U(20);
             this.textureOffsetX = 0;
             this.textureOffsetY = 0;
-            this.b = a[0];
+            this.texture = a[0];
             return;
         }
         throw new RuntimeException("Fire type:" + this.fireType + " is not supported");

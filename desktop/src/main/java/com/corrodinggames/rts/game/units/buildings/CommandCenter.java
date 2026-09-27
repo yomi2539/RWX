@@ -151,26 +151,26 @@ public class CommandCenter extends FactoryWithQueue {
         gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
         Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(f, f2, this.posZ, Color.a(255, 255, 255, 255));
         if (effectCreateLightEffect != null) {
-            effectCreateLightEffect.G = 8.0f;
-            effectCreateLightEffect.F = 5.0f;
-            effectCreateLightEffect.E = 0.9f;
-            effectCreateLightEffect.V = 20.0f;
-            effectCreateLightEffect.W = effectCreateLightEffect.V;
+            effectCreateLightEffect.scaleFrom = 8.0f;
+            effectCreateLightEffect.scaleTo = 5.0f;
+            effectCreateLightEffect.alpha = 0.9f;
+            effectCreateLightEffect.lifeTimer = 20.0f;
+            effectCreateLightEffect.lifeMax = effectCreateLightEffect.lifeTimer;
             effectCreateLightEffect.fadeIn = true;
         }
         gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
         Effect effectCreateSmallExplosion = gameEngine.effectManager.createSmallExplosion(f, f2, 0.0f, -1127220);
         if (effectCreateSmallExplosion != null) {
-            effectCreateSmallExplosion.G = 0.2f;
-            effectCreateSmallExplosion.F = 2.0f;
-            effectCreateSmallExplosion.ar = (short) 2;
-            effectCreateSmallExplosion.V = 45.0f;
-            effectCreateSmallExplosion.W = effectCreateSmallExplosion.V;
-            effectCreateSmallExplosion.U = 0.0f;
+            effectCreateSmallExplosion.scaleFrom = 0.2f;
+            effectCreateSmallExplosion.scaleTo = 2.0f;
+            effectCreateSmallExplosion.drawLayer = (short) 2;
+            effectCreateSmallExplosion.lifeTimer = 45.0f;
+            effectCreateSmallExplosion.lifeMax = effectCreateSmallExplosion.lifeTimer;
+            effectCreateSmallExplosion.delayedStartTimer = 0.0f;
         }
         gameEngine.effectManager.createExplosionWithVelocity(this.posX, this.posY, this.posZ, 40.0f, 70.0f);
-        EffectEmitter.a(this.posX, this.posY);
-        EffectEmitter.b(this.posX, this.posY).duration = 800.0f;
+        EffectEmitter.createDefaultFireEmitter(this.posX, this.posY);
+        EffectEmitter.createAlternateFireEmitter(this.posX, this.posY).duration = 800.0f;
         return true;
     }
 

@@ -239,38 +239,48 @@ public class NukeLauncher extends FactoryWithQueue {
     public void a(int i) {
     }
 
-    @Override // com.corrodinggames.rts.game.units.buildings.BaseBuilding
-    /* JADX INFO: renamed from: L */
-    public boolean onDeath() {
+    public static Projectile a(BaseUnit baseUnit, float f, float f2, float f3, float f4) {
+        Projectile projectileA = Projectile.a(baseUnit, f, f2);
+        projectileA.S(10);
+        projectileA.textureFrame = (short) 0;
+        projectileA.frameIndex = (short) 1;
+        projectileA.textureType = (short) 1;
+        projectileA.renderScale = 1.0f;
+        projectileA.fliesToPosition = true;
+        projectileA.hasFixedTarget = true;
+        projectileA.targetX = f3;
+        projectileA.targetY = f4;
+        projectileA.lifeTimer = 99999.0f;
+        projectileA.speed = 0.1f;
+        projectileA.targetSpeed = 2.7f;
+        projectileA.color = Color.a(255, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_PAIRING, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_PAIRING, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_PAIRING);
+        projectileA.damage = 300.0f;
+        projectileA.isBallistic = true;
+        projectileA.hasTrail = true;
+        projectileA.isSmallExplosion = true;
+        projectileA.C = true;
+        projectileA.isNuke = true;
+        projectileA.minHeight = 80.0f;
+        projectileA.maxHeight = 100.0f;
+        projectileA.verticalVelocity = 1.1f;
+        projectileA.splashDamage = 5400.0f;
+        projectileA.explosionRadius = 250.0f;
+        projectileA.excludesAir = true;
+        projectileA.matchesTargetAltitude = false;
+        projectileA.trackHitUnits = true;
+        projectileA.explosionAnimTimer = 75.0f;
+        projectileA.explosionAnimDuration = projectileA.explosionAnimTimer;
+        projectileA.revealsFog = true;
         GameEngine gameEngine = GameEngine.getInstance();
-        this.baseTexture = deadTexture;
-        S(0);
-        this.isAlive = false;
-        a(UnitSize.verylargeBuilding);
-        float f = this.posX;
-        float f2 = this.posY;
         gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
-        Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(f, f2, this.posZ, Color.a(255, 255, 255, 255));
+        Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(projectileA, -1118720);
         if (effectCreateLightEffect != null) {
-            effectCreateLightEffect.G = 8.0f;
-            effectCreateLightEffect.F = 5.0f;
-            effectCreateLightEffect.E = 0.9f;
-            effectCreateLightEffect.V = 20.0f;
-            effectCreateLightEffect.W = effectCreateLightEffect.V;
-            effectCreateLightEffect.fadeIn = true;
+            effectCreateLightEffect.lifeTimer = 1300.0f;
+            effectCreateLightEffect.lifeMax = effectCreateLightEffect.lifeTimer;
+            effectCreateLightEffect.alpha = 0.2f;
+            effectCreateLightEffect.scaleFrom = 1.0f;
         }
-        gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
-        Effect effectCreateSmallExplosion = gameEngine.effectManager.createSmallExplosion(f, f2, 0.0f, -1127220);
-        if (effectCreateSmallExplosion != null) {
-            effectCreateSmallExplosion.G = 0.2f;
-            effectCreateSmallExplosion.F = 2.0f;
-            effectCreateSmallExplosion.ar = (short) 2;
-            effectCreateSmallExplosion.V = 45.0f;
-            effectCreateSmallExplosion.W = effectCreateSmallExplosion.V;
-            effectCreateSmallExplosion.U = 0.0f;
-        }
-        gameEngine.effectManager.createExplosionWithVelocity(this.posX, this.posY, this.posZ, 40.0f, 120.0f);
-        return true;
+        return projectileA;
     }
 
     @Override // com.corrodinggames.rts.game.units.buildings.FactoryWithQueue, com.corrodinggames.rts.game.units.OrderableUnit, com.corrodinggames.rts.game.units.BaseUnit, com.corrodinggames.rts.gameFramework.GameObject
@@ -328,48 +338,38 @@ public class NukeLauncher extends FactoryWithQueue {
         return super.bV();
     }
 
-    public static Projectile a(BaseUnit baseUnit, float f, float f2, float f3, float f4) {
-        Projectile projectileA = Projectile.a(baseUnit, f, f2);
-        projectileA.S(10);
-        projectileA.textureFrame = (short) 0;
-        projectileA.frameIndex = (short) 1;
-        projectileA.textureType = (short) 1;
-        projectileA.renderScale = 1.0f;
-        projectileA.fliesToPosition = true;
-        projectileA.hasFixedTarget = true;
-        projectileA.targetX = f3;
-        projectileA.targetY = f4;
-        projectileA.lifeTimer = 99999.0f;
-        projectileA.speed = 0.1f;
-        projectileA.targetSpeed = 2.7f;
-        projectileA.color = Color.a(255, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_PAIRING, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_PAIRING, SlickToAndroidKeycodes.AndroidCodes.KEYCODE_PAIRING);
-        projectileA.damage = 300.0f;
-        projectileA.isBallistic = true;
-        projectileA.hasTrail = true;
-        projectileA.isSmallExplosion = true;
-        projectileA.C = true;
-        projectileA.isNuke = true;
-        projectileA.minHeight = 80.0f;
-        projectileA.maxHeight = 100.0f;
-        projectileA.verticalVelocity = 1.1f;
-        projectileA.splashDamage = 5400.0f;
-        projectileA.explosionRadius = 250.0f;
-        projectileA.excludesAir = true;
-        projectileA.matchesTargetAltitude = false;
-        projectileA.trackHitUnits = true;
-        projectileA.explosionAnimTimer = 75.0f;
-        projectileA.explosionAnimDuration = projectileA.explosionAnimTimer;
-        projectileA.revealsFog = true;
+    @Override // com.corrodinggames.rts.game.units.buildings.BaseBuilding
+    /* JADX INFO: renamed from: L */
+    public boolean onDeath() {
         GameEngine gameEngine = GameEngine.getInstance();
+        this.baseTexture = deadTexture;
+        S(0);
+        this.isAlive = false;
+        a(UnitSize.verylargeBuilding);
+        float f = this.posX;
+        float f2 = this.posY;
         gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
-        Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(projectileA, -1118720);
+        Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(f, f2, this.posZ, Color.a(255, 255, 255, 255));
         if (effectCreateLightEffect != null) {
-            effectCreateLightEffect.V = 1300.0f;
-            effectCreateLightEffect.W = effectCreateLightEffect.V;
-            effectCreateLightEffect.E = 0.2f;
-            effectCreateLightEffect.G = 1.0f;
+            effectCreateLightEffect.scaleFrom = 8.0f;
+            effectCreateLightEffect.scaleTo = 5.0f;
+            effectCreateLightEffect.alpha = 0.9f;
+            effectCreateLightEffect.lifeTimer = 20.0f;
+            effectCreateLightEffect.lifeMax = effectCreateLightEffect.lifeTimer;
+            effectCreateLightEffect.fadeIn = true;
         }
-        return projectileA;
+        gameEngine.effectManager.setOverrideEffectQuality(EffectQuality.critical);
+        Effect effectCreateSmallExplosion = gameEngine.effectManager.createSmallExplosion(f, f2, 0.0f, -1127220);
+        if (effectCreateSmallExplosion != null) {
+            effectCreateSmallExplosion.scaleFrom = 0.2f;
+            effectCreateSmallExplosion.scaleTo = 2.0f;
+            effectCreateSmallExplosion.drawLayer = (short) 2;
+            effectCreateSmallExplosion.lifeTimer = 45.0f;
+            effectCreateSmallExplosion.lifeMax = effectCreateSmallExplosion.lifeTimer;
+            effectCreateSmallExplosion.delayedStartTimer = 0.0f;
+        }
+        gameEngine.effectManager.createExplosionWithVelocity(this.posX, this.posY, this.posZ, 40.0f, 120.0f);
+        return true;
     }
 
     public void a(float f, float f2) {
@@ -389,24 +389,24 @@ public class NukeLauncher extends FactoryWithQueue {
         a(this, pointFE.x, pointFE.y, f, f2).initialDelay = 5.0f;
         Effect effectCreateLightEffect = gameEngine.effectManager.createLightEffect(pointFE.x, pointFE.y, this.posZ, -1127220);
         if (effectCreateLightEffect != null) {
-            effectCreateLightEffect.U = 5.0f;
-            effectCreateLightEffect.G = 2.1f;
-            effectCreateLightEffect.F = 2.1f;
-            effectCreateLightEffect.ar = (short) 2;
+            effectCreateLightEffect.delayedStartTimer = 5.0f;
+            effectCreateLightEffect.scaleFrom = 2.1f;
+            effectCreateLightEffect.scaleTo = 2.1f;
+            effectCreateLightEffect.drawLayer = (short) 2;
             effectCreateLightEffect.fadeOut = true;
             effectCreateLightEffect.fadeDuration = 70.0f;
-            effectCreateLightEffect.V = 370.0f;
-            effectCreateLightEffect.W = effectCreateLightEffect.V;
-            effectCreateLightEffect.E = 1.0f;
+            effectCreateLightEffect.lifeTimer = 370.0f;
+            effectCreateLightEffect.lifeMax = effectCreateLightEffect.lifeTimer;
+            effectCreateLightEffect.alpha = 1.0f;
         }
         Effect effectCreateSmallExplosionInternal = gameEngine.effectManager.createSmallExplosionInternal(pointFE.x, pointFE.y, 0.0f, -1);
         if (effectCreateSmallExplosionInternal != null) {
-            effectCreateSmallExplosionInternal.G = 1.0f;
-            effectCreateSmallExplosionInternal.F = 3.1f;
-            effectCreateSmallExplosionInternal.ar = (short) 2;
-            effectCreateSmallExplosionInternal.V = 170.0f;
-            effectCreateSmallExplosionInternal.W = effectCreateSmallExplosionInternal.V;
-            effectCreateSmallExplosionInternal.U = 5.0f + 20.0f;
+            effectCreateSmallExplosionInternal.scaleFrom = 1.0f;
+            effectCreateSmallExplosionInternal.scaleTo = 3.1f;
+            effectCreateSmallExplosionInternal.drawLayer = (short) 2;
+            effectCreateSmallExplosionInternal.lifeTimer = 170.0f;
+            effectCreateSmallExplosionInternal.lifeMax = effectCreateSmallExplosionInternal.lifeTimer;
+            effectCreateSmallExplosionInternal.delayedStartTimer = 5.0f + 20.0f;
         }
         gameEngine.soundEngine.playSoundAt(SoundEngine.nukeLaunchSound, 0.27f, 0.8f, pointFE.x, pointFE.y);
     }
