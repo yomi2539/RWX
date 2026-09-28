@@ -139,7 +139,9 @@ internal class WarmupController(
             deltaSeconds,
             drainVisibleLayerBuffers = true,
         )
-        if (menuBackgroundSession.isMenuBackgroundActive()) {
+        if (!menuBackgroundSession.isPreparingMap() &&
+            menuBackgroundSession.isMenuBackgroundActive()
+        ) {
             if (startupMenuBackgroundReadyFramePending) {
                 pendingStartupMenuBackgroundLoad = false
                 startupMenuBackgroundReadyFramePending = false
@@ -148,6 +150,8 @@ internal class WarmupController(
             } else {
                 startupMenuBackgroundReadyFramePending = true
             }
+        } else {
+            startupMenuBackgroundReadyFramePending = false
         }
         return frame
     }
