@@ -20,9 +20,9 @@ internal class ScreenPresenter(
         if (screen == AppScreen.InGame) apply(screen, lastExternalGameFrame)
     }
 
-    fun shouldShowRwMenuBackground(screen: AppScreen): Boolean =
-        supportsMenuBattleBackground(screen) &&
-                bootstrap.settingsModel.showMainMenuBackgroundDemo.value &&
+    fun shouldShowBackgroundBattle(screen: AppScreen): Boolean =
+        supportsBackgroundBattle(screen) &&
+                bootstrap.settingsModel.showBackgroundBattleDemo.value &&
                 bootstrap.menuBackgroundSession.isMenuBackgroundActive() &&
                 !bootstrap.gameSession.canResume()
 
@@ -30,11 +30,11 @@ internal class ScreenPresenter(
         screen: AppScreen,
         lastExternalGameFrame: GameFrame?,
     ) {
-        val isMenuBackgroundPreparing = ensureMenuBackground(screen)
+        val isBackgroundBattlePreparing = ensureBackgroundBattle(screen)
         val gameSession = bootstrap.gameSession
         val visibility = AppScreenLayout.visibilityFor(screen)
         val gameOverlay = inGameOverlay.takeIf { screen == AppScreen.InGame }
-        val isRwMenuBackgroundVisible = shouldShowRwMenuBackground(screen)
+        val isBackgroundBattleVisible = shouldShowBackgroundBattle(screen)
         val isExternalModWindowOverlayVisible = screen == AppScreen.ModWindow && !gameSession.usesFrameCommandRendering
         val isExternalModHudOverlayVisible = gameOverlay?.let {
             it.visible && !gameSession.usesFrameCommandRendering
@@ -45,15 +45,15 @@ internal class ScreenPresenter(
         )
         val isResumeBackgroundVisible = shouldShowResumeMenuBackground(screen, gameSession.canResume())
         val isExternalRwBackgroundVisible = shouldShowExternalRwBackgroundSurface(
-            isRwMenuBackgroundVisible = isRwMenuBackgroundVisible,
+            isBackgroundBattleVisible = isBackgroundBattleVisible,
             isResumeBackgroundVisible = isResumeBackgroundVisible,
             usesFrameCommandRendering = gameSession.usesFrameCommandRendering,
             usesNativeSurfaceForResumeBackground = gameSession.usesNativeSurfaceForResumeBackground,
-        ) || (isMenuBackgroundPreparing && !gameSession.usesFrameCommandRendering)
-        val isLastExternalFrameBackgroundVisible = supportsMenuBattleBackground(screen) &&
+        ) || (isBackgroundBattlePreparing && !gameSession.usesFrameCommandRendering)
+        val isLastExternalFrameBackgroundVisible = supportsBackgroundBattle(screen) &&
                 !gameSession.usesFrameCommandRendering &&
                 lastExternalGameFrame != null
-        val isBattleBackgroundVisible = isRwMenuBackgroundVisible ||
+        val isBattleBackgroundVisible = isBackgroundBattleVisible ||
                 isResumeBackgroundVisible ||
                 isLastExternalFrameBackgroundVisible
 
@@ -71,9 +71,9 @@ internal class ScreenPresenter(
         )
     }
 
-    private fun ensureMenuBackground(screen: AppScreen): Boolean {
-        if (!bootstrap.settingsModel.showMainMenuBackgroundDemo.value) return false
-        if (!supportsMenuBattleBackground(screen)) return false
+    private fun ensureBackgroundBattle(screen: AppScreen): Boolean {
+        if (!bootstrap.settingsModel.showBackgroundBattleDemo.value) return false
+        if (!supportsBackgroundBattle(screen)) return false
         if (bootstrap.gameSession.canResume() || bootstrap.menuBackgroundSession.isMenuBackgroundActive()) return false
         bootstrap.menuBackgroundSession.prepareMenuBackgroundAsync(viewport())
         return true

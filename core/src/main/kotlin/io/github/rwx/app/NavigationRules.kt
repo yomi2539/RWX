@@ -3,11 +3,15 @@ package io.github.rwx.app
 import io.github.rwx.ui.AppScreen
 import io.github.rwx.ui.AppScreen.*
 
-internal fun supportsMenuBattleBackground(screen: AppScreen): Boolean =
-    screen == MainMenu || screen == Settings
+internal fun supportsBackgroundBattle(screen: AppScreen): Boolean =
+    screen != BattleRoom &&
+            screen != Loading &&
+            screen != Paused &&
+            screen != InGame &&
+            screen != ModWindow
 
 internal fun shouldShowResumeMenuBackground(screen: AppScreen, canResume: Boolean): Boolean =
-    supportsMenuBattleBackground(screen) && canResume
+    supportsBackgroundBattle(screen) && canResume
 
 internal fun shouldSetRwGameVisibleForScreen(screen: AppScreen): Boolean =
     screen == InGame
@@ -18,13 +22,13 @@ internal fun shouldPauseRwGameForScreen(
 ): Boolean = screen == Paused || screen == ModWindow || isResumeBackgroundVisible
 
 internal fun shouldShowExternalRwBackgroundSurface(
-    isRwMenuBackgroundVisible: Boolean,
+    isBackgroundBattleVisible: Boolean,
     isResumeBackgroundVisible: Boolean,
     usesFrameCommandRendering: Boolean,
     usesNativeSurfaceForResumeBackground: Boolean = false,
 ): Boolean =
     !usesFrameCommandRendering &&
-            (isRwMenuBackgroundVisible ||
+            (isBackgroundBattleVisible ||
                     (isResumeBackgroundVisible && usesNativeSurfaceForResumeBackground))
 
 internal fun shouldHandleBattleRoomAction(screen: AppScreen): Boolean =
@@ -41,12 +45,12 @@ internal fun shouldStartLiveBattleRoomInPlace(
 
 internal fun shouldUseRwCanvasFrameForFrame(
     isRwGameVisible: Boolean,
-    isRwMenuBackgroundVisible: Boolean,
+    isBackgroundBattleVisible: Boolean,
     isResumeBackgroundVisible: Boolean,
     isRwGameLoading: Boolean,
     isLastExternalFrameBackgroundVisible: Boolean,
     usesFrameCommandRendering: Boolean,
-): Boolean = isRwMenuBackgroundVisible ||
+): Boolean = isBackgroundBattleVisible ||
         isResumeBackgroundVisible ||
         isLastExternalFrameBackgroundVisible ||
         isRwGameVisible || (usesFrameCommandRendering && isRwGameLoading)

@@ -158,7 +158,7 @@ fun installApp(
         loadingSceneHost = loadingSceneHost,
         navigateTo = { screen -> navigator.navigateTo(screen) },
         clearExternalFrame = { lastExternalGameFrame = null },
-        isMenuBackgroundDemoEnabled = { settingsModel.showMainMenuBackgroundDemo.value },
+        isBackgroundBattleDemoEnabled = { settingsModel.showBackgroundBattleDemo.value },
     )
 
     lateinit var updateController: UpdateController
@@ -251,12 +251,14 @@ fun installApp(
         lobbyController = multiplayerLobbyController,
         battleRoomJoinController = battleRoomJoinController,
         dialogSceneHost = dialogSceneHost,
+        multiplayerSceneHost = multiplayerSceneHost,
         selectHostMap = battleRoomController::selectedOrDefaultMap,
         onHostPreparing = battleRoomController::prepareHostRoom,
         updateBattleRoomFromNetwork = battleRoomController::updateFromNetwork,
         navigateToBattleRoom = { navigator.navigateTo(AppScreen.BattleRoom) },
         showUnavailableDialog = dialogController::showUnavailable,
     )
+    multiplayerConnectionController.refreshLastJoinState()
     val battleRoomAdminController = BattleRoomAdminController(
         currentRoomRevision = { battleRoomSceneHost.snapshot().revision },
         gameSession = gameSession,

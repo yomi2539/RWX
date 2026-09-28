@@ -8,15 +8,18 @@ import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.horizontalScroll
+import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.semantics.Role
@@ -86,10 +89,12 @@ private fun MainMenuLauncher(
     onAction: (MainMenuAction) -> Unit,
 ) {
     val menuWidth = mainMenuPanelWidth(metrics.contentWidth)
-    val primaryItems = items.filterNot { it.action == MainMenuAction.About || it.action == MainMenuAction.Exit }
+    val primaryItems =
+        items.filterNot { it.action == MainMenuAction.About || it.action == MainMenuAction.Exit || it.action == MainMenuAction.Continue }
     val footerItems = items.filter { it.action == MainMenuAction.About || it.action == MainMenuAction.Exit }
+    val resumeItem = items.find { it.action == MainMenuAction.Continue }
 
-    Column(
+    Box(
         modifier = Modifier
             .fillMaxSize()
             .background(
@@ -99,32 +104,48 @@ private fun MainMenuLauncher(
                     scheme.palette.panelOverlayLight.copy(alpha = MAIN_MENU_SURFACE_ALPHA * LocalOverlayOpacity.current)
                 }
             ),
-        horizontalAlignment = Alignment.CenterHorizontally,
-        verticalArrangement = Arrangement.Center,
     ) {
-        MainMenuHeader(metrics.contentWidth, scheme, metrics.isShortLandscape)
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center,
+        ) {
+            MainMenuHeader(metrics.contentWidth, scheme, metrics.isShortLandscape)
 
-        if (metrics.isShortLandscape) {
-            MainMenuHorizontal(
-                items = primaryItems,
-                scheme = scheme,
-                width = metrics.contentWidth,
-                height = metrics.menuViewportHeight,
-                enableAnimations = enableAnimations,
-                onAction = onAction
-            )
-        } else {
-            MainMenuColumns(
-                items = primaryItems,
-                scheme = scheme,
-                width = menuWidth,
-                height = metrics.menuViewportHeight,
-                enableAnimations = enableAnimations,
-                onAction = onAction
-            )
+            if (metrics.isShortLandscape) {
+                MainMenuHorizontal(
+                    items = primaryItems,
+                    scheme = scheme,
+                    width = metrics.contentWidth,
+                    height = metrics.menuViewportHeight,
+                    enableAnimations = enableAnimations,
+                    onAction = onAction
+                )
+            } else {
+                MainMenuColumns(
+                    items = primaryItems,
+                    scheme = scheme,
+                    width = menuWidth,
+                    height = metrics.menuViewportHeight,
+                    enableAnimations = enableAnimations,
+                    onAction = onAction
+                )
+            }
+
+            MainMenuFooter(footerItems, scheme, metrics.contentWidth, onAction)
         }
 
-        MainMenuFooter(footerItems, scheme, metrics.contentWidth, onAction)
+        if (resumeItem != null) {
+            FloatingActionButton(
+                onClick = { onAction(MainMenuAction.Continue) },
+                modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.lg).testTag("main-menu-resume"),
+                shape = CircleShape,
+                containerColor = scheme.palette.primaryContainer,
+                contentColor = scheme.palette.onPrimary,
+            ) {
+                Icon(Icon.Continue, Layout.contentIconSize, scheme.palette.onPrimary)
+            }
+        }
     }
 }
 

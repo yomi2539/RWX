@@ -118,7 +118,7 @@ class SettingsModel {
     val shaderEffects: MutableState<Boolean> = mutableStateOf(false)
     val teamShaders: MutableState<Boolean> = mutableStateOf(false)
     val useAndroidOpenGlRenderer: MutableState<Boolean> = mutableStateOf(false)
-    val showMainMenuBackgroundDemo: MutableState<Boolean> = mutableStateOf(true)
+    val showBackgroundBattleDemo: MutableState<Boolean> = mutableStateOf(true)
     val mouseCaptureEnabled: MutableState<Boolean> = mutableStateOf(false)
     val mouseSupport: MutableState<Boolean> = mutableStateOf(true)
     val keyboardSupport: MutableState<Boolean> = mutableStateOf(true)
@@ -253,7 +253,7 @@ class SettingsViewModel(val model: SettingsModel) {
 
     private fun themeToggles(): List<SettingToggle> = listOf(
         SettingToggle(I18n.settings.theme.enableAnimations, model.enableAnimations),
-        SettingToggle(I18n.settings.display.showMainMenuBackgroundDemo, model.showMainMenuBackgroundDemo),
+        SettingToggle(I18n.settings.display.showBackgroundBattleDemo, model.showBackgroundBattleDemo),
     )
 
     private fun gameplayToggles(): List<SettingToggle> = buildList {

@@ -14,6 +14,17 @@ class MultiplayerSceneHost(
     private var isRefreshing = false
     private var errorText: String? = null
     private var revision = 0L
+    private var lastJoinByLobby: Map<MultiplayerLobbyKind, String> = emptyMap()
+
+    fun setLastJoin(lobbyKind: MultiplayerLobbyKind, address: String) {
+        val trimmed = address.trim()
+        if (trimmed.isBlank()) return
+        lastJoinByLobby = lastJoinByLobby + (lobbyKind to trimmed)
+    }
+
+    fun clearLastJoin(lobbyKind: MultiplayerLobbyKind) {
+        lastJoinByLobby = lastJoinByLobby - lobbyKind
+    }
 
     fun beginRefresh(kind: MultiplayerLobbyKind) {
         revision++
@@ -32,6 +43,7 @@ class MultiplayerSceneHost(
         revision = revision,
         isRefreshing = isRefreshing,
         errorText = errorText,
+        lastJoinAddress = lastJoinByLobby[lobbyKind]?.takeIf { it.isNotBlank() },
     )
 
     fun updateRooms(

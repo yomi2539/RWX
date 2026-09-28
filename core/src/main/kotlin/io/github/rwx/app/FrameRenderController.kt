@@ -6,7 +6,7 @@ import io.github.rwx.ui.AppScreen
 
 internal class FrameRenderController(
     private val gameSession: GameSession,
-    private val shouldShowMenuBackground: (AppScreen) -> Boolean,
+    private val shouldShowBackgroundBattle: (AppScreen) -> Boolean,
     private val warmupController: WarmupController,
     private val presenter: GameFramePresenter,
     private val lastExternalFrame: () -> GameFrame?,
@@ -20,13 +20,13 @@ internal class FrameRenderController(
         deltaSeconds: Float,
     ) {
         val isRwGameVisible = screen == AppScreen.InGame
-        val isRwMenuBackgroundVisible = !isExternalBattleRoomJoinPending &&
-                shouldShowMenuBackground(screen)
+        val isBackgroundBattleVisible = !isExternalBattleRoomJoinPending &&
+                shouldShowBackgroundBattle(screen)
         val isResumeBackgroundVisible = shouldShowResumeMenuBackground(
             screen = screen,
             canResume = canResumeForFrame,
         )
-        val isLastExternalFrameBackgroundVisible = supportsMenuBattleBackground(screen) &&
+        val isLastExternalFrameBackgroundVisible = supportsBackgroundBattle(screen) &&
                 !gameSession.usesFrameCommandRendering &&
                 lastExternalFrame() != null
         val isStartupMenuBackgroundLoading = warmupController.isStartupMenuBackgroundLoading(screen)
@@ -34,7 +34,7 @@ internal class FrameRenderController(
         val rwCanvasFrame = when {
             isExternalBattleRoomJoinPending -> GameFrame(canvasViewport, emptyList())
             isRwGameVisible -> gameSession.updateFrame(canvasViewport, deltaSeconds)
-            isRwMenuBackgroundVisible -> {
+            isBackgroundBattleVisible -> {
                 gameSession.updateFrame(
                     canvasViewport,
                     deltaSeconds,
@@ -70,7 +70,7 @@ internal class FrameRenderController(
         }
         val shouldUseRwCanvasFrame = shouldUseRwCanvasFrameForFrame(
             isRwGameVisible = isRwGameVisible,
-            isRwMenuBackgroundVisible = isRwMenuBackgroundVisible,
+            isBackgroundBattleVisible = isBackgroundBattleVisible,
             isResumeBackgroundVisible = isResumeBackgroundVisible,
             isRwGameLoading = isRwGameLoading,
             isLastExternalFrameBackgroundVisible = isLastExternalFrameBackgroundVisible,

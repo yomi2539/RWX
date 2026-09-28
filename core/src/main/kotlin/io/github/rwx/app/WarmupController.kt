@@ -13,7 +13,7 @@ internal class WarmupController(
     private val loadingSceneHost: LoadingSceneHost,
     private val navigateTo: (AppScreen) -> Unit,
     private val clearExternalFrame: () -> Unit,
-    private val isMenuBackgroundDemoEnabled: () -> Boolean,
+    private val isBackgroundBattleDemoEnabled: () -> Boolean,
 ) {
     private var pendingRwGameLoad = false
     private var warmingRwMapPath: String? = null
@@ -36,7 +36,7 @@ internal class WarmupController(
             pendingWarmupStartedAtNanos = null
             deferRwWarmupUntilNextFrame = false
             pendingRwPreparation = null
-            if (!isMenuBackgroundDemoEnabled()) {
+            if (!isBackgroundBattleDemoEnabled()) {
                 pendingStartupMenuBackgroundLoad = false
                 pendingRwGameLoad = true
                 deferRwWarmupUntilNextFrame = true

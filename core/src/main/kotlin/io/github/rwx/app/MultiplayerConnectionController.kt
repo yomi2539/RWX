@@ -1,10 +1,13 @@
 package io.github.rwx.app
 
+import com.corrodinggames.rts.gameFramework.GameEngine
+import com.corrodinggames.rts.gameFramework.SettingsEngine
 import io.github.rwx.i18n.I18n
 import io.github.rwx.logger
 import io.github.rwx.p2p.P2PLobbyService
 import io.github.rwx.session.GameSession
 import io.github.rwx.ui.host.DialogSceneHost
+import io.github.rwx.ui.host.MultiplayerSceneHost
 import io.github.rwx.ui.model.*
 
 internal class MultiplayerConnectionController(
@@ -12,6 +15,7 @@ internal class MultiplayerConnectionController(
     private val lobbyController: MultiplayerLobbyController,
     private val battleRoomJoinController: BattleRoomJoinController,
     private val dialogSceneHost: DialogSceneHost,
+    private val multiplayerSceneHost: MultiplayerSceneHost,
     private val selectHostMap: () -> MapEntry?,
     private val onHostPreparing: (MapEntry) -> Unit,
     private val updateBattleRoomFromNetwork: () -> Unit,
@@ -20,6 +24,7 @@ internal class MultiplayerConnectionController(
 ) {
     fun joinOriginalServer(connectDescriptor: String, roomLabel: String = "server", serverId: String? = null) {
         if (connectDescriptor.isBlank()) return
+        recordLastJoin(MultiplayerLobbyKind.Original, connectDescriptor)
         battleRoomJoinController.start(
             address = connectDescriptor,
             roomLabel = roomLabel,
@@ -33,6 +38,7 @@ internal class MultiplayerConnectionController(
 
     fun joinP2PRoom(roomId: String, roomLabel: String = "P2P room") {
         if (roomId.isBlank()) return
+        recordLastJoin(MultiplayerLobbyKind.P2P, roomId)
         runCatching {
             P2PLobbyService.getInstance().prepareJoin(roomId)
         }.onSuccess { address ->
@@ -79,6 +85,50 @@ internal class MultiplayerConnectionController(
                 roomLabel = if (lobbyKind == MultiplayerLobbyKind.P2P) "P2P room" else "server",
             ),
         )
+    }
+
+    fun joinLastGame() {
+        val lobbyKind = lobbyController.activeLobbyKind
+        val address = lastJoinAddress(lobbyKind)
+        if (address.isNullOrBlank()) {
+            showUnavailableDialog(I18n.multiplayer.missingJoinInput())
+            return
+        }
+        joinDirectWithAddress(address)
+    }
+
+    fun refreshLastJoinState() {
+        lastJoinAddress(MultiplayerLobbyKind.Original)?.let {
+            multiplayerSceneHost.setLastJoin(MultiplayerLobbyKind.Original, it)
+        }
+        lastJoinAddress(MultiplayerLobbyKind.P2P)?.let {
+            multiplayerSceneHost.setLastJoin(MultiplayerLobbyKind.P2P, it)
+        }
+    }
+
+    private fun lastJoinAddress(lobbyKind: MultiplayerLobbyKind): String? {
+        val settings = GameEngine.getInstance()?.settingsEngine ?: SettingsEngine.getInstance()
+        val raw = when (lobbyKind) {
+            MultiplayerLobbyKind.Original -> settings?.lastNetworkIP
+            MultiplayerLobbyKind.P2P -> settings?.lastP2PRoomId
+        }
+        return raw?.trim()?.takeIf { it.isNotBlank() }
+    }
+
+    private fun recordLastJoin(lobbyKind: MultiplayerLobbyKind, address: String) {
+        val trimmed = address.trim()
+        if (trimmed.isBlank()) return
+        multiplayerSceneHost.setLastJoin(lobbyKind, trimmed)
+        runCatching {
+            val settings = GameEngine.getInstance()?.settingsEngine ?: SettingsEngine.getInstance()
+            if (settings != null) {
+                when (lobbyKind) {
+                    MultiplayerLobbyKind.Original -> settings.lastNetworkIP = trimmed
+                    MultiplayerLobbyKind.P2P -> settings.lastP2PRoomId = trimmed
+                }
+                settings.save()
+            }
+        }
     }
 
     private fun joinLobbyRequest(request: MultiplayerJoinRequest) {
@@ -149,6 +199,7 @@ internal class MultiplayerConnectionController(
                     rwxP2PSession = lobbyKind == MultiplayerLobbyKind.P2P,
                 )
             ) { "Game session rejected host request" }
+            gameSession.setBattleRoomMaxPlayers(options.maxPlayers)
             if (lobbyKind == MultiplayerLobbyKind.P2P) {
                 P2PLobbyService.getInstance().hostCurrentServer()
             }
@@ -243,6 +294,7 @@ internal data class MultiplayerHostOptions(
     val useMods: Boolean,
     val password: String?,
     val isPublic: Boolean,
+    val maxPlayers: Int = DEFAULT_HOST_MAX_PLAYERS,
 )
 
 internal fun multiplayerHostGameForm(lobbyKind: MultiplayerLobbyKind): DialogForm =
@@ -263,6 +315,14 @@ internal fun multiplayerHostGameForm(lobbyKind: MultiplayerLobbyKind): DialogFor
                     hint = I18n.multiplayer.hostPasswordHint(),
                 ),
             )
+            add(
+                DialogFormField.Text(
+                    id = HOST_MAX_PLAYERS_FIELD,
+                    label = I18n.battleroom.options.maxPlayers(),
+                    initialText = DEFAULT_HOST_MAX_PLAYERS.toString(),
+                    hint = "$MIN_HOST_MAX_PLAYERS-$MAX_HOST_MAX_PLAYERS",
+                ),
+            )
         },
     )
 
@@ -274,7 +334,13 @@ internal fun Map<String, String>.toMultiplayerHostOptions(
         useMods = get(HOST_USE_MODS_FIELD)?.toBooleanStrictOrNull() ?: false,
         password = get(HOST_PASSWORD_FIELD)?.trim()?.takeIf(String::isNotBlank),
         isPublic = lobbyKind == MultiplayerLobbyKind.Original && isPublic,
+        maxPlayers = get(HOST_MAX_PLAYERS_FIELD)?.toIntOrNull()?.coerceIn(MIN_HOST_MAX_PLAYERS, MAX_HOST_MAX_PLAYERS)
+            ?: DEFAULT_HOST_MAX_PLAYERS,
     )
 
 private const val HOST_USE_MODS_FIELD: String = "useMods"
 private const val HOST_PASSWORD_FIELD: String = "password"
+private const val HOST_MAX_PLAYERS_FIELD: String = "maxPlayers"
+private const val MIN_HOST_MAX_PLAYERS: Int = 10
+private const val MAX_HOST_MAX_PLAYERS: Int = 100
+private const val DEFAULT_HOST_MAX_PLAYERS: Int = 10

@@ -179,6 +179,19 @@ fun MultiplayerScreen(
                 ) {
                     Icon(Icon.Start, Layout.contentIconSize, palette.onPrimary)
                 }
+                if (!state.lastJoinAddress.isNullOrBlank()) {
+                    ExtendedFloatingActionButton(
+                        onClick = { onAction(MultiplayerAction.JoinLastGame) },
+                        modifier = Modifier.align(Alignment.BottomCenter).padding(Spacing.md)
+                            .testTag("multiplayer-join-last"),
+                        containerColor = palette.primaryContainer,
+                        contentColor = palette.onPrimary,
+                    ) {
+                        Icon(Icon.Replay, Layout.contentIconSize, palette.onPrimary)
+                        Spacer(Modifier.width(Spacing.sm))
+                        Text(I18n.multiplayer.joinLastGame())
+                    }
+                }
                 FloatingActionButton(
                     onClick = { onAction(MultiplayerAction.Refresh) },
                     modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.md).testTag("multiplayer-refresh"),

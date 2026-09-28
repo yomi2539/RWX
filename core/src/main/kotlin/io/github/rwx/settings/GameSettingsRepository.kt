@@ -108,7 +108,7 @@ class GameSettingsRepository(
         model.shaderEffects.value = prefs.getBoolean(KEY_SHADER_EFFECTS, false)
         model.teamShaders.value = prefs.getBoolean(KEY_TEAM_SHADERS, false)
         model.useAndroidOpenGlRenderer.value = prefs.getBoolean(KEY_ANDROID_OPENGL_RENDERER, false)
-        model.showMainMenuBackgroundDemo.value = prefs.getBoolean(KEY_SHOW_MAIN_MENU_BACKGROUND_DEMO, true)
+        model.showBackgroundBattleDemo.value = prefs.getBoolean(KEY_SHOW_BACKGROUND_BATTLE_DEMO, true)
         model.renderBackground.value = prefs.getBoolean(KEY_RENDER_BACKGROUND, true)
         model.renderExtraLayers.value = prefs.getBoolean(KEY_RENDER_EXTRA_LAYERS, true)
         model.showHpChanges.value = prefs.getBoolean(KEY_SHOW_HP_CHANGES, true)
@@ -294,7 +294,7 @@ class GameSettingsRepository(
             .putBoolean(KEY_SHADER_EFFECTS, model.shaderEffects.value)
             .putBoolean(KEY_TEAM_SHADERS, model.teamShaders.value)
             .putBoolean(KEY_ANDROID_OPENGL_RENDERER, model.useAndroidOpenGlRenderer.value)
-            .putBoolean(KEY_SHOW_MAIN_MENU_BACKGROUND_DEMO, model.showMainMenuBackgroundDemo.value)
+            .putBoolean(KEY_SHOW_BACKGROUND_BATTLE_DEMO, model.showBackgroundBattleDemo.value)
             .putBoolean(KEY_RENDER_BACKGROUND, model.renderBackground.value)
             .putBoolean(KEY_RENDER_EXTRA_LAYERS, model.renderExtraLayers.value)
             .putBoolean(KEY_SHOW_HP_CHANGES, model.showHpChanges.value)
@@ -353,7 +353,7 @@ class GameSettingsRepository(
         private const val KEY_SOFT_FOG_FADING = "softFogFading"
         private const val KEY_SHADER_EFFECTS = "shaderEffects"
         private const val KEY_TEAM_SHADERS = "teamShaders"
-        private const val KEY_SHOW_MAIN_MENU_BACKGROUND_DEMO = "showMainMenuBackgroundDemo"
+        private const val KEY_SHOW_BACKGROUND_BATTLE_DEMO = "showBackgroundBattleDemo"
         private const val KEY_RENDER_BACKGROUND = "renderBackground"
         private const val KEY_RENDER_EXTRA_LAYERS = "renderExtraLayers"
         private const val KEY_SHOW_HP_CHANGES = "showHpChanges"

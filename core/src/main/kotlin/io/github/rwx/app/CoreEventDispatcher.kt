@@ -32,7 +32,7 @@ internal class CoreEventDispatcher(
                 CoreUiEvent.ResourceBrowserDownloadProgress -> resourceBrowserController.handleDownloadProgress()
                 CoreUiEvent.ResourceBrowserDownloadCompleted -> resourceBrowserController.handleDownloadCompleted()
                 CoreUiEvent.MenuBackgroundReady -> {
-                    if (supportsMenuBattleBackground(currentScreen())) refreshMenuBackground()
+                    if (supportsBackgroundBattle(currentScreen())) refreshMenuBackground()
                 }
                 CoreUiEvent.InGameSaveRequested -> inGameDialogController.showSaveGameDialog()
                 CoreUiEvent.InGameExportMapRequested -> inGameDialogController.showExportMapDialog()

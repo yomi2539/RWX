@@ -57,7 +57,7 @@ internal class FrameLoopInstaller(
         )
         val frameRenderController = FrameRenderController(
             gameSession = gameSession,
-            shouldShowMenuBackground = screenPresenter::shouldShowRwMenuBackground,
+            shouldShowBackgroundBattle = screenPresenter::shouldShowBackgroundBattle,
             warmupController = warmupController,
             presenter = presenter,
             lastExternalFrame = lastExternalFrame,

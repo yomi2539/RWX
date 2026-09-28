@@ -199,6 +199,7 @@ internal class ActionRouter(
             MultiplayerOutcome.JoinDirectRequested -> multiplayerConnectionController.showJoinDirectDialog()
             is MultiplayerOutcome.JoinDirectWithAddressRequested ->
                 multiplayerConnectionController.joinDirectWithAddress(outcome.address)
+            MultiplayerOutcome.JoinLastGameRequested -> multiplayerConnectionController.joinLastGame()
             MultiplayerOutcome.ConfigurePlayerNameRequested -> multiplayerConnectionController.showPlayerNameDialog()
             is MultiplayerOutcome.JoinRoom -> multiplayerConnectionController.showJoinRoomDialog(outcome.roomId)
         }

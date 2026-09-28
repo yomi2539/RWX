@@ -1938,6 +1938,14 @@ object I18n {
             ),
         )
 
+        val joinLastGame = entry(
+            key = "multiplayer.joinLastGame",
+            translations = linkedMapOf(
+                "en" to "Rejoin Last Game",
+                "zh-CN" to "重新加入上局",
+            ),
+        )
+
         val joinP2pRoom = entry(
             key = "multiplayer.joinP2pRoom",
             translations = linkedMapOf(
@@ -2600,6 +2608,14 @@ object I18n {
                 ),
             )
 
+            val showBackgroundBattleDemo = entry(
+                key = "settings.display.showBackgroundBattleDemo",
+                translations = linkedMapOf(
+                    "en" to "Show background battle demo",
+                    "zh-CN" to "显示背景战斗演示",
+                ),
+            )
+
             val showFps = entry(
                 key = "settings.display.showFps",
                 translations = linkedMapOf(
@@ -2613,14 +2629,6 @@ object I18n {
                 translations = linkedMapOf(
                     "en" to "Show HP changes",
                     "zh-CN" to "显示血量变化",
-                ),
-            )
-
-            val showMainMenuBackgroundDemo = entry(
-                key = "settings.display.showMainMenuBackgroundDemo",
-                translations = linkedMapOf(
-                    "en" to "Show main menu battle demo",
-                    "zh-CN" to "显示主菜单战斗演示",
                 ),
             )
 

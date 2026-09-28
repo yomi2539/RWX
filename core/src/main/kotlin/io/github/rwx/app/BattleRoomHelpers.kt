@@ -98,11 +98,11 @@ internal fun Map<String, String>.toGameRoomSettings(base: GameRoomSettings = Gam
 internal fun battleRoomOptionsForm(options: GameRoomSettings, maxPlayers: Int = 10): DialogForm =
     DialogForm(
         fields = listOf(
-            DialogFormField.Choice(
+            DialogFormField.Text(
                 id = "maxPlayers",
                 label = I18n.battleroom.options.maxPlayers(),
-                options = (2..10).map { DialogFormOption(it.toString(), it.toString()) },
-                selectedIndex = (maxPlayers - 2).coerceIn(0, 8),
+                initialText = maxPlayers.toString(),
+                hint = "2-100",
             ),
             DialogFormField.Choice(
                 id = "aiDifficulty",

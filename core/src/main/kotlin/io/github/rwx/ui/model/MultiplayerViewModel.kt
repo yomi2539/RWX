@@ -33,10 +33,11 @@ data class MultiplayerRoomListModel(
     val revision: Long = 0,
     val isRefreshing: Boolean = false,
     val errorText: String? = null,
+    val lastJoinAddress: String? = null,
 ) {
     /** Scope actions to the lobby the user actually saw, while allowing a newer tab choice. */
     internal fun resolveAction(requestLobby: MultiplayerLobbyKind, requestRevision: Long, action: MultiplayerAction): MultiplayerAction? {
-        if (action == MultiplayerAction.Back || action == MultiplayerAction.ConfigurePlayerName || action is MultiplayerAction.SwitchLobby) {
+        if (action == MultiplayerAction.Back || action == MultiplayerAction.ConfigurePlayerName || action is MultiplayerAction.SwitchLobby || action == MultiplayerAction.JoinLastGame) {
             return action
         }
         if (requestLobby != lobbyKind || requestRevision != revision) return null
@@ -75,6 +76,9 @@ sealed interface MultiplayerAction {
 
     /** Join a specific room by its ID. */
     data class JoinRoom(val roomId: String) : MultiplayerAction
+
+    /** Rejoin the last address used in the active lobby. */
+    data object JoinLastGame : MultiplayerAction
 }
 
 /** Outcome produced by [MultiplayerNavigation] for each [MultiplayerAction]. */
@@ -87,6 +91,7 @@ sealed interface MultiplayerOutcome {
     data class JoinDirectWithAddressRequested(val address: String) : MultiplayerOutcome
     data object ConfigurePlayerNameRequested : MultiplayerOutcome
     data class JoinRoom(val roomId: String) : MultiplayerOutcome
+    data object JoinLastGameRequested : MultiplayerOutcome
 }
 
 /** Pure function that maps each [MultiplayerAction] to its [MultiplayerOutcome]. */
@@ -100,6 +105,7 @@ object MultiplayerNavigation {
         is MultiplayerAction.JoinDirectWithAddress -> MultiplayerOutcome.JoinDirectWithAddressRequested(action.address)
         MultiplayerAction.ConfigurePlayerName -> MultiplayerOutcome.ConfigurePlayerNameRequested
         is MultiplayerAction.JoinRoom -> MultiplayerOutcome.JoinRoom(action.roomId)
+        MultiplayerAction.JoinLastGame -> MultiplayerOutcome.JoinLastGameRequested
     }
 }
 
