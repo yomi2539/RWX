@@ -6,7 +6,7 @@ import io.github.rwx.ui.InGameMenuController;
 public interface CoreGameView {
     void pause();
 
-    boolean isPaused();
+    boolean isActive();
 
     boolean isContinuousRendering();
 

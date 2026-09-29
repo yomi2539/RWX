@@ -17,6 +17,8 @@ data class AppOptions(
     val joinServer: String? = null,
     val isDesktop: Boolean = false,
     val noSteam: Boolean = false,
+    val backendId: String? = null,
+    val autoReplay: String? = null,
 ) {
     companion object {
         private const val SCREEN_PREFIX = "--screen="
@@ -30,6 +32,8 @@ data class AppOptions(
         private const val AUTO_START_BATTLE_ROOM_TWICE_ARG = "--auto-start-battleroom-twice"
         private const val AUTO_RETURN_MAIN_MENU_AFTER_GAME_READY_ARG = "--auto-return-main-menu-after-game-ready"
         private const val JOIN_SERVER_PREFIX = "--join-server="
+        private const val BACKEND_PREFIX = "--render-backend="
+        private const val AUTO_REPLAY_PREFIX = "--auto-replay="
 
         private val screensByArgument = mapOf(
             "main-menu" to AppScreen.MainMenu,
@@ -77,6 +81,8 @@ data class AppOptions(
             var autoReturnMainMenuAfterGameReady = false
             var joinServer: String? = null
             var noSteam = false
+            var rendererId: String? = null
+            var autoReplay: String? = null
 
             args.forEach { arg ->
                 when {
@@ -109,7 +115,17 @@ data class AppOptions(
                         settingsPage = parseSettingsPage(arg.removePrefix(SETTINGS_PAGE_PREFIX))
                     }
 
-                    else -> throw IllegalArgumentException("Unsupported Kool app argument: $arg")
+                    arg.startsWith(BACKEND_PREFIX) -> {
+                        rendererId = parseRendererId(arg.removePrefix(BACKEND_PREFIX))
+                    }
+
+                    arg.startsWith(AUTO_REPLAY_PREFIX) -> {
+                        autoReplay = arg.removePrefix(AUTO_REPLAY_PREFIX).trim().also {
+                            require(it.isNotEmpty()) { "Replay file name must not be empty" }
+                        }
+                    }
+
+                    else -> throw IllegalArgumentException("Unsupported app argument: $arg")
                 }
             }
 
@@ -126,6 +142,8 @@ data class AppOptions(
                 joinServer = joinServer,
                 isDesktop = isDesktop,
                 noSteam = noSteam,
+                backendId = rendererId,
+                autoReplay = autoReplay,
             )
         }
 
@@ -147,6 +165,12 @@ data class AppOptions(
 
         private fun parseSettingsPage(value: String): SettingsPage = requireNotNull(settingsPagesByArgument[value]) {
             "Unsupported Kool app settings page: $value"
+        }
+
+        private fun parseRendererId(value: String): String {
+            val normalized = value.trim().lowercase()
+            require(normalized.isNotEmpty()) { "Render backend id must not be empty" }
+            return normalized
         }
     }
 }

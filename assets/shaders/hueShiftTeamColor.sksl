@@ -1,0 +1,20 @@
+uniform shader u_texture;
+uniform vec4 teamColor;
+
+vec4 main(vec2 fragCoord) {
+  vec4 color = u_texture.eval(fragCoord);
+
+  float hueness = abs(color.r - color.g);
+  hueness = max(hueness, abs(color.g - color.b));
+  hueness = max(hueness, abs(color.b - color.r));
+
+  if (hueness > (15.0 / 256.0)) {
+    float lightness = min(min(color.r, color.g), color.b);
+
+    color.r = lightness + teamColor.r * hueness;
+    color.g = lightness + teamColor.g * hueness;
+    color.b = lightness + teamColor.b * hueness;
+  }
+
+  return color;
+}

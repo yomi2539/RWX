@@ -1,12 +1,5 @@
 package io.github.rwx
 
-import androidx.lifecycle.lifecycleScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
-import kotlinx.coroutines.withContext
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.platform.ComposeView
-import androidx.compose.ui.platform.ViewCompositionStrategy
 import android.content.Intent
 import android.content.SharedPreferences
 import android.net.Uri
@@ -17,17 +10,22 @@ import android.provider.DocumentsContract
 import android.provider.OpenableColumns
 import android.view.*
 import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.platform.ComposeView
+import androidx.compose.ui.platform.ViewCompositionStrategy
+import androidx.lifecycle.lifecycleScope
 import io.github.rwx.app.*
-import io.github.rwx.di.AndroidGameRenderBackend
-import io.github.rwx.di.selectedAndroidGameRenderBackend
+import io.github.rwx.di.selectedAndroidRenderBackend
 import io.github.rwx.p2p.P2PLobbyService
 import io.github.rwx.session.GameSession
 import io.github.rwx.settings.KEY_ANDROID_OPENGL_RENDERER
 import io.github.rwx.ui.AndroidComposeOverlay
 import io.github.rwx.ui.AppUiState
-import io.github.rwx.ui.component.*
 import io.github.rwx.ui.model.LoadingUiState
 import io.github.rwx.ui.platform.createAndroidComposeHost
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import org.koin.android.ext.android.get
 import org.koin.core.component.KoinComponent
 import java.io.File
@@ -149,17 +147,13 @@ class MainActivity : ComponentActivity(), PlatformFilePickerHost, KoinComponent 
         val preferences = getSharedPreferences(PREFERENCE_NAME, MODE_PRIVATE)
         val listener = SharedPreferences.OnSharedPreferenceChangeListener { prefs, key ->
             if (key != KEY_ANDROID_OPENGL_RENDERER) return@OnSharedPreferenceChangeListener
-            val backend = selectedAndroidGameRenderBackend(
+            val backend = selectedAndroidRenderBackend(
                 useOpenGlPreference = prefs.getBoolean(KEY_ANDROID_OPENGL_RENDERER, false),
                 incompleteLoadAttempts = prefs.getInt("numIncompleteLoadAttempts", 0),
                 loadsSinceNormalExit = prefs.getInt("numLoadsSinceRunningGameOrNormalExit", 0),
             )
-            val rendererMode = when (backend) {
-                AndroidGameRenderBackend.CANVAS -> AndroidRendererMode.CANVAS
-                AndroidGameRenderBackend.OPENGL -> AndroidRendererMode.OPENGL
-            }
             runOnUiThread {
-                nativeGameSession?.switchRendererMode(rendererMode)
+                nativeGameSession?.switchRenderBackend(backend)
             }
         }
         preferences.registerOnSharedPreferenceChangeListener(listener)

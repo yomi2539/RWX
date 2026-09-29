@@ -1096,7 +1096,7 @@ public class GameLogic extends GameEngine {
         this.performanceProfiler.a(ProfilerSection.total);
         this.networkEngine.b(float1);
         this.activeGameView = this.pendingGameView;
-        if (this.activeGameView.isPaused()) {
+        if (this.activeGameView.isActive()) {
             this.performanceProfiler.a(ProfilerSection.update);
 
             while (this.gameThreadRunnableQueue.peek() != null) {

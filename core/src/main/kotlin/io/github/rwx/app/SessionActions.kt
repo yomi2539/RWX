@@ -60,7 +60,7 @@ internal class SessionActions(
 
     fun saveCurrentScreenStateBeforeMainMenu() {
         when (currentScreen()) {
-            AppScreen.Settings -> settingsRepository.discardChanges(settingsModel)
+            AppScreen.Settings -> settingsRepository.saveFrom(settingsModel)
             AppScreen.Mods -> modsController.applyChangesAndRefresh()
             else -> Unit
         }

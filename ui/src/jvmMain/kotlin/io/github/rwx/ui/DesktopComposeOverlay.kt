@@ -16,7 +16,7 @@ import kotlinx.coroutines.launch
 import javax.swing.SwingUtilities
 
 /** Owns in-frame Compose content from bootstrap through the application session. */
-class DesktopComposeOverlay internal constructor(
+class DesktopComposeOverlay constructor(
     initialState: AppUiState,
     hostFactory: (onDispose: () -> Unit) -> PlatformComposeHost,
     private val scope: CoroutineScope = CoroutineScope(SupervisorJob() + Dispatchers.Default),

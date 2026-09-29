@@ -119,7 +119,7 @@ fun ComposeOverlayContent(
             }
             is SettingsUiAction.CaptureKey -> keyCaptureHandler.finish(action.requestId)
             is SettingsUiAction.CancelKeyCapture -> keyCaptureHandler.finish(action.requestId)
-            is SettingsUiAction.ClearKeyBinding, is SettingsUiAction.SelectPage, SettingsUiAction.Back, SettingsUiAction.Save -> {
+            is SettingsUiAction.ClearKeyBinding, is SettingsUiAction.SelectPage, SettingsUiAction.Back -> {
                 keyCaptureHandler.finish(currentCapture()?.requestId)
                 pendingCapture = null
             }

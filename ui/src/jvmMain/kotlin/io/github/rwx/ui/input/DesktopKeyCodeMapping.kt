@@ -8,6 +8,10 @@ import java.awt.event.KeyEvent as AwtKeyEvent
 
 internal data class BindingStroke(val keyCode: Int, val modifiers: Int)
 
+/** Shared by the game canvas and overlays so captured key bindings work in both. */
+fun desktopGameKeyCode(code: Int, location: Int = AwtKeyEvent.KEY_LOCATION_STANDARD): Int? =
+    DesktopKeyCodeMapping.gameKeyCode(code, location)
+
 /** AWT key identity, not typed characters: Shift+1 must remain Shift+1, not the '!' character. */
 internal object DesktopKeyCodeMapping {
     fun stroke(event: KeyEvent): BindingStroke? {
@@ -38,11 +42,11 @@ internal object DesktopKeyCodeMapping {
             return AndroidCodes.KEYCODE_NUMPAD_ENTER
         }
         // With NumLock off, the game treats keypad navigation as navigation, not digits.
-        return when {
-            code in AwtKeyEvent.VK_A..AwtKeyEvent.VK_Z -> AndroidCodes.KEYCODE_A + code - AwtKeyEvent.VK_A
-            code in AwtKeyEvent.VK_0..AwtKeyEvent.VK_9 -> AndroidCodes.KEYCODE_0 + code - AwtKeyEvent.VK_0
-            code in AwtKeyEvent.VK_F1..AwtKeyEvent.VK_F12 -> AndroidCodes.KEYCODE_F1 + code - AwtKeyEvent.VK_F1
-            code in AwtKeyEvent.VK_NUMPAD0..AwtKeyEvent.VK_NUMPAD9 -> AndroidCodes.KEYCODE_NUMPAD_0 + code - AwtKeyEvent.VK_NUMPAD0
+        return when (code) {
+            in AwtKeyEvent.VK_A..AwtKeyEvent.VK_Z -> AndroidCodes.KEYCODE_A + code - AwtKeyEvent.VK_A
+            in AwtKeyEvent.VK_0..AwtKeyEvent.VK_9 -> AndroidCodes.KEYCODE_0 + code - AwtKeyEvent.VK_0
+            in AwtKeyEvent.VK_F1..AwtKeyEvent.VK_F12 -> AndroidCodes.KEYCODE_F1 + code - AwtKeyEvent.VK_F1
+            in AwtKeyEvent.VK_NUMPAD0..AwtKeyEvent.VK_NUMPAD9 -> AndroidCodes.KEYCODE_NUMPAD_0 + code - AwtKeyEvent.VK_NUMPAD0
             else -> when (code) {
                 AwtKeyEvent.VK_ESCAPE -> AndroidCodes.KEYCODE_ESCAPE
                 AwtKeyEvent.VK_ENTER -> AndroidCodes.KEYCODE_ENTER

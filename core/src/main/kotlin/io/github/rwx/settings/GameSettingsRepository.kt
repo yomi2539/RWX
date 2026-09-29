@@ -86,12 +86,6 @@ class GameSettingsRepository(
         }
     }
 
-    fun discardChanges(model: SettingsModel) {
-        loadFromPreferences(model)
-        applyToLiveSettings(model, runtimeSettings())
-        GameEngine.getInstance()?.musicManager?.onSettingsChanged()
-    }
-
     private fun loadFromPreferences(model: SettingsModel) {
         val prefs = preferences
         model.batterySaving.value = prefs.getBoolean(KEY_BATTERY_SAVING, false)
@@ -128,6 +122,8 @@ class GameSettingsRepository(
         model.forceEnglish.value = prefs.getBoolean(KEY_FORCE_ENGLISH, false)
         model.enableAnimations.value = prefs.getBoolean(KEY_ENABLE_ANIMATIONS, true)
         model.overlayOpacity.value = normalizeOverlayOpacity(prefs.getFloat(KEY_OVERLAY_OPACITY, DEFAULT_OVERLAY_OPACITY))
+        model.desktopRenderBackend.value =
+            normalizeDesktopRenderBackend(prefs.getString(KEY_DESKTOP_RENDER_BACKEND, "slick"))
 
         model.quickRally.value = prefs.getBoolean(KEY_QUICK_RALLY, true)
         model.doubleClickToAttackMove.value = prefs.getBoolean(KEY_DOUBLE_CLICK_TO_ATTACK_MOVE, true)
@@ -271,6 +267,9 @@ class GameSettingsRepository(
         settings.edgeScrollSpeed = model.edgeScrollSpeed.value
     }
 
+    private fun normalizeDesktopRenderBackend(id: String?): String =
+        if (id?.lowercase() == "skia") "skia" else "slick"
+
     private fun normalizeAudioSettings(model: SettingsModel) {
         model.masterVolume.value = model.masterVolume.value.coerceIn(0f, 1f)
         model.gameVolume.value = model.gameVolume.value.coerceIn(0f, 1f)
@@ -313,6 +312,7 @@ class GameSettingsRepository(
             .putBoolean(KEY_FORCE_ENGLISH, model.forceEnglish.value)
             .putBoolean(KEY_ENABLE_ANIMATIONS, model.enableAnimations.value)
             .putFloat(KEY_OVERLAY_OPACITY, normalizeOverlayOpacity(model.overlayOpacity.value))
+            .putString(KEY_DESKTOP_RENDER_BACKEND, normalizeDesktopRenderBackend(model.desktopRenderBackend.value))
             .putBoolean(KEY_QUICK_RALLY, model.quickRally.value)
             .putBoolean(KEY_DOUBLE_CLICK_TO_ATTACK_MOVE, model.doubleClickToAttackMove.value)
             .putBoolean(KEY_SHOW_MAP_PINGS_ON_BATTLEFIELD, model.showMapPingsOnBattlefield.value)
@@ -391,5 +391,6 @@ class GameSettingsRepository(
         private const val KEY_EDGE_SCROLL_SPEED = "edgeScrollSpeed"
         private const val KEY_STORAGE_TYPE = "storageType"
         private const val KEY_EXTERNAL_SAF_LINK = "externalSAFLink"
+        private const val KEY_DESKTOP_RENDER_BACKEND = "desktopRenderBackend"
     }
 }

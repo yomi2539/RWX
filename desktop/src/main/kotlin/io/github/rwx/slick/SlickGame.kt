@@ -14,6 +14,7 @@ import com.corrodinggames.rts.gameFramework.network.PasswordHandler
 import com.corrodinggames.rts.gameFramework.utility.SlickToAndroidKeycodes
 import io.github.rwx.DesktopInputHandler
 import io.github.rwx.ensureDesktopOpenAlMusicFactory
+import io.github.rwx.bench.BenchFrameProbe
 import io.github.rwx.geometry.Point
 import io.github.rwx.input.MultiTouchPointerState
 import io.github.rwx.logger
@@ -188,11 +189,9 @@ class SlickGame(
     private val onTextInputRequest: (SlickGame, SlickTextInputRequest) -> Boolean = { _, _ -> false },
     private val onMapReady: (String) -> Unit = { mapPath ->
         logger.info { "Map($mapPath) is ready" }
-        System.out.flush()
     },
     private val onMapError: (String, Throwable) -> Unit = { mapPath, error ->
         logger.error(error) {  "Failed to load map:$mapPath"}
-        System.out.flush()
     },
     private val onLoadingStatus: (String) -> Unit = {},
 ) : BasicGame("RWX") {
@@ -242,6 +241,7 @@ class SlickGame(
     private val pendingInputEventCount = AtomicInteger(0)
     private val nextTextInputRequestId = AtomicInteger(1)
     private val frameDelta = SlickFrameDelta()
+    private val frameProbe by lazy { BenchFrameProbe() }
     private var lastAppliedWidth: Int = 0
     private var lastAppliedHeight: Int = 0
     private var lastAppliedTargetFrameRate: Int = -1
@@ -347,6 +347,9 @@ class SlickGame(
 
     override fun render(container: GameContainer, graphics: Graphics) {
         val activeEngine = engine ?: return
+        val probeOn = frameProbe.isEnabled
+        val startNanos = if (probeOn) System.nanoTime() else 0L
+        try {
         graphicsEngine.setGraphics(graphics, container.width, container.height)
         activeEngine.renderGraphicsEngine = graphicsEngine
         completeModReload(activeEngine)
@@ -367,6 +370,9 @@ class SlickGame(
             renderPendingLayerRedraws(activeEngine)
         }
         notifyReadyAfterVisibleFrames(activeEngine)
+        } finally {
+            if (probeOn) frameProbe.frame(System.nanoTime() - startNanos)
+        }
     }
 
     private fun drainPendingWork(activeEngine: GameEngine, container: GameContainer) {
@@ -1146,7 +1152,7 @@ class SlickGame(
             rendering = false
         }
 
-        override fun isPaused(): Boolean = true
+        override fun isActive(): Boolean = true
 
         override fun isContinuousRendering(): Boolean = true
 

@@ -1,0 +1,17 @@
+uniform shader u_texture;
+uniform vec4 teamColor;
+
+vec4 main(vec2 fragCoord) {
+  vec4 color = u_texture.eval(fragCoord);
+
+  float threshold = 0.04;
+
+  if (color.g > 0.0 && abs(color.r - color.b) <= threshold) {
+    float lightness = color.r;
+    float greenness = color.g - lightness;
+
+    color.rgb = lightness + teamColor.rgb * greenness;
+  }
+
+  return color;
+}

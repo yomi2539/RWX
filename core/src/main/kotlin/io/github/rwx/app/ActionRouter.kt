@@ -42,6 +42,8 @@ internal class ActionRouter(
     private val requestInGameSurrender: () -> Unit,
     private val exitRwGameToMainMenu: () -> Unit,
     private val showUnavailableDialog: (String) -> Unit,
+    private val canResume: () -> Boolean,
+    private val showStartNewGameDialog: (() -> Unit) -> Unit,
 ) {
     fun install() {
         actions.menu = ::handleMenuAction
@@ -61,8 +63,12 @@ internal class ActionRouter(
                 if (action == MainMenuAction.Continue && outcome.screen == AppScreen.InGame) {
                     resumeRwGame()
                 } else if (action == MainMenuAction.Sandbox) {
-                    if (battleRoomController.prepareSandboxGame()) {
-                        navigator.navigateTo(AppScreen.BattleRoom)
+                    if (canResume()) {
+                        showStartNewGameDialog {
+                            enterSandboxRoom()
+                        }
+                    } else {
+                        enterSandboxRoom()
                     }
                 } else if (outcome.screen == AppScreen.InGame) {
                     enterRwGame(true, null)
@@ -119,8 +125,24 @@ internal class ActionRouter(
             navigator.navigateTo(AppScreen.BattleRoom)
             return
         }
+        if (canResume()) {
+            showStartNewGameDialog {
+                proceedToBattleRoom(map)
+            }
+            return
+        }
+        proceedToBattleRoom(map)
+    }
+
+    private fun proceedToBattleRoom(map: MapEntry) {
         battleRoomController.prepareForMap(map)
         navigator.navigateTo(AppScreen.BattleRoom)
+    }
+
+    private fun enterSandboxRoom() {
+        if (battleRoomController.prepareSandboxGame()) {
+            navigator.navigateTo(AppScreen.BattleRoom)
+        }
     }
 
     private fun handleReplaySelectAction(action: ReplaySelectAction) {
@@ -139,7 +161,7 @@ internal class ActionRouter(
                 refreshScreen()
             }
             is SettingsOutcome.Navigate -> {
-                settingsRepository.discardChanges(settingsModel)
+                settingsRepository.saveFrom(settingsModel)
                 navigator.navigateTo(outcome.screen)
             }
         }

@@ -148,11 +148,22 @@ internal class AppUiController(
                     page.items.filterIsInstance<SettingsPageItem.ColorSchemeSelector>().any { it.item.id == action.id }
                 ) {
                     bootstrap.settingsModel.selectedColorSchemeId.value = action.id
+                    bootstrap.actions.settings(SettingsAction.ApplyChanges)
                 }
             }
             is SettingsUiAction.BeginKeyCapture -> bootstrap.settingsSceneHost.keyBindingEditor.beginCapture(action.capture)
             is SettingsUiAction.CaptureKey -> bootstrap.settingsSceneHost.keyBindingEditor.captureKey(action.requestId, action.keyCode, action.modifiers)
             is SettingsUiAction.ClearKeyBinding -> bootstrap.settingsSceneHost.keyBindingEditor.clear(action.target)
+            is SettingsUiAction.SelectRenderBackend -> {
+                val pageContent = bootstrap.settingsSceneHost.pageContent()
+                if (pageContent.page == SettingsPage.Display &&
+                    pageContent.items.filterIsInstance<SettingsPageItem.RenderBackend>().isNotEmpty()
+                ) {
+                    val normalized = if (action.backendId.lowercase() == "skia") "skia" else "slick"
+                    bootstrap.settingsModel.desktopRenderBackend.value = normalized
+                    bootstrap.actions.settings(SettingsAction.ApplyChanges)
+                }
+            }
             is SettingsUiAction.SelectStorage -> {
                 val page = bootstrap.settingsSceneHost.pageContent()
                 if (page.page == SettingsPage.Display &&
@@ -160,6 +171,7 @@ internal class AppUiController(
                     (action.storageType == 0 || action.storageType == 2)
                 ) {
                     bootstrap.settingsModel.storageType.value = action.storageType
+                    bootstrap.actions.settings(SettingsAction.ApplyChanges)
                 }
             }
             is SettingsUiAction.RequestExternalStorage -> {
@@ -170,15 +182,13 @@ internal class AppUiController(
                         if (!canDispatchPageAction(AppScreen.Settings)) return@submit
                         bootstrap.settingsRepository.saveExternalStorageLink(selection.uri)
                         bootstrap.settingsModel.storageType.value = 2
+                        bootstrap.actions.settings(SettingsAction.ApplyChanges)
                     }
                 }
             }
             SettingsUiAction.Back -> {
                 bootstrap.settingsSceneHost.keyBindingEditor.cancelCapture()
                 bootstrap.actions.settings(SettingsAction.Back)
-            }
-            SettingsUiAction.Save -> {
-                bootstrap.actions.settings(SettingsAction.ApplyChanges)
             }
             else -> bootstrap.settingsSceneHost.pageContent().applyEdit(action)?.let(bootstrap.actions.settings)
         }

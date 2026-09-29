@@ -1,0 +1,8 @@
+uniform shader u_texture;
+
+vec4 main(vec2 fragCoord) {
+  vec4 color = u_texture.eval(fragCoord);
+  color.a = 1.0;
+
+  return color;
+}

@@ -17,37 +17,29 @@ fun androidModule(context: Context) = module {
     single<CrashReporter> { get<PlatformBridge>().crashReporter }
     single {
         AndroidGameSession(
-            rendererMode = when (selectedAndroidGameRenderBackend()) {
-                AndroidGameRenderBackend.OPENGL -> AndroidRendererMode.OPENGL
-                else -> AndroidRendererMode.CANVAS
-            },
+            renderBackend = selectedAndroidRenderBackend(),
         )
     }
     single<GameSession> { get<AndroidGameSession>() }
 }
 
-private fun org.koin.core.scope.Scope.selectedAndroidGameRenderBackend(): AndroidGameRenderBackend {
+private fun org.koin.core.scope.Scope.selectedAndroidRenderBackend(): AndroidRenderBackend {
     val preferences = get<PreferenceStorage>().preference(PREFERENCE_NAME)
-    return selectedAndroidGameRenderBackend(
+    return selectedAndroidRenderBackend(
         useOpenGlPreference = preferences.getBoolean(KEY_ANDROID_OPENGL_RENDERER, false),
         incompleteLoadAttempts = preferences.getInt("numIncompleteLoadAttempts", 0),
         loadsSinceNormalExit = preferences.getInt("numLoadsSinceRunningGameOrNormalExit", 0),
     )
 }
 
-internal enum class AndroidGameRenderBackend {
-    CANVAS,
-    OPENGL,
-}
-
-internal fun selectedAndroidGameRenderBackend(
+internal fun selectedAndroidRenderBackend(
     useOpenGlPreference: Boolean,
     incompleteLoadAttempts: Int = 0,
     loadsSinceNormalExit: Int = 0,
-): AndroidGameRenderBackend =
+): AndroidRenderBackend =
     when {
         useOpenGlPreference && incompleteLoadAttempts <= 3 && loadsSinceNormalExit <= 15 ->
-            AndroidGameRenderBackend.OPENGL
+            AndroidRenderBackend.OPENGL_ES
 
-        else -> AndroidGameRenderBackend.CANVAS
+        else -> AndroidRenderBackend.CANVAS
     }

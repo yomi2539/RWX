@@ -1,5 +1,6 @@
 package io.github.rwx.app
 
+import io.github.rwx.logger
 import io.github.rwx.ui.AppScreen
 
 internal class GameReadyController(
@@ -24,6 +25,7 @@ internal class GameReadyController(
             if (!gameFrameReadyMarkerPrinted && renderedGameFrameCount >= 2) {
                 gameFrameReadyMarkerPrinted = true
                 onFirstGameFrameReady()
+                logger.info { RWX_GAME_FRAME_READY_MARKER }
                 println(RWX_GAME_FRAME_READY_MARKER)
                 System.out.flush()
                 if (pendingAutoReturnMainMenuAfterGameReady) {

@@ -17,6 +17,7 @@ uiTestVersion = "1.12.0"
 webrtcJavaVersion = "0.14.0"
 androidWebrtcVersion = "144.7559.12"
 composeVersion = "1.12.0"
+skikoVersion = "0.150.1"
 composeMaterial3Version = "1.9.0"
 navigationeventVersion = "1.1.0"
 koinCoreVersion = "4.2.2"
@@ -34,6 +35,7 @@ kotlinx-coroutines-swing = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "kotlinxVersion" }
 navigationevent-compose = { module = "org.jetbrains.androidx.navigationevent:navigationevent-compose", version.ref = "navigationeventVersion" }
 compose-runtime = { module = "org.jetbrains.compose.runtime:runtime", version.ref = "composeVersion" }
+skiko-awt = { module = "org.jetbrains.skiko:skiko-awt", version.ref = "skikoVersion" }
 compose-foundation = { module = "org.jetbrains.compose.foundation:foundation", version.ref = "composeVersion" }
 compose-material3 = { module = "org.jetbrains.compose.material3:material3", version.ref = "composeMaterial3Version" }
 compose-resources = { module = "org.jetbrains.compose.components:components-resources", version.ref = "composeVersion" }

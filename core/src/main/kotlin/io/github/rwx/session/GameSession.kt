@@ -17,7 +17,7 @@ import io.github.rwx.map.MapMetadata
 import io.github.rwx.map.TransferredUnit
 import io.github.rwx.net.CoreUiNetworkCallbacks
 import io.github.rwx.platform.CoreGameView
-import io.github.rwx.render.RendererMode
+import io.github.rwx.render.RenderBackend
 import io.github.rwx.render.frame.GameFrame
 import io.github.rwx.render.frame.GameViewport
 import io.github.rwx.ui.BattleRoomUiBridge
@@ -44,9 +44,8 @@ abstract class GameSession {
     protected val gameLock = Any()
     private val engineStartLock = Any()
     val inGameMenuController = InGameMenuController()
-    protected val sessionLogName: String
-        get() = rendererMode.id.uppercase().replace('-', ' ') + " RW"
-    protected abstract val rendererMode: RendererMode
+
+    protected abstract val renderBackend: RenderBackend
     protected open val defaultPreloadViewport: GameViewport = GameViewport(1280, 720)
 
     @Volatile
@@ -57,6 +56,7 @@ abstract class GameSession {
         get() = rendererProfile.canStartNewSessionInPlace
     open val usesNativeSurfaceForResumeBackground: Boolean
         get() = rendererProfile.usesNativeSurfaceForResumeBackground
+    open val inputCoordinateScale: Float = 1f
 
     @Volatile
     protected var gameEngine: GameEngine? = null
@@ -267,8 +267,8 @@ abstract class GameSession {
         }
         asyncEnginePreloadError = null
         lastViewport = viewport
-        logger.info { "Preparing $sessionLogName engine asynchronously" }
-        launchOnIO("${rendererMode.id}-engine-preloader") {
+        logger.info { "Preparing engine asynchronously" }
+        launchOnIO("${renderBackend.id}-engine-preloader") {
             preloadEngineInBackground(viewport)
         }
     }
@@ -309,8 +309,8 @@ abstract class GameSession {
             resetLastFrame = { it.runningMapPath != requestedMapPath },
             mutate = { it.copy(pendingRendererBattleRoomConfig = null, activeRendererBattleRoomConfig = null) },
         ) ?: return
-        logger.info { "Preparing $sessionLogName map asynchronously: $requestedMapPath" }
-        launchOnIO("${rendererMode.id}-map-loader") {
+        logger.info { "Preparing map asynchronously: $requestedMapPath" }
+        launchOnIO("${renderBackend.id}-map-loader") {
             loadMapInBackground(requestedMapPath, viewport, generation)
         }
     }
@@ -326,8 +326,8 @@ abstract class GameSession {
             resetLastFrame = { true },
             mutate = { it.copy(pendingRendererBattleRoomConfig = null, activeRendererBattleRoomConfig = null) },
         ) ?: return
-        logger.info { "Preparing $sessionLogName saved game asynchronously: $requestedSaveName" }
-        launchOnIO("${rendererMode.id}-saved-game-loader") {
+        logger.info { "Preparing saved game asynchronously: $requestedSaveName" }
+        launchOnIO("${renderBackend.id}-saved-game-loader") {
             loadSavedGameInBackground(requestedSaveName, viewport, generation)
         }
     }
@@ -348,8 +348,8 @@ abstract class GameSession {
                 )
             },
         ) ?: return
-        logger.info { "Preparing $sessionLogName memory snapshot asynchronously: ${snapshot.mapPath}" }
-        launchOnIO("${rendererMode.id}-memory-snapshot-loader") {
+        logger.info { "Preparing map snapshot asynchronously: ${snapshot.mapPath}" }
+        launchOnIO("${renderBackend.id}-map-snapshot-loader") {
             loadMapSnapshotInBackground(snapshot, viewport, generation)
         }
     }
@@ -361,8 +361,8 @@ abstract class GameSession {
             viewport = viewport,
             resetLastFrame = { true },
         ) ?: return
-        logger.info { "Preparing $sessionLogName replay asynchronously: $requestedReplayName" }
-        launchOnIO("${rendererMode.id}-replay-loader") {
+        logger.info { "Preparing replay asynchronously: $requestedReplayName" }
+        launchOnIO("${renderBackend.id}-replay-loader") {
             loadReplayInBackground(requestedReplayName, viewport, generation)
         }
     }
@@ -384,8 +384,8 @@ abstract class GameSession {
                 )
             },
         ) ?: return
-        logger.info { "Preparing $sessionLogName battle room map asynchronously: $requestedMapPath" }
-        launchOnIO("${rendererMode.id}-battleroom-map-loader") {
+        logger.info { "Preparing battle room map asynchronously: $requestedMapPath" }
+        launchOnIO("${renderBackend.id}-battleroom-map-loader") {
             loadMapInBackground(requestedMapPath, viewport, generation)
         }
     }
@@ -461,9 +461,9 @@ abstract class GameSession {
                 engine, config.room.mapPath, force = true,
                 savedGame = config.room.isSavedGame
             )
-            engine.configureLocalBattleRoom(config, "$sessionLogName local")
+            engine.configureLocalBattleRoom(config, "local")
 
-            // Keep the config around so an in-game map switch / memory snapshot can rebuild the room,
+            // Keep the config around so an in-game map switch / map snapshot can rebuild the room,
             // but do NOT mark the level running: the level loads only at "Start game".
             updateLoadState { it.copy(activeRendererBattleRoomConfig = config) }
             BattleRoomUiBridge.updateUI()
@@ -875,7 +875,7 @@ abstract class GameSession {
         battleRoomConfig: BattleRoomLaunchConfig? = null,
     ) {
         require(mapSnapshot == null || mapSnapshot.mapPath == mapPath) {
-            "Memory snapshot path does not match renderer map path"
+            "Map snapshot path does not match renderer map path"
         }
         require(battleRoomConfig == null || battleRoomConfig.room.mapPath == mapPath) {
             "Battle room path does not match renderer map path"
@@ -1043,7 +1043,7 @@ abstract class GameSession {
     }
 
     open fun captureMapSnapshot(): MapSnapshot? =
-        runEngineCommand("capture memory snapshot") { engine ->
+        runEngineCommand("capture map snapshot") { engine ->
             if (engine.isNetworkGameActive() || !engine.hasLoadedLevel) {
                 return@runEngineCommand null
             }
@@ -1145,8 +1145,8 @@ abstract class GameSession {
         return synchronized(gameLock) {
             val engine = activeEngineLocked() ?: return@synchronized emptyList()
             val networkEngine = engine.networkEngine ?: return@synchronized emptyList()
-            if (!engine.isNetworkGameActive()) return@synchronized emptyList<MultiplayerChatSnapshot>()
-            networkEngine.chatLog.getMessages().mapNotNull { entry ->
+            if (!engine.isNetworkGameActive()) return@synchronized emptyList()
+            networkEngine.chatLog.messages.mapNotNull { entry ->
                 val message = entry as? ChatMessage ?: return@mapNotNull null
                 MultiplayerChatSnapshot(
                     text = message.displayText,
@@ -1327,10 +1327,10 @@ abstract class GameSession {
             synchronized(gameLock) {
                 applyViewport(engine, viewport)
             }
-            logger.info { "Prepared $sessionLogName engine asynchronously: ${elapsedMs(startedAt)}ms" }
+            logger.info { "Prepared engine asynchronously: ${elapsedMs(startedAt)}ms" }
         }.onFailure { error ->
             asyncEnginePreloadError = error
-            logger.error(error) { "$sessionLogName async engine preload failed" }
+            logger.error(error) { "async engine preload failed" }
         }.also {
             asyncEnginePreloadInProgress.set(false)
         }
@@ -1489,7 +1489,7 @@ abstract class GameSession {
      * finds its generation stale is discarded instead of overwriting the current frame or reporting
      * an error for a request nobody is waiting on any more.
      *
-     * @param kind noun used in log lines, e.g. "map", "replay", "memory snapshot".
+     * @param kind noun used in log lines, e.g. "map", "replay", "map snapshot".
      * @param requestKey what was asked for, logged alongside [kind].
      */
     private fun loadLevelInBackground(
@@ -1524,19 +1524,19 @@ abstract class GameSession {
                 }
             }
             if (!loadedCurrentRequest) {
-                logger.info { "Discarded stale $sessionLogName $kind preparation: $requestKey" }
+                logger.info { "Discarded $kind preparation: $requestKey" }
                 return@runCatching
             }
             logger.info {
-                "Prepared $sessionLogName $kind asynchronously: $requestKey " +
+                "Prepared $kind asynchronously: $requestKey " +
                         "(total=${elapsedMs(startedAt)}ms, load=${loadMs}ms, firstFrame=${firstFrameMs}ms)"
             }
         }.onFailure { error ->
             if (loadState.mapLoadGeneration == generation) {
                 updateLoadState { if (it.mapLoadGeneration == generation) it.copy(asyncMapLoadError = error) else it }
-                logger.error(error) { "$sessionLogName async $kind load failed: $requestKey" }
+                logger.error(error) { " async $kind load failed: $requestKey" }
             } else {
-                logger.info { "Ignored stale $sessionLogName $kind load failure for: $requestKey" }
+                logger.info { "Ignored stale  $kind load failure for: $requestKey" }
             }
         }.also {
             updateLoadState { if (it.mapLoadGeneration == generation) it.copy(asyncMapLoadInProgress = false) else it }
@@ -1565,7 +1565,7 @@ abstract class GameSession {
         snapshot: MapSnapshot,
         requestedViewport: GameViewport,
         generation: Long,
-    ) = loadLevelInBackground("memory snapshot", snapshot.mapPath, requestedViewport, generation) { engine ->
+    ) = loadLevelInBackground("map snapshot", snapshot.mapPath, requestedViewport, generation) { engine ->
         loadMapSnapshot(engine, snapshot)
     }
 
@@ -1616,7 +1616,7 @@ abstract class GameSession {
                     )
                 }
             }
-            logger.error(error) { "$sessionLogName map load failed: $mapPath" }
+            logger.error(error) { " map load failed: $mapPath" }
         }
     }
 
@@ -1662,7 +1662,7 @@ abstract class GameSession {
         engine.isStopped = false
         engine.isPaused = false
         engine.minimap?.release()
-        val networkEngine = engine.configureLocalBattleRoom(config, sessionLogName) ?: run {
+        val networkEngine = engine.configureLocalBattleRoom(config, "") ?: run {
             if (config.room.isSavedGame) {
                 loadSavedGame(engine, config.room.mapPath)
             } else {
@@ -1671,7 +1671,7 @@ abstract class GameSession {
             return
         }
 
-        check(networkEngine.startBattleRoomGame()) { "Unable to start $sessionLogName battle room game" }
+        check(networkEngine.startBattleRoomGame()) { "Unable to start battle room game" }
         BattleRoomUiBridge.setupGame()
         val resolvedMapPath = activeRunningMapPath(engine) ?: config.room.mapPath
         updateLoadState {

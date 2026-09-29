@@ -14,6 +14,7 @@ import io.github.rwx.ui.model.LoadingDialogHandle
 import io.github.rwx.ui.model.DialogInfoRow
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
+import kotlinx.coroutines.CancellationException
 
 internal class UpdateController(
     private val appMetadata: AppMetadata,
@@ -47,7 +48,13 @@ internal class UpdateController(
 
         inProgress = true
         launchCheck {
-            val response = checkLatestRelease(appMetadata.versionName)
+            val response = try {
+                checkLatestRelease(appMetadata.versionName)
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (error: Throwable) {
+                Result.failure(error)
+            }
             result.set(
                 UpdateCheckResult(
                     manual = manual,

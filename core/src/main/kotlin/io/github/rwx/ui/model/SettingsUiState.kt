@@ -22,6 +22,7 @@ sealed interface SettingsItemState {
     ) : SettingsItemState
     data class ColorScheme(val id: ColorSchemeId, val label: String, val selected: Boolean) : SettingsItemState
     data class StorageLocation(val selectedType: Int) : SettingsItemState
+    data class RenderBackend(val selectedId: String) : SettingsItemState
 }
 
 /** Edits carry a page and stable key so queued input cannot change a newly selected page. */
@@ -36,8 +37,8 @@ sealed interface SettingsUiAction {
     data class CancelKeyCapture(val requestId: Long) : SettingsUiAction
     data class ClearKeyBinding(val target: KeyBindingTarget) : SettingsUiAction
     data class SelectStorage(val storageType: Int) : SettingsUiAction
+    data class SelectRenderBackend(val backendId: String) : SettingsUiAction
     data object RequestExternalStorage : SettingsUiAction
-    data object Save : SettingsUiAction
     data object Back : SettingsUiAction
 }
 
@@ -55,17 +56,17 @@ fun SettingsPageContent.snapshot(): SettingsPageState = SettingsPageState(
                 SettingsItemState.ColorScheme(id, label, item.selected)
             }
             is SettingsPageItem.StorageLocation -> SettingsItemState.StorageLocation(item.selectedType)
+            is SettingsPageItem.RenderBackend -> SettingsItemState.RenderBackend(item.selectedId)
         }
     },
 )
 
-/** Draft mode: edits only touch the in-memory SettingsModel. Only Save persists. */
 internal fun SettingsPageContent.applyEdit(action: SettingsUiAction): SettingsAction? = when (action) {
     is SettingsUiAction.Toggle -> if (action.page == page) {
         items.filterIsInstance<SettingsPageItem.Toggle>()
             .firstOrNull { it.toggle.i18nText.key == action.key }?.let {
                 it.toggle.state.value = action.checked
-                null
+                SettingsAction.ApplyChanges
             }
     } else null
     is SettingsUiAction.PreviewSlider -> if (action.page == page && action.value.isFinite()) {
@@ -75,6 +76,11 @@ internal fun SettingsPageContent.applyEdit(action: SettingsUiAction): SettingsAc
                 SettingsAction.PreviewChanges
             }
     } else null
-    is SettingsUiAction.CommitSlider -> null
+    is SettingsUiAction.CommitSlider -> if (action.page == page) {
+        items.filterIsInstance<SettingsPageItem.Slider>()
+            .firstOrNull { it.slider.i18nText.key == action.key }?.let {
+                SettingsAction.ApplyChanges
+            }
+    } else null
     else -> null
 }

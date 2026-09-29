@@ -3,12 +3,11 @@ package io.github.rwx.slick
 import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.PlatformCallbacks
 import com.corrodinggames.rts.gameFramework.graphics.GraphicsEngine
-import io.github.rwx.DesktopRendererMode
+import io.github.rwx.DesktopRenderBackend
 import io.github.rwx.PlatformStorage
 import io.github.rwx.logger
 import io.github.rwx.platform.CoreGameView
-import io.github.rwx.render.RendererMode
-import io.github.rwx.render.canvas.*
+import io.github.rwx.render.RenderBackend
 import io.github.rwx.render.frame.*
 import io.github.rwx.session.*
 import io.github.rwx.ui.CoreUiEventQueue
@@ -24,7 +23,7 @@ class SlickGameSession(
     private val storage: PlatformStorage,
     registerShutdownHook: Boolean = true,
 ) : GameSession() {
-    override val rendererMode: RendererMode= DesktopRendererMode.Slick
+    override val renderBackend: RenderBackend = DesktopRenderBackend.Slick
     private val running = AtomicBoolean(false)
     private val requestState = SlickSessionRequestState()
     private val stopRequested = AtomicBoolean(false)
@@ -551,6 +550,9 @@ class SlickGameSession(
     }
 
     override fun prepareMenuBackgroundAsync(viewport: GameViewport) {
+        if (requestState.desired is SlickSessionRequest.Replay) {
+            return
+        }
         if (loadState.menuBackgroundActive || requestState.desired is SlickSessionRequest.MenuBackground) {
             return
         }
@@ -695,6 +697,7 @@ class SlickGameSession(
             return
         }
         markRendererMapReady(mapPath, viewport)
+        logger.info { "Embedded Slick map ready: $mapPath" }
         println("RWX_SLICK_MAP_READY:$mapPath")
         System.out.flush()
     }

@@ -3,6 +3,7 @@ package io.github.rwx.app
 import io.github.rwx.ui.model.ModsAction
 import io.github.rwx.ui.model.ResourceBrowserAction
 import io.github.rwx.ui.model.ReplaySelectAction
+import io.github.rwx.ui.model.ReplayEntry
 
 import io.github.rwx.logger
 import io.github.rwx.render.frame.GameFrame
@@ -23,29 +24,28 @@ import io.github.rwx.ui.model.PauseMenuConditions
 import io.github.rwx.ui.model.ResourceBrowserType
 import io.github.rwx.ui.model.SettingsUiAction
 import kotlinx.coroutines.*
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.coroutines.CoroutineContext
 
 const val RWX_GAME_FRAME_READY_MARKER: String = "RWX_GAME_FRAME_READY"
-private val ioSupervisor = SupervisorJob(ApplicationScope.job)
 
 fun launchOnIO(name: String?=null,
                start: CoroutineStart = CoroutineStart.DEFAULT,
-               exceptionHandler: (CoroutineContext, Throwable)->Unit={ _, t-> logger.error(t) },
+               exceptionHandler: (CoroutineContext, Throwable) -> Unit = { _, t ->
+                   if (t !is CancellationException) logger.error(
+                       t
+                   )
+               },
                block: suspend CoroutineScope.() -> Unit): Job {
     val effectiveName = name ?: "IO-${System.identityHashCode(block)}"
-    val ctx=ioSupervisor+Dispatchers.IO+ CoroutineName(effectiveName)+CoroutineExceptionHandler(exceptionHandler)
+    val ctx =
+        SupervisorJob(ApplicationScope.job) + Dispatchers.IO + CoroutineName(effectiveName) + CoroutineExceptionHandler(
+            exceptionHandler
+        )
     return ApplicationScope.launch(ctx, start, block)
 }
-fun <T> asyncOnIO(
-    name: String? = null,
-    start: CoroutineStart = CoroutineStart.DEFAULT,
-    block: suspend CoroutineScope.() -> T
-): Deferred<T> {
-    val effectiveName = name ?: "IO-${System.identityHashCode(block)}"
-    val ctx = ioSupervisor + Dispatchers.IO + CoroutineName(effectiveName)
-    return ApplicationScope.async(ctx, start, block)
-}
+
 class AppSession internal constructor(
     val navigator: ScreenNavigator,
     private val uiController: AppUiController,
@@ -271,7 +271,6 @@ fun installApp(
         storage = { platformBridge?.storage },
         viewport = ::rwGameViewport,
         currentScreen = { navigator.current },
-        showStartNewGameDialog = gameLaunchController::showStartNewGameDialog,
         enterRwGame = gameLaunchController::enterRwGame,
         clearPendingRwStartState = warmupController::clear,
         clearPendingStartState = pendingStartController::clear,
@@ -487,6 +486,8 @@ fun installApp(
         requestInGameSurrender = sessionActions::requestInGameSurrender,
         exitRwGameToMainMenu = sessionActions::exitRwGameToMainMenu,
         showUnavailableDialog = dialogController::showUnavailable,
+        canResume = gameSession::canResume,
+        showStartNewGameDialog = gameLaunchController::showStartNewGameDialog,
     ).install()
 
     screenPresenter.apply(navigator.current, lastExternalGameFrame)
@@ -534,6 +535,19 @@ fun installApp(
     ).finish()
     options.joinServer?.let { address ->
         multiplayerConnectionController.joinOriginalServer(address, roomLabel = address)
+    }
+    options.autoReplay?.let { replayName ->
+        gameLaunchController.enterReplay(
+            ReplayEntry(
+                id = 0,
+                fileName = replayName,
+                displayName = replayName,
+                replayName = replayName,
+                modifiedAt = "",
+                sizeLabel = "",
+            ),
+            startNew = true,
+        )
     }
     uiController.refresh(force = true)
     return session

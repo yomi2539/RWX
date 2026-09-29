@@ -6,7 +6,7 @@ import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.newdawn.slick.*
 import org.newdawn.slick.Image
 import org.newdawn.slick.opengl.ImageData
-import org.newdawn.slick.util.Log
+import io.github.rwx.logger
 import java.awt.*
 import java.awt.event.*
 import java.awt.image.BufferedImage
@@ -49,7 +49,7 @@ internal class EmbeddedSlickGameContainer(
         this.height = height.coerceAtLeast(240)
         installAwtInput()
         if (fullscreen) {
-            Log.warn("Fullscreen is ignored by the RWX AWT Slick container")
+            logger.warn { "Fullscreen is ignored by the AWT Slick container" }
         }
     }
 
@@ -62,7 +62,7 @@ internal class EmbeddedSlickGameContainer(
         this.width = width.coerceAtLeast(320)
         this.height = height.coerceAtLeast(240)
         if (fullscreen) {
-            Log.warn("Fullscreen is ignored by the RWX AWT Slick container")
+            logger.warn { "Fullscreen is ignored by the AWT Slick container" }
         }
         if (initialized) {
             enterOrtho()
@@ -151,7 +151,7 @@ internal class EmbeddedSlickGameContainer(
                     updateFPS()
                     awtCanvas.swapBuffers()
                 } catch (error: SlickException) {
-                    Log.error(error)
+                    logger.error(error) { "Slick AWT container failed" }
                     terminalFailure = error
                     running = false
                 } catch (error: Throwable) {
@@ -313,7 +313,7 @@ internal class EmbeddedSlickGameContainer(
             )
             applyCursor(cursor)
         } catch (error: Throwable) {
-            Log.error("Failed to load and apply cursor.", error)
+            logger.error(error) { "Failed to load and apply cursor." }
             throw SlickException("Failed to set mouse cursor", error)
         }
     }
@@ -453,12 +453,12 @@ internal class EmbeddedSlickGameContainer(
         if (framebufferGeometryLogged) return
         framebufferGeometryLogged = true
         val (scaleX, scaleY) = awtCanvas.hidpiScaleFactors()
-        Log.info(
+        logger.info {
             "Slick framebuffer geometry: canvas=${awtCanvas.width}x${awtCanvas.height} " +
                     "logical=${logicalWidth}x${logicalHeight} scale=${scaleX}x${scaleY} " +
                     "reportedFramebuffer=${awtCanvas.framebufferWidth}x${awtCanvas.framebufferHeight} " +
-                    "viewport=${framebufferSize.width}x${framebufferSize.height}",
-        )
+                    "viewport=${framebufferSize.width}x${framebufferSize.height}"
+        }
     }
 }
 

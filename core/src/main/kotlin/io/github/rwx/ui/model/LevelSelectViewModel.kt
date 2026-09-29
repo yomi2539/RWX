@@ -274,17 +274,27 @@ class LevelSelectViewModel(
     }
 
     private fun resolveSiblingPreview(mapPath: String, siblingNames: Set<String>): String? {
-        val fileName = mapPath.substringAfterLast('/')
+        val cleanMapPath = mapPath.stripMergedTag()
+        val fileName = cleanMapPath.substringAfterLast('/')
         if (fileName.length < 4) return null
         val fileBase = fileName.substring(0, fileName.length - 4)
-        val dirPrefix = mapPath.substringBeforeLast('/', "")
+        val dirPrefix = cleanMapPath.substringBeforeLast('/', "")
         val prefix = if (dirPrefix.isEmpty()) "" else dirPrefix + "/"
+        val cleanSiblings = siblingNames.map { it.stripMergedTag().substringAfterLast('/') }
         for (suffix in SIBLING_PREVIEW_SUFFIXES) {
             val candidate = fileBase + "_map" + suffix
-            val realName = siblingNames.firstOrNull { it.equals(candidate, ignoreCase = true) }
+            val realName = cleanSiblings.firstOrNull { it.equals(candidate, ignoreCase = true) }
             if (realName != null) return prefix + realName
         }
         return null
+    }
+
+    private fun String.stripMergedTag(): String {
+        var result = this
+        for (tag in MERGED_PATH_TAGS) {
+            result = result.replace(tag, "")
+        }
+        return result
     }
 
     private fun savedGameItems(): List<MapEntry> {
@@ -345,6 +355,15 @@ class LevelSelectViewModel(
         private const val MOD_PATH_PREFIX: String = "MOD|"
 
         private val SIBLING_PREVIEW_SUFFIXES: List<String> = listOf(".png", ".jpg", ".jpeg")
+
+        private val MERGED_PATH_TAGS: List<String> = listOf(
+            "[INTERNAL-PATH]/",
+            "[EXTERNAL-PATH]/",
+            "[NULL-PATH]/",
+            "[INTERNAL-PATH]",
+            "[EXTERNAL-PATH]",
+            "[NULL-PATH]",
+        )
 
         private val playerCountRegex = Regex("""p(\d+)|(\d+)p""", RegexOption.IGNORE_CASE)
 

@@ -1,0 +1,34 @@
+uniform shader u_texture;
+uniform shader screenBase;
+uniform vec2 screenBaseSize;
+
+uniform vec2 u_resolution;
+uniform float u_offsetBy;
+
+uniform float u_uiScaling;
+
+vec4 main(vec2 fragCoord) {
+  vec2 usedScreenSize = (u_resolution / screenBaseSize);
+
+  vec2 screenUV = fragCoord / (u_resolution * u_uiScaling);
+
+  screenUV.y = 1.0 - screenUV.y;
+  screenUV = screenUV * usedScreenSize;
+
+  vec4 spriteColor = u_texture.eval(fragCoord);
+
+  vec2 screenOffset = u_offsetBy * (spriteColor.xy - vec2(128.0 / 255.0)) * spriteColor.a;
+
+  vec4 screenColor = vec4(1.0, 1.0, 1.0, 1.0);
+
+  vec2 offsetScreenUV = screenUV;
+
+  offsetScreenUV += screenOffset;
+
+  offsetScreenUV = min(offsetScreenUV, usedScreenSize);
+  offsetScreenUV = max(offsetScreenUV, vec2(0.0, 0.0));
+
+  vec4 newScreenPixel = screenBase.eval(offsetScreenUV * screenBaseSize);
+
+  return newScreenPixel * screenColor;
+}

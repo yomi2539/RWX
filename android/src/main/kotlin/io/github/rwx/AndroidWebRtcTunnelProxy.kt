@@ -9,8 +9,6 @@ import io.github.rwx.p2p.P2PJson
 import io.github.rwx.p2p.WebRtcTunnelProxy
 import org.webrtc.*
 import java.io.IOException
-import java.io.PrintWriter
-import java.io.StringWriter
 import java.net.*
 import java.nio.ByteBuffer
 import java.util.*
@@ -565,7 +563,7 @@ class AndroidWebRtcTunnelProxy(
             while (!session.closed.get()) {
                 val length = try {
                     socket.inputStream.read(buffer)
-                } catch (error: SocketTimeoutException) {
+                } catch (_: SocketTimeoutException) {
                     continue
                 }
                 if (length < 0) break
@@ -617,7 +615,7 @@ class AndroidWebRtcTunnelProxy(
                     .setOptions(PeerConnectionFactory.Options())
                     .createPeerConnectionFactory()
             } catch (error: Throwable) {
-                GameEngine.log("Failed to initialize Android WebRTC native library:\n${stackTraceToString(error)}")
+                logger.error(error) { "Failed to initialize Android WebRTC native library" }
                 throw IOException(
                     "Failed to initialize Android WebRTC native library: ${rootCauseMessage(error)}",
                     error
@@ -684,12 +682,6 @@ class AndroidWebRtcTunnelProxy(
         override fun onSetSuccess() = Unit
         override fun onCreateFailure(error: String?) = Unit
         override fun onSetFailure(error: String?) = Unit
-    }
-
-    private fun stackTraceToString(throwable: Throwable): String {
-        val writer = StringWriter()
-        throwable.printStackTrace(PrintWriter(writer))
-        return writer.toString()
     }
 
     private fun rootCauseMessage(throwable: Throwable): String {

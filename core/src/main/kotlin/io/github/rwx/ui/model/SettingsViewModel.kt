@@ -36,6 +36,7 @@ sealed interface SettingsPageItem {
     data class Slider(val slider: SettingSlider) : SettingsPageItem
     data class ColorSchemeSelector(val item: SettingColorSchemeItem, val selected: Boolean) : SettingsPageItem
     data class StorageLocation(val selectedType: Int) : SettingsPageItem
+    data class RenderBackend(val selectedId: String) : SettingsPageItem
 }
 
 sealed interface SettingsScrollRow {
@@ -46,6 +47,7 @@ sealed interface SettingsScrollRow {
     data class KeyBinding(val row: SettingKeyBindingRow) : SettingsScrollRow
     data class ColorSchemeSelector(val item: SettingColorSchemeItem, val selected: Boolean) : SettingsScrollRow
     data class StorageLocation(val selectedType: Int) : SettingsScrollRow
+    data class RenderBackend(val selectedId: String) : SettingsScrollRow
 }
 
 data class SettingsPageContent(
@@ -175,6 +177,9 @@ class SettingsModel {
     // Android original-engine file backend.
     val storageType: MutableState<Int> = mutableStateOf(2)
 
+    // Desktop render backend id ("slick" | "skia"), restart required.
+    val desktopRenderBackend: MutableState<String> = mutableStateOf("slick")
+
 }
 
 fun SettingsModel.colorScheme(): Scheme<Palette<UiColor>> = ColorSchemeRegistry.schemeFor(selectedColorSchemeId.value)
@@ -292,7 +297,11 @@ class SettingsViewModel(val model: SettingsModel) {
         return when (page) {
             SettingsPage.Display -> SettingsPageContent(
                 page = page,
-                items = if (isAndroidPlatform()) {
+                items = (if (isPcPlatform()) {
+                    listOf(SettingsPageItem.RenderBackend(normalizeDesktopRenderBackend(model.desktopRenderBackend.value)))
+                } else {
+                    emptyList()
+                }) + if (isAndroidPlatform()) {
                     listOf(SettingsPageItem.StorageLocation(model.storageType.value))
                 } else {
                     emptyList()
@@ -340,6 +349,9 @@ internal fun visibleSettingsPages(): List<SettingsPage> =
 private fun isAndroidPlatform(): Boolean = GameEngine.isAndroidPlatform()
 
 private fun isPcPlatform(): Boolean = GameEngine.isPC()
+
+private fun normalizeDesktopRenderBackend(id: String?): String =
+    if (id?.lowercase() == "skia") "skia" else "slick"
 
 sealed interface SettingsAction {
     data object PreviewChanges : SettingsAction

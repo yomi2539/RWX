@@ -4,12 +4,15 @@ import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.InputController
 import com.corrodinggames.rts.gameFramework.SettingsEngine
 import io.github.rwx.app.AppOptions
+import io.github.rwx.app.GameFramePresenter
 import io.github.rwx.app.installApp
 import io.github.rwx.di.coreModule
 import io.github.rwx.di.desktopModule
 import io.github.rwx.i18n.LocaleSettings
 import io.github.rwx.render.canvas.GameFontMetrics
 import io.github.rwx.settings.GameSettingsRepository
+import io.github.rwx.skia.SkiaGameSession
+import io.github.rwx.skia.SkiaGameView
 import io.github.rwx.slick.SlickFramePresenter
 import io.github.rwx.slick.SlickGameSession
 import io.github.rwx.steam.SteamBridge
@@ -20,12 +23,14 @@ import io.github.rwx.ui.model.SettingsModel
 import org.koin.core.component.KoinComponent
 import org.koin.core.component.get
 import org.koin.core.context.GlobalContext
+import org.koin.dsl.module
 import javax.swing.SwingUtilities
 
 object DesktopMain : KoinComponent {
     @JvmStatic
     fun main(args: Array<String>) {
         configureDesktopLogging()
+        val options = AppOptions.parseArgs(args, isDesktop = true)
         configureLwjglMemoryStack()
         System.setProperty("org.lwjgl.opengl.contextAPI", "native")
         GameEngine.isMenuBackgroundDisabled = true
@@ -35,7 +40,10 @@ object DesktopMain : KoinComponent {
         GameEngine.isPCOrIOSVersion = true
         InputController.b = DesktopInputHandler()
         ensureDesktopOpenAlMusicFactory()
-        GlobalContext.startKoin { modules(coreModule, desktopModule) }
+        GlobalContext.startKoin { modules(coreModule, desktopModule, module { single { options } }) }
+        val storedBackendId =
+            get<PreferenceStorage>().preference(PREFERENCE_NAME).getString("desktopRenderBackend", "slick")
+        val renderBackend = DesktopRenderBackend.selectedId(options.backendId, storedBackendId)
         (get<CrashReporter>() as? FileCrashReporter)?.installAsDefaultUncaughtExceptionHandler()
         GameFontMetrics.install(DesktopFontMetrics(get<PlatformStorage>()))
         SettingsEngine.getInstance().save()
@@ -44,7 +52,6 @@ object DesktopMain : KoinComponent {
             get<GameSettingsRepository>().saveFrom(it)
         }
         LocaleSettings.initialize()
-        val options = AppOptions.parseArgs(args, isDesktop = true)
         if (options.colorSchemeId != ColorSchemeRegistry.defaultSchemeId) {
             settings.selectedColorSchemeId.value = options.colorSchemeId
         }
@@ -58,7 +65,19 @@ object DesktopMain : KoinComponent {
         }
         Runtime.getRuntime().addShutdownHook(Thread { steamBridge.shutdown() })
         SwingUtilities.invokeLater {
-            val host = SwingAppHost.create(fullscreen = SettingsEngine.getInstance().slick2dFullScreen)
+            val host = when (renderBackend) {
+                DesktopRenderBackend.Skia -> SwingAppHost.create(
+                    fullscreen = SettingsEngine.getInstance().slick2dFullScreen,
+                    shutdownRenderer = { get<SkiaGameSession>().close() },
+                    skiaGameContent = { inputEnabled ->
+                        SkiaGameView(session = get<SkiaGameSession>(), inputEnabled = inputEnabled)
+                    },
+                )
+
+                DesktopRenderBackend.Slick -> SwingAppHost.create(
+                    fullscreen = SettingsEngine.getInstance().slick2dFullScreen
+                )
+            }
             bridge.filePickerHost = host
             host.closeCompletion.whenComplete { _, error ->
                 if (error != null) {
@@ -76,10 +95,14 @@ object DesktopMain : KoinComponent {
                 loading = LoadingSceneHost(settings).snapshot(),
             ))
             try {
+                val presenter: GameFramePresenter = when (renderBackend) {
+                    DesktopRenderBackend.Skia -> GameFramePresenter { }
+                    DesktopRenderBackend.Slick -> SlickFramePresenter { host.presentSnapshot(get<SlickGameSession>().currentSnapshot()) }
+                }
                 val session = installApp(
                     viewportProvider = { host.viewport },
                     scheduler = SwingFrameScheduler(framePump = steamBridge::pump),
-                    presenter = SlickFramePresenter { host.presentSnapshot(get<SlickGameSession>().currentSnapshot()) },
+                    presenter = presenter,
                     options = options,
                     onQuit = host::requestClose,
                 )

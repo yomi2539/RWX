@@ -2,12 +2,11 @@ package io.github.rwx.p2p
 
 import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.network.NetworkEngine
+import io.github.rwx.logger
 import dev.onvoid.webrtc.*
 import dev.onvoid.webrtc.media.audio.AudioDeviceModule
 import dev.onvoid.webrtc.media.audio.AudioLayer
 import java.io.IOException
-import java.io.PrintWriter
-import java.io.StringWriter
 import java.net.*
 import java.nio.ByteBuffer
 import java.util.*
@@ -569,7 +568,7 @@ class DesktopWebRtcTunnelProxy(
             factory = try {
                 PeerConnectionFactory(AudioDeviceModule(AudioLayer.kDummyAudio))
             } catch (e: Throwable) {
-                GameEngine.log("Failed to initialize WebRTC native library:\n${stackTraceToString(e)}")
+                logger.error(e) { "Failed to initialize WebRTC native library" }
                 throw IOException("Failed to initialize WebRTC native library: ${rootCauseMessage(e)}", e)
             }
         }
@@ -622,12 +621,6 @@ class DesktopWebRtcTunnelProxy(
             .filter { it.startsWith("stun:") || it.startsWith("turn:") || it.startsWith("turns:") }
             .distinct()
         return servers.ifEmpty { WebRtcTunnelProxy.DEFAULT_ICE_SERVERS }
-    }
-
-    private fun stackTraceToString(throwable: Throwable): String {
-        val writer = StringWriter()
-        throwable.printStackTrace(PrintWriter(writer))
-        return writer.toString()
     }
 
     private fun rootCauseMessage(throwable: Throwable): String {

@@ -1,0 +1,13 @@
+uniform shader u_texture;
+uniform vec4 teamColor;
+uniform float teamColorAmount;
+
+vec4 main(vec2 fragCoord) {
+  vec4 color = u_texture.eval(fragCoord);
+
+  color.r += teamColor.r * teamColorAmount;
+  color.g += teamColor.g * teamColorAmount;
+  color.b += teamColor.b * teamColorAmount;
+
+  return color;
+}

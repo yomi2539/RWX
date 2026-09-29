@@ -20,17 +20,14 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.rwx.i18n.I18n
-import io.github.rwx.ui.component.Icon
 import io.github.rwx.ui.component.itemAppear
 import io.github.rwx.ui.component.pressScale
 import io.github.rwx.ui.model.*
 import io.github.rwx.ui.ColorSchemeRegistry
 import io.github.rwx.ui.theme.Corners
-import io.github.rwx.ui.theme.Layout
 import io.github.rwx.ui.theme.LocalColorScheme
 import io.github.rwx.ui.theme.Spacing
 import io.github.rwx.ui.theme.schemeForCompose
-import kotlinx.coroutines.launch
 import kotlin.math.roundToInt
 
 /** Settings rendering only: the shared model and ActionRouter still own edits and persistence. */
@@ -42,8 +39,6 @@ fun SettingsScreen(
     enableAnimations: Boolean = true,
 ) {
     val palette = LocalColorScheme.current.palette
-    val snackbarHost = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
     Box(
         Modifier.fillMaxSize().background(palette.panelOverlay),
         contentAlignment = Alignment.Center,
@@ -99,30 +94,15 @@ fun SettingsScreen(
                                     onSelectInternal = { onAction(SettingsUiAction.SelectStorage(0)) },
                                     onSelectExternal = { onAction(SettingsUiAction.RequestExternalStorage) },
                                 )
+                                    is SettingsItemState.RenderBackend -> SettingsRenderBackend(
+                                        item = item,
+                                        onSelect = { onAction(SettingsUiAction.SelectRenderBackend(it)) },
+                                    )
                                 }
                             }
                         }
                     }
                 }
-            }
-        }
-        Box(Modifier.widthIn(max = 1560.dp).fillMaxSize().align(Alignment.Center)) {
-            SnackbarHost(
-                hostState = snackbarHost,
-                modifier = Modifier.align(Alignment.BottomCenter).padding(bottom = 88.dp),
-            )
-            ExtendedFloatingActionButton(
-                onClick = {
-                    onAction(SettingsUiAction.Save)
-                    scope.launch { snackbarHost.showSnackbar(I18n.settings.saved()) }
-                },
-                modifier = Modifier.align(Alignment.BottomEnd).padding(Spacing.lg).testTag("settings-save"),
-                containerColor = palette.primaryContainer,
-                contentColor = palette.onPrimary,
-            ) {
-                Icon(Icon.Save, Layout.contentIconSize, palette.onPrimary)
-                Spacer(Modifier.width(Spacing.sm))
-                Text(I18n.common.save())
             }
         }
     }
@@ -172,12 +152,56 @@ private fun SettingsStorageLocation(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+private fun SettingsRenderBackend(
+    item: SettingsItemState.RenderBackend,
+    onSelect: (String) -> Unit,
+) {
+    var expanded by remember(item.selectedId) { mutableStateOf(false) }
+    fun label(backendId: String): String = if (backendId == "skia") {
+        I18n.settings.display.desktopRenderBackendSkia()
+    } else {
+        I18n.settings.display.desktopRenderBackendSlick()
+    }
+    SettingsCard {
+        Column(Modifier.padding(Spacing.lg)) {
+            Text(I18n.settings.display.desktopRenderBackend())
+            Spacer(Modifier.height(Spacing.sm))
+            ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = { expanded = it }) {
+                OutlinedTextField(
+                    value = label(item.selectedId),
+                    onValueChange = {},
+                    readOnly = true,
+                    trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                    modifier = Modifier.menuAnchor().fillMaxWidth().testTag("render-backend-selector"),
+                )
+                ExposedDropdownMenu(expanded = expanded, onDismissRequest = { expanded = false }) {
+                    listOf("slick", "skia").forEach { backendId ->
+                        DropdownMenuItem(
+                            text = { Text(label(backendId)) },
+                            leadingIcon = { RadioButton(selected = backendId == item.selectedId, onClick = null) },
+                            onClick = {
+                                expanded = false
+                                if (backendId != item.selectedId) onSelect(backendId)
+                            },
+                            modifier = Modifier.testTag("render-backend-$backendId"),
+                        )
+                    }
+                }
+            }
+            Text(I18n.settings.storage.restartRequired())
+        }
+    }
+}
+
 private val SettingsItemState.stableKey: String
     get() = when (this) {
         is SettingsItemState.Toggle -> key
         is SettingsItemState.Slider -> key
         is SettingsItemState.ColorScheme -> "color-scheme:${id.value}"
         is SettingsItemState.StorageLocation -> "storage-location:${selectedType}"
+        is SettingsItemState.RenderBackend -> "desktop-render-backend"
     }
 
 @Composable

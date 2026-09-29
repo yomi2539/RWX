@@ -1,5 +1,5 @@
 package io.github.rwx.render
 
-interface RendererMode {
+interface RenderBackend {
     val id: String
 }

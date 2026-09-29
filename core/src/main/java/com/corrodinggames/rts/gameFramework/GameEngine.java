@@ -1967,6 +1967,16 @@ public abstract class GameEngine {
         log("setKeyState: Key out of range:" + i);
     }
 
+    /**
+     * Called by an input owner while holding the engine's update lock.
+     */
+    public void clearInputState() {
+        java.util.Arrays.fill(this.keyDownStates, false);
+        java.util.Arrays.fill(this.keyPressPendingStates, false);
+        this.pendingInputEvents.clear();
+        this.accumulatedMouseWheelDelta = 0;
+    }
+
     /* JADX INFO: renamed from: aE */
     public void showMemoryWarningsIfNeeded() {
         if (lowMemoryWarningPending && !hasShownLowMemoryWarning) {

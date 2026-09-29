@@ -4,6 +4,7 @@ import com.corrodinggames.rts.game.PlayerTeam
 import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.network.GameModeType
 import com.corrodinggames.rts.gameFramework.network.NetworkEngine
+import io.github.rwx.logger
 import io.github.rwx.map.PortalTransferMessage
 import io.github.rwx.ui.CoreUiEventQueue
 import io.libp2p.core.Host
@@ -19,8 +20,6 @@ import io.libp2p.pubsub.gossip.builders.GossipRouterBuilder
 import io.libp2p.transport.tcp.TcpTransport
 import io.netty.buffer.Unpooled
 import java.io.IOException
-import java.io.PrintWriter
-import java.io.StringWriter
 import java.util.*
 import java.util.concurrent.ConcurrentHashMap
 import java.util.concurrent.Executors
@@ -99,7 +98,7 @@ class P2PLobbyService private constructor() {
             relaySupport = Libp2pRelaySupport(p2pConfig.relay).applyTo(hostBuilder)
             hostBuilder.build()
         }.getOrElse { e ->
-            GameEngine.log("Failed to build libp2p host:\n${stackTraceToString(e)}")
+            logger.error(e) { "Failed to build libp2p host" }
             throw IOException("Failed to build libp2p host: ${rootCauseMessage(e)}", e)
         }
         host = builtHost.also {
@@ -107,7 +106,7 @@ class P2PLobbyService private constructor() {
             runCatching {
                 it.start().get(15L, TimeUnit.SECONDS)
             }.onFailure { e ->
-                GameEngine.log("Failed to start libp2p host:\n${stackTraceToString(e)}")
+                logger.error(e) { "Failed to start libp2p host" }
                 throw IOException("Failed to start libp2p host: ${rootCauseMessage(e)}", e)
             }
         }
@@ -698,12 +697,6 @@ class P2PLobbyService private constructor() {
         } catch (e: Exception) {
             GameEngine.log("Failed mDNS connect: ${e.message}")
         }
-    }
-
-    private fun stackTraceToString(throwable: Throwable): String {
-        val writer = StringWriter()
-        throwable.printStackTrace(PrintWriter(writer))
-        return writer.toString()
     }
 
     private fun rootCauseMessage(throwable: Throwable): String {

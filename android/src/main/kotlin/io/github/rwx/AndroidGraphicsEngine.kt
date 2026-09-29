@@ -2,7 +2,6 @@ package io.github.rwx
 
 import android.content.Context
 import android.graphics.*
-import android.util.Log
 import com.corrodinggames.rts.game.ColorMode
 import com.corrodinggames.rts.game.teamColorsHueType
 import com.corrodinggames.rts.gameFramework.android.graphics.AndroidGraphicsContext
@@ -19,7 +18,7 @@ import io.github.rwx.geometry.Rect
 import io.github.rwx.geometry.RectF
 import io.github.rwx.render.canvas.*
 import io.github.rwx.render.frame.GameCanvasBlendMode
-import timber.log.Timber
+import io.github.rwx.logger
 import java.io.File
 import java.io.InputStream
 import java.util.*
@@ -31,7 +30,7 @@ import androidx.core.graphics.createBitmap
  */
 internal class AndroidGraphicsEngine(
     private val context: Context,
-    private var rendererMode: AndroidRendererMode,
+    private var hostBackend: AndroidRenderBackend,
     private val graphicsContext: com.corrodinggames.rts.gameFramework.m.GraphicsContext =
         AndroidGraphicsContext().also { root ->
             root.a(context.applicationContext)
@@ -42,12 +41,13 @@ internal class AndroidGraphicsEngine(
     private val shaderSyncStack: MutableSet<ShaderProgram> =
         Collections.newSetFromMap(IdentityHashMap()),
     private val targetBinding: TextureBinding? = null,
-    private val cpuTarget: Boolean = false,
+    private val target: AndroidTargetSurface = resolveTarget(hostBackend, RenderTargetMode.DEFAULT),
     private val sharedFallbackResources: AndroidFallbackResources? = null,
 ) : GraphicsEngine {
+    val isCpuTarget: Boolean get() = target == AndroidTargetSurface.CPU_BITMAP
     override fun backendCapabilities(): GraphicsBackendCapabilities = ANDROID_GRAPHICS_BACKEND_CAPABILITIES
 
-    override fun supportsShaderEffects(): Boolean = rendererMode == AndroidRendererMode.OPENGL
+    override fun supportsShaderEffects(): Boolean = target == AndroidTargetSurface.GPU
 
 
     private var viewportWidth: Int = 1
@@ -91,10 +91,11 @@ internal class AndroidGraphicsEngine(
         graphicsContext.f()
     }
 
-    fun recreateForRendererMode(rendererMode: AndroidRendererMode): AndroidGraphicsEngine =
+    fun recreateForRenderBackend(renderBackend: AndroidRenderBackend): AndroidGraphicsEngine =
         AndroidGraphicsEngine(
             context = context,
-            rendererMode = rendererMode,
+            hostBackend = renderBackend,
+            target = resolveTarget(renderBackend, RenderTargetMode.DEFAULT),
             textureBindings = textureBindings,
             shaderBindings = shaderBindings,
             shaderSyncStack = shaderSyncStack,
@@ -110,28 +111,28 @@ internal class AndroidGraphicsEngine(
         if (texture == null) {
             return AndroidGraphicsEngine(
                 context = context,
-                rendererMode = rendererMode,
+                hostBackend = hostBackend,
+                target = resolveTarget(hostBackend, mode),
                 textureBindings = textureBindings,
                 shaderBindings = shaderBindings,
                 shaderSyncStack = shaderSyncStack,
             )
         }
         val binding = textureBinding(texture)
-        val targetKind = rendererMode.renderTargetKind(mode)
-        val targetContext = when (targetKind) {
-            AndroidRenderTargetKind.GPU -> graphicsContext.a(binding.unitTexture)
-            AndroidRenderTargetKind.CPU_BITMAP -> graphicsContext.b(binding.unitTexture)
+        val targetSurface = resolveTarget(hostBackend, mode)
+        val targetContext = when (targetSurface) {
+            AndroidTargetSurface.GPU -> graphicsContext.a(binding.unitTexture)
+            AndroidTargetSurface.CPU_BITMAP -> graphicsContext.b(binding.unitTexture)
         }
-        val targetRendererMode = targetKind.rendererMode()
         return AndroidGraphicsEngine(
             context = context,
-            rendererMode = targetRendererMode,
+            hostBackend = hostBackend,
+            target = targetSurface,
             graphicsContext = targetContext,
             textureBindings = textureBindings,
             shaderBindings = shaderBindings,
             shaderSyncStack = shaderSyncStack,
             targetBinding = binding,
-            cpuTarget = targetKind == AndroidRenderTargetKind.CPU_BITMAP,
         ).also { targetEngine ->
             targetEngine.a(binding.unitTexture.width(), binding.unitTexture.height())
         }
@@ -156,7 +157,8 @@ internal class AndroidGraphicsEngine(
                 override fun a(callbackContext: com.corrodinggames.rts.gameFramework.m.GraphicsContext) {
                     val callbackEngine = AndroidGraphicsEngine(
                         context = context,
-                        rendererMode = rendererMode,
+                        hostBackend = hostBackend,
+                        target = target,
                         graphicsContext = callbackContext,
                         textureBindings = textureBindings,
                         shaderBindings = shaderBindings,
@@ -431,7 +433,7 @@ internal class AndroidGraphicsEngine(
 
     override fun p() {
         graphicsContext.n()
-        if (cpuTarget) {
+        if (isCpuTarget) {
             targetBinding?.markCanvasTargetChanged()
         }
     }
@@ -627,7 +629,7 @@ internal class AndroidGraphicsEngine(
                 else -> android.graphics.Paint.Style.FILL
             }
             val koolColorFilter = colorFilter()
-            paint.color = if (rendererMode == AndroidRendererMode.OPENGL) {
+            paint.color = if (target == AndroidTargetSurface.GPU) {
                 n.applyColorFilter(koolColorFilter)
             } else {
                 n
@@ -641,7 +643,7 @@ internal class AndroidGraphicsEngine(
             }
             paint.typeface = AndroidGameFontMetrics.typeface(typeface()?.key)
             paint.colorFilter = koolColorFilter.toCachedAndroidColorFilter()
-            if (rendererMode == AndroidRendererMode.OPENGL) {
+            if (target == AndroidTargetSurface.GPU) {
                 paint.xfermode = null
                 (paint as? BlendPaint)?.blendMode = toAndroidOpenGlBlendMode()
             } else {
@@ -662,7 +664,7 @@ internal class AndroidGraphicsEngine(
     }
 
     private fun io.github.rwx.render.canvas.Paint.createAndroidPaint(): android.graphics.Paint =
-        if (rendererMode == AndroidRendererMode.CANVAS && this is GamePaint) {
+        if (target == AndroidTargetSurface.CPU_BITMAP && this is GamePaint) {
             UniquePaint()
         } else {
             BlendPaint(android.graphics.Paint.ANTI_ALIAS_FLAG)
@@ -699,7 +701,7 @@ internal class AndroidGraphicsEngine(
 
         fun logUnsupportedUniform(name: String, size: Int) {
             if (unsupportedUniforms.add("$name/$size")) {
-                Timber.tag(SHADER_LOG_TAG).w("Unsupported Android OpenGL uniform size=$size name=$name")
+                logger.warn(tag = SHADER_LOG_TAG) { "Unsupported Android OpenGL uniform size=$size name=$name" }
             }
         }
     }
@@ -709,7 +711,7 @@ internal class AndroidGraphicsEngine(
         return colorFilterCache[filter] ?: when (filter) {
             is MultiplyAddColorFilter ->
                 if (
-                    rendererMode == AndroidRendererMode.CANVAS &&
+                    target == AndroidTargetSurface.CPU_BITMAP &&
                     filter.multiplyColor == OPAQUE_BLACK &&
                     filter.addColor == 0
                 ) {
@@ -900,7 +902,7 @@ internal val ANDROID_GRAPHICS_BACKEND_CAPABILITIES = GraphicsBackendCapabilities
     requiresImageTintColorFilter = true,
 )
 
-internal enum class AndroidRenderTargetKind {
+internal enum class AndroidTargetSurface {
     CPU_BITMAP,
     GPU,
 }
@@ -910,16 +912,11 @@ internal data class AndroidFallbackResources(
     val unitTexture: UnitTexture,
 )
 
-internal fun AndroidRenderTargetKind.rendererMode(): AndroidRendererMode = when (this) {
-    AndroidRenderTargetKind.CPU_BITMAP -> AndroidRendererMode.CANVAS
-    AndroidRenderTargetKind.GPU -> AndroidRendererMode.OPENGL
-}
-
-internal fun AndroidRendererMode.renderTargetKind(mode: RenderTargetMode): AndroidRenderTargetKind =
-    if (this == AndroidRendererMode.OPENGL && mode == RenderTargetMode.DEFAULT) {
-        AndroidRenderTargetKind.GPU
+internal fun resolveTarget(host: AndroidRenderBackend, mode: RenderTargetMode): AndroidTargetSurface =
+    if (host == AndroidRenderBackend.OPENGL_ES && mode == RenderTargetMode.DEFAULT) {
+        AndroidTargetSurface.GPU
     } else {
-        AndroidRenderTargetKind.CPU_BITMAP
+        AndroidTargetSurface.CPU_BITMAP
     }
 
 internal fun androidTextureRotation(rotation: Float): Float =

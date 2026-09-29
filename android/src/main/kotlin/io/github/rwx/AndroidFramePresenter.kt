@@ -4,18 +4,16 @@ import android.app.Activity
 import android.view.View
 import com.corrodinggames.rts.appFramework.GameViewOpenGL
 import com.corrodinggames.rts.gameFramework.android.graphics.GraphicsInterface
-import io.github.rwx.render.RendererMode
+import io.github.rwx.render.RenderBackend
 import androidx.core.view.isVisible
+import java.util.Locale
 
-internal enum class AndroidRendererMode(
-    override val id: String,
-) : RendererMode{
-    CANVAS(
-        id = "android-canvas"
-    ),
-    OPENGL(
-        id = "android-opengles"
-    ),
+internal enum class AndroidRenderBackend : RenderBackend {
+
+    CANVAS,
+    OPENGL_ES;
+
+    override val id: String = name.lowercase(Locale.ROOT)
 }
 
 internal class AndroidPresentedFrame(
@@ -42,10 +40,10 @@ internal interface AndroidFramePresenter {
     fun setVisible(visible: Boolean)
 }
 
-internal fun AndroidRendererMode.createPresenter(activity: Activity): AndroidFramePresenter =
+internal fun AndroidRenderBackend.createPresenter(activity: Activity): AndroidFramePresenter =
     when (this) {
-        AndroidRendererMode.CANVAS -> AndroidCanvasFramePresenter(CanvasGameView(activity))
-        AndroidRendererMode.OPENGL -> AndroidOpenGlFramePresenter(GameViewOpenGL(activity, null))
+        AndroidRenderBackend.CANVAS -> AndroidCanvasFramePresenter(CanvasGameView(activity))
+        AndroidRenderBackend.OPENGL_ES -> AndroidOpenGlFramePresenter(GameViewOpenGL(activity, null))
     }
 
 private class AndroidCanvasFramePresenter(

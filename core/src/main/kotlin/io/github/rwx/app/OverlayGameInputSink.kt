@@ -11,7 +11,7 @@ import io.github.rwx.ui.model.GamePointerButton
  * Feeds unconsumed non-modal overlay input into the running game, with a single
  * active pointer and world-position selection. Frontend only.
  */
-internal class OverlayGameInputSink(
+class OverlayGameInputSink(
     private val gameSession: GameSession,
     private val hasWorldPositionSelection: () -> Boolean = UiRegistry::hasActiveWorldPositionSelection,
     private val selectWorldPosition: (screenX: Float, screenY: Float) -> Boolean = ::selectEngineWorldPosition,
@@ -24,6 +24,16 @@ internal class OverlayGameInputSink(
     private val pressedKeys = linkedSetOf<Int>()
 
     fun handle(event: GameInputEvent) {
+        val scale = gameSession.inputCoordinateScale
+        val engineEvent = if (scale == 1f) event else when (event) {
+            is GameInputEvent.PointerMove -> event.copy(x = event.x * scale, y = event.y * scale)
+            is GameInputEvent.PointerButton -> event.copy(x = event.x * scale, y = event.y * scale)
+            else -> event
+        }
+        handleEngineInput(engineEvent)
+    }
+
+    private fun handleEngineInput(event: GameInputEvent) {
         when (event) {
             GameInputEvent.ReleaseAll -> release()
             is GameInputEvent.PointerMove -> {

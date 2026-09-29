@@ -2544,6 +2544,30 @@ object I18n {
                 ),
             )
 
+            val desktopRenderBackend = entry(
+                key = "settings.display.desktopRenderBackend",
+                translations = linkedMapOf(
+                    "en" to "Render backend",
+                    "zh-CN" to "渲染后端",
+                ),
+            )
+
+            val desktopRenderBackendSkia = entry(
+                key = "settings.display.desktopRenderBackendSkia",
+                translations = linkedMapOf(
+                    "en" to "Skia (Experimental)",
+                    "zh-CN" to "Skia（实验性）",
+                ),
+            )
+
+            val desktopRenderBackendSlick = entry(
+                key = "settings.display.desktopRenderBackendSlick",
+                translations = linkedMapOf(
+                    "en" to "Slick (Compatible)",
+                    "zh-CN" to "Slick（兼容）",
+                ),
+            )
+
             val edgeScrollSpeed = entry(
                 key = "settings.display.edgeScrollSpeed",
                 translations = linkedMapOf(
@@ -3008,14 +3032,6 @@ object I18n {
             )
 
         }
-
-        val saved = entry(
-            key = "settings.saved",
-            translations = linkedMapOf(
-                "en" to "Settings saved",
-                "zh-CN" to "设置已保存",
-            ),
-        )
 
         object storage {
             val `external` = entry(

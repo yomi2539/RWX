@@ -28,7 +28,7 @@ import kotlin.math.roundToInt
 import androidx.core.view.isVisible
 
 internal class AndroidGameSession(
-    override var rendererMode: AndroidRendererMode,
+    override var renderBackend: AndroidRenderBackend,
 ) : GameSession() {
 
     private val view = AndroidCoreGameView(inGameMenuController)
@@ -77,7 +77,7 @@ internal class AndroidGameSession(
         this.composeView = composeView
         val presenter = createPresenter(activity)
         if (graphicsEngine == null) {
-            graphicsEngine = AndroidGraphicsEngine(activity.applicationContext, rendererMode)
+            graphicsEngine = AndroidGraphicsEngine(activity.applicationContext, renderBackend)
         }
         host.addView(presenter.view, 0, matchParentLayoutParams())
         (composeView.parent as? ViewGroup)?.removeView(composeView)
@@ -105,13 +105,13 @@ internal class AndroidGameSession(
         check(Looper.myLooper() === Looper.getMainLooper()) { "Native views must be owned by the main thread" }
     }
 
-    fun switchRendererMode(rendererMode: AndroidRendererMode) {
+    fun switchRenderBackend(renderBackend: AndroidRenderBackend) {
         checkMainThread()
         val activity = activity ?: return
         val host = host ?: return
-        if (this.rendererMode == rendererMode) return
+        if (this.renderBackend == renderBackend) return
         synchronized(gameLock) {
-            if (this.rendererMode == rendererMode) return
+            if (this.renderBackend == renderBackend) return
 
             val oldPresenter = framePresenter
             visibilityUpdate?.let(mainHandler::removeCallbacks)
@@ -122,8 +122,8 @@ internal class AndroidGameSession(
                 (oldView.parent as? ViewGroup)?.removeView(oldView)
             }
 
-            this.rendererMode = rendererMode
-            graphicsEngine = graphicsEngine?.recreateForRendererMode(rendererMode)
+            this.renderBackend = renderBackend
+            graphicsEngine = graphicsEngine?.recreateForRenderBackend(renderBackend)
             graphicsEngine?.let { replacement ->
                 GameEngine.graphicsEngine = replacement
                 gameEngine?.let { engine ->
@@ -152,12 +152,12 @@ internal class AndroidGameSession(
                     composeView?.bringToFront()
                 }
             }
-            logger.info { "Switched Android game renderer to ${rendererMode.id}" }
+            logger.info { "Switched Android game renderer to ${renderBackend.name}" }
         }
     }
 
     private fun createPresenter(activity: Activity): AndroidFramePresenter =
-        rendererMode.createPresenter(activity).also { createdPresenter ->
+        renderBackend.createPresenter(activity).also { createdPresenter ->
             createdPresenter.view.apply {
                 visibility = View.VISIBLE
                 isFocusableInTouchMode = true
@@ -299,7 +299,7 @@ internal class AndroidGameSession(
                     (deltaSeconds * 1000f).roundToInt().coerceAtLeast(0),
                 )
             }.onFailure { error ->
-                logger.error(error) { "$sessionLogName game loop failed" }
+                logger.error(error) { " game loop failed" }
             }
         } finally {
             if (skipDraw) {
@@ -312,7 +312,7 @@ internal class AndroidGameSession(
         runCatching {
             (engine as GameLogic).drawWorldOnlyThreadSafe(0f)
         }.onFailure { error ->
-            logger.error(error) { "$sessionLogName paused background render failed" }
+            logger.error(error) { " paused background render failed" }
         }
     }
 
@@ -343,7 +343,7 @@ internal class AndroidGameSession(
         val issuedGeneration = generation ?: return
         lastFrame = GameFrame(viewport, emptyList())
         logger.info { "Preparing Android Canvas RW menu background asynchronously" }
-        launchOnIO("${rendererMode.id}-menu-background-loader") {
+        launchOnIO("${renderBackend.name.lowercase()}-menu-background-loader") {
             loadMenuBackgroundInBackground(viewport, issuedGeneration)
         }
     }
@@ -580,7 +580,7 @@ internal class AndroidGameSession(
             surfaceActive = false
         }
 
-        override fun isPaused(): Boolean = surfaceActive
+        override fun isActive(): Boolean = surfaceActive
 
         override fun isContinuousRendering(): Boolean = true
 

@@ -1,12 +1,21 @@
 package io.github.rwx
 
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.ComposePanel
+import com.corrodinggames.rts.gameFramework.SettingsEngine
 import io.github.rwx.app.AppSession
 import io.github.rwx.render.frame.GameViewport
 import io.github.rwx.slick.SlickAwtGLCanvas
 import io.github.rwx.slick.SlickCanvasHost
 import io.github.rwx.slick.SlickFrameSnapshot
 import io.github.rwx.slick.SlickSnapshotPanel
+import io.github.rwx.skia.SkiaOverlayPanelHost
+import io.github.rwx.skia.acceptsDirectSkiaInput
+import io.github.rwx.skia.createSkiaGamePanel
 import io.github.rwx.ui.AppScreen
 import io.github.rwx.ui.AppUiState
 import io.github.rwx.ui.DesktopComposeOverlay
@@ -35,7 +44,20 @@ class SwingAppHost private constructor(
     val gameCanvas: Canvas,
     val menuPanel: ComposePanel,
     private val shutdownRenderer: () -> Unit,
+    skiaGameContent: (@Composable (inputEnabled: Boolean) -> Unit)? = null,
 ) : PlatformFilePickerHost {
+    private val skiaOverlayContent = mutableStateOf<(@Composable () -> Unit)?>(null)
+    private val skiaInputEnabled = mutableStateOf(false)
+    private val skiaGamePanel: ComposePanel? = skiaGameContent?.let { game ->
+        createSkiaGamePanel(isVsyncEnabled = SettingsEngine.getInstance().renderVsync).apply {
+            setContent {
+                Box(Modifier.fillMaxSize()) {
+                    game(skiaInputEnabled.value)
+                    skiaOverlayContent.value?.invoke()
+                }
+            }
+        }
+    }
     private val content = JLayeredPane()
     private val composeTexturePanel = ComposeTexturePanel(menuPanel)
     private val snapshotPanel = SlickSnapshotPanel()
@@ -67,6 +89,7 @@ class SwingAppHost private constructor(
         gameCanvas.ignoreRepaint = true
         gameCanvas.isVisible = false
         content.add(gameCanvas, JLayeredPane.MODAL_LAYER, 0)
+        skiaGamePanel?.let { content.add(it, JLayeredPane.DEFAULT_LAYER, 0) }
         content.add(snapshotPanel, 50, 0)
         content.add(composeTexturePanel, JLayeredPane.PALETTE_LAYER, 0)
         content.addComponentListener(object : ComponentAdapter() {
@@ -84,11 +107,20 @@ class SwingAppHost private constructor(
         checkEdt()
         if (closing.get() || composeHost != null) return
         uiState = state
-        composeHost = installComposeOverlay(
-            frame, gameCanvas, menuPanel, initialState = state,
-            onVisibilityChanged = { updateVisibility() },
-            onStateChanged = { uiState = it; updateVisibility() },
-        )
+        val mergedPanel = skiaGamePanel
+        composeHost = if (mergedPanel != null) {
+            DesktopComposeOverlay(
+                initialState = state,
+                hostFactory = { SkiaOverlayPanelHost(mergedPanel, skiaOverlayContent) },
+                onStateChanged = { uiState = it; updateVisibility() },
+            )
+        } else {
+            installComposeOverlay(
+                frame, gameCanvas, menuPanel, initialState = state,
+                onVisibilityChanged = { updateVisibility() },
+                onStateChanged = { uiState = it; updateVisibility() },
+            )
+        }
     }
 
     fun installComposeUi(session: AppSession) {
@@ -124,6 +156,23 @@ class SwingAppHost private constructor(
     private fun updateVisibility() {
         checkEdt()
         if (closing.get()) return
+        val mergedPanel = skiaGamePanel
+        if (mergedPanel != null) {
+            // Skia renders game and menu overlay in one GPU composition; the Slick
+            // widgets stay parked. Overlay content gates itself on UI state.
+            skiaInputEnabled.value = acceptsDirectSkiaInput(uiState)
+            gameCanvas.isVisible = false
+            menuPanel.isVisible = false
+            composeTexturePanel.isVisible = false
+            snapshotPanel.isVisible = false
+            if (!mergedPanel.isVisible) {
+                mergedPanel.isVisible = true
+                content.revalidate()
+                content.repaint()
+                mergedPanel.requestFocusInWindow()
+            }
+            return
+        }
         val state = uiState
         val showGame = gameRequested
         val showUi = !showGame || overlayRequested || state?.showComposeOverlay == true ||
@@ -147,6 +196,7 @@ class SwingAppHost private constructor(
         val width = content.width.coerceAtLeast(1)
         val height = content.height.coerceAtLeast(1)
         gameCanvas.setBounds(0, 0, width, height)
+        skiaGamePanel?.setBounds(0, 0, width, height)
         snapshotPanel.setBounds(0, 0, width, height)
         composeTexturePanel.setBounds(0, 0, width, height)
         composeTexturePanel.doLayout()
@@ -179,6 +229,7 @@ class SwingAppHost private constructor(
                                 composeHost?.dispose()
                                 composeHost = null
                                 SlickCanvasHost.uninstall(gameCanvas)
+                                skiaGamePanel?.dispose()
                                 menuPanel.dispose()
                                 frame.dispose()
                                 closed.complete(Unit)
@@ -223,13 +274,17 @@ class SwingAppHost private constructor(
         fun create(
             fullscreen: Boolean = false,
             shutdownRenderer: () -> Unit = SlickCanvasHost::shutdownRenderer,
+            skiaGameContent: (@Composable (inputEnabled: Boolean) -> Unit)? = null,
         ): SwingAppHost {
             checkEdt() // Check before creating even the first Swing/Compose/native component.
             System.setProperty("org.lwjgl.opengl.contextAPI", "native")
             val frame = JFrame(System.getProperty("rwx.windowTitle")
                 ?: System.getenv("RWX_WINDOW_TITLE") ?: "RWX Game").apply { isUndecorated = fullscreen }
             val canvas = SlickAwtGLCanvas(GLData().apply { alphaSize = 8; depthSize = 24; stencilSize = 8 }, 0)
-            val host = SwingAppHost(frame, canvas, createDesktopComposePanel(), shutdownRenderer)
+            val host = SwingAppHost(
+                frame, canvas, createDesktopComposePanel(), shutdownRenderer,
+                skiaGameContent,
+            )
             SlickCanvasHost.install({ host.gameCanvas }) { visible, overlay ->
                 // Showing the initial peer must finish before Slick starts. Once showing, never
                 // wait under runInContext's JAWT lock: dispatch visibility asynchronously instead.

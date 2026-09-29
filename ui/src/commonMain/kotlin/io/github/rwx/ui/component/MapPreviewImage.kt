@@ -11,6 +11,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.ImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.testTag
+import com.corrodinggames.rts.gameFramework.file.FileHelper
 import io.github.rwx.LegacyAssetBridge
 import io.github.rwx.i18n.I18n
 import io.github.rwx.ui.theme.LocalColorScheme
@@ -24,8 +25,27 @@ typealias MapPreviewLoader = suspend (String) -> ImageBitmap?
 /** Reuse platform asset resolution, but decode directly to Compose rather than allocating a Kool texture. */
 internal val defaultMapPreviewLoader: MapPreviewLoader = { path ->
     withContext(Dispatchers.IO) {
-        LegacyAssetBridge.openAsset(path)?.use { it.readBytes() }?.decodeToImageBitmap()
+        readMapPreviewBytes(path)?.decodeToImageBitmap()
     }
+}
+
+private fun readMapPreviewBytes(path: String): ByteArray? {
+    runCatching { LegacyAssetBridge.openAsset(path)?.use { it.readBytes() } }
+        .getOrElse { if (it is CancellationException) throw it; null }
+        ?.let { return it }
+    if (!isCustomMapPreviewPath(path)) return null
+    return runCatching { FileHelper.openFileByPath(path)?.use { it.readBytes() } }
+        .getOrElse { if (it is CancellationException) throw it; null }
+}
+
+private fun isCustomMapPreviewPath(path: String): Boolean {
+    if (path.startsWith("/SD/") || path.startsWith("\\SD\\")) return true
+    if (path.startsWith("/")) return true
+    if (path.contains(".[saflink]")) return true
+    if (path.contains("[EXTERNAL-PATH]") || path.contains("[INTERNAL-PATH]")) return true
+    if (path.contains("rustedWarfare/maps", ignoreCase = true)) return true
+    if (path.contains("rusted_warfare_maps", ignoreCase = true)) return true
+    return false
 }
 
 @Composable

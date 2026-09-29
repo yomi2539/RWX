@@ -23,7 +23,6 @@ internal class BattleRoomLaunchController(
     private val storage: () -> PlatformStorage?,
     private val viewport: () -> GameViewport,
     private val currentScreen: () -> AppScreen,
-    private val showStartNewGameDialog: (() -> Unit) -> Unit,
     private val enterRwGame: (Boolean, BattleRoomLaunchConfig?) -> Unit,
     private val clearPendingRwStartState: () -> Unit,
     private val clearPendingStartState: () -> Unit,
@@ -47,12 +46,6 @@ internal class BattleRoomLaunchController(
         }
         P2PLobbyService.getInstance().currentMissingRequiredFeatureSummary()?.let { message ->
             showUnavailableDialog(message)
-            return
-        }
-        if (gameSession.canResume()) {
-            showStartNewGameDialog {
-                enterRwGame(true, launchConfig)
-            }
             return
         }
         val snapshot = gameSession.currentBattleRoom()
