@@ -2411,6 +2411,7 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
                 ((CustomUnitRenderHook) objArrA[i2]).d(this, f);
             }
         }
+        if (!RenderRegistry.drawUnit(this, gameEngine, UnitRenderLayer.BODY)) {
         if (this.ew) {
             float f3 = (this.posX + unitAIPosition.x) - gameEngine.viewpointXSnapped;
             float f4 = ((this.posY + unitAIPosition.y) - gameEngine.viewpointYSnapped) - this.posZ;
@@ -2440,6 +2441,7 @@ public class CustomUnit extends MovableUnit implements TransportUnitInterface, U
             graphicsEngine.a(getRenderRotation(false), f7, f8);
             graphicsEngine.a(this.baseTexture, rectA_, unitBounds, renderPaint);
             graphicsEngine.l();
+        }
         }
         if (i > 0) {
             Object[] objArrA2 = customUnitConfig.onDestroyListeners.a();

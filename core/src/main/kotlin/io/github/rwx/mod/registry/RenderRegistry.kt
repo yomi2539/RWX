@@ -114,19 +114,22 @@ object RenderRegistry : OwnedRegistry {
     }
 
     @JvmStatic
-    fun drawUnit(unit: CustomUnit, gameEngine: GameEngine, layer: UnitRenderLayer) {
+    fun drawUnit(unit: CustomUnit, gameEngine: GameEngine, layer: UnitRenderLayer): Boolean {
         val (bound, renderer) = synchronized(lock) {
-            val bound = unitBindings[unit.unitConfig] ?: return
-            bound to (unitRenderers[bound.binding.rendererId.value] ?: return)
+            val bound = unitBindings[unit.unitConfig] ?: return false
+            if (layer == UnitRenderLayer.BODY && !bound.binding.replaceBody) return false
+            bound to (unitRenderers[bound.binding.rendererId.value] ?: return false)
         }
         val unitOffset = unit.getRenderOffset()
         val centerX = unit.posX + unitOffset.x - gameEngine.viewpointXSnapped
         val centerY = unit.posY + unitOffset.y - unit.posZ - gameEngine.viewpointYSnapped
         val bounds = unit.getUnitBounds()
-        val imageScale = unit.getRenderScale()
+        val imageScale = unit.renderScale
         val width = (abs(bounds.c - bounds.a).takeIf { it > 0f } ?: (unit.radius * 2f)) * imageScale
         val height = (abs(bounds.d - bounds.b).takeIf { it > 0f } ?: (unit.radius * 2f)) * imageScale
-        val canvas = EngineRenderCanvas(gameEngine.renderGraphicsEngine)
+        val canvas = EngineRenderCanvas(gameEngine.renderGraphicsEngine, unit.renderPaint.f() / 255f)
+        var rendered = false
+        canvas.save()
         try {
             failures.runSafelyOncePerId("unit:${bound.binding.rendererId.value}") {
                 renderer.render(
@@ -146,10 +149,12 @@ object RenderRegistry : OwnedRegistry {
                     ),
                     canvas,
                 )
+                rendered = true
             }
         } finally {
             canvas.finish()
         }
+        return rendered
     }
 
     @JvmStatic
@@ -342,7 +347,7 @@ object RenderRegistry : OwnedRegistry {
         return true
     }
 
-    private fun resolveTexture(id: TextureId): Pair<Texture, TextureOptions> {
+    internal fun resolveTexture(id: TextureId): Pair<Texture, TextureOptions> {
         val registration = textures.owned(id.value)
             ?: error("Texture is not registered: ${id.value}")
         val entry = registration.value
@@ -353,7 +358,8 @@ object RenderRegistry : OwnedRegistry {
         return texture to entry.options
     }
 
-    private class EngineRenderCanvas(private val graphics: GraphicsEngine) : RenderCanvas {
+    internal class EngineRenderCanvas(private val graphics: GraphicsEngine, private val globalOpacity: Float = 1f) :
+        RenderCanvas {
         private val source = Rect()
         private val destination = RectF()
         private val paint = Paint()
@@ -393,7 +399,7 @@ object RenderRegistry : OwnedRegistry {
             val (texture, options) = resolveTexture(textureId)
             paint.a(options.filter == TextureFilter.LINEAR)
             paint.a(
-                (tint.alpha * opacity.coerceIn(0f, 1f)).roundToInt(),
+                (tint.alpha * opacity.coerceIn(0f, 1f) * globalOpacity).roundToInt(),
                 tint.red,
                 tint.green,
                 tint.blue,
@@ -429,7 +435,7 @@ object RenderRegistry : OwnedRegistry {
             val (texture, options) = resolveTexture(textureId)
             paint.a(options.filter == TextureFilter.LINEAR)
             paint.a(
-                (tint.alpha * opacity.coerceIn(0f, 1f)).roundToInt(),
+                (tint.alpha * opacity.coerceIn(0f, 1f) * globalOpacity).roundToInt(),
                 tint.red,
                 tint.green,
                 tint.blue,
@@ -452,6 +458,73 @@ object RenderRegistry : OwnedRegistry {
                 centerY + height * 0.5f,
             )
             graphics.a(texture, this.source, destination, paint)
+        }
+
+        override fun drawCircle(
+            centerX: Float,
+            centerY: Float,
+            radius: Float,
+            color: RgbaColor,
+            opacity: Float,
+            style: RenderShapeStyle,
+            strokeWidth: Float,
+            blendMode: RenderBlendMode,
+        ) {
+            require(radius.isFinite() && radius > 0f) { "Circle radius must be positive and finite: $radius" }
+            applyShapePaint(color, opacity, style, strokeWidth, blendMode)
+            graphics.a(centerX, centerY, radius, paint)
+        }
+
+        override fun drawRect(
+            centerX: Float,
+            centerY: Float,
+            width: Float,
+            height: Float,
+            color: RgbaColor,
+            opacity: Float,
+            style: RenderShapeStyle,
+            strokeWidth: Float,
+            blendMode: RenderBlendMode,
+        ) {
+            require(width.isFinite() && width > 0f) { "Rect width must be positive and finite: $width" }
+            require(height.isFinite() && height > 0f) { "Rect height must be positive and finite: $height" }
+            applyShapePaint(color, opacity, style, strokeWidth, blendMode)
+            destination.a(
+                centerX - width * 0.5f,
+                centerY - height * 0.5f,
+                centerX + width * 0.5f,
+                centerY + height * 0.5f,
+            )
+            graphics.a(destination, paint)
+        }
+
+        private fun applyShapePaint(
+            color: RgbaColor,
+            opacity: Float,
+            style: RenderShapeStyle,
+            strokeWidth: Float,
+            blendMode: RenderBlendMode,
+        ) {
+            require(strokeWidth.isFinite() && strokeWidth > 0f) { "Stroke width must be positive and finite: $strokeWidth" }
+            paint.a(
+                (color.alpha * opacity.coerceIn(0f, 1f) * globalOpacity).roundToInt(),
+                color.red,
+                color.green,
+                color.blue,
+            )
+            paint.a(
+                when (style) {
+                    RenderShapeStyle.FILL -> Paint.Style.FILL
+                    RenderShapeStyle.STROKE -> Paint.Style.STROKE
+                }
+            )
+            paint.a(strokeWidth)
+            paint.a(
+                when (blendMode) {
+                    RenderBlendMode.ALPHA -> GameCanvasBlendMode.SourceOver
+                    RenderBlendMode.ADDITIVE -> GameCanvasBlendMode.Add
+                }
+            )
         }
 
         fun finish() {

@@ -9,6 +9,8 @@ interface Graphics {
     fun registerPostFireRenderer(id: RendererId, renderer: PostFireRenderer)
     fun registerEffectRenderer(id: RendererId, renderer: EffectRenderer)
     fun registerUnitRenderer(id: RendererId, renderer: UnitRenderer)
+    fun registerTerrainOverlayRenderer(id: RendererId, renderer: TerrainOverlayRenderer)
+    fun registerTerrainShader(definition: TerrainShaderDefinition)
     fun registerAnimation(definition: AnimationDefinition)
     fun registerShader(definition: ShaderDefinition)
     fun setUnitShader(unitId: String, shaderId: String?)
@@ -59,6 +61,7 @@ data class EffectRenderBinding(
 data class UnitRenderBinding(
     val rendererId: RendererId,
     val variantId: RenderVariantId,
+    val replaceBody: Boolean = false,
 )
 
 fun interface ProjectileRenderer {
@@ -153,6 +156,7 @@ data class UnitRenderContext(
 
 enum class UnitRenderLayer {
     UNDER_UNIT,
+    BODY,
     OVER_UNIT,
 }
 
@@ -184,6 +188,34 @@ interface RenderCanvas {
         opacity: Float = 1f,
         blendMode: RenderBlendMode = RenderBlendMode.ALPHA,
     ) = drawTexture(textureId, centerX, centerY, width, height, tint, opacity, blendMode)
+
+    fun drawCircle(
+        centerX: Float,
+        centerY: Float,
+        radius: Float,
+        color: RgbaColor = RgbaColor(255, 255, 255),
+        opacity: Float = 1f,
+        style: RenderShapeStyle = RenderShapeStyle.FILL,
+        strokeWidth: Float = 1f,
+        blendMode: RenderBlendMode = RenderBlendMode.ALPHA,
+    )
+
+    fun drawRect(
+        centerX: Float,
+        centerY: Float,
+        width: Float,
+        height: Float,
+        color: RgbaColor = RgbaColor(255, 255, 255),
+        opacity: Float = 1f,
+        style: RenderShapeStyle = RenderShapeStyle.FILL,
+        strokeWidth: Float = 1f,
+        blendMode: RenderBlendMode = RenderBlendMode.ALPHA,
+    )
+}
+
+enum class RenderShapeStyle {
+    FILL,
+    STROKE,
 }
 
 data class TextureRegion(

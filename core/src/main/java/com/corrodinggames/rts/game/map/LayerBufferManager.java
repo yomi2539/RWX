@@ -81,6 +81,7 @@ public final class LayerBufferManager {
     }
 
     public void releaseLayerBuffers() {
+        io.github.rwx.mod.registry.TerrainRegistry.releaseGraphics();
         GraphicsEngine previousBackend = this.graphicsBackend;
         IdentityHashMap<Texture, Boolean> releasedTextures = new IdentityHashMap<>();
         Texture fallbackTexture = previousBackend != null ? previousBackend.r() : null;
@@ -563,6 +564,16 @@ public final class LayerBufferManager {
             layerBufferCell.cellGraphicsCopy.a(VariableScope.nullOrMissingString + layerBufferCell.redrawVersion, 40.0f, 40.0f, TileMap.fogAtlasDebugRedStrokePaint);
         }
         layerBufferCell.redrawVersion++;
+        io.github.rwx.mod.registry.TerrainRegistry.invalidateCell(layerBufferCell);
+    }
+
+    private void drawTerrainCell(LayerBufferCell cell, Texture texture, Paint paint) {
+        GameEngine engine = GameEngine.getInstance();
+        if (!io.github.rwx.mod.registry.TerrainRegistry.drawCell(cell, engine.tileMap,
+                engine.renderGraphicsEngine, resourceBackend(), texture, cell.tileSrcRect,
+                cell.screenDstRectF, paint, this.renderScale)) {
+            engine.renderGraphicsEngine.a(texture, cell.tileSrcRect, cell.screenDstRectF, paint);
+        }
     }
 
     /* JADX INFO: renamed from: d */
@@ -1087,15 +1098,15 @@ public final class LayerBufferManager {
                             if (layerBufferCell.fadeProgressRatio > 0.0f) {
                                 layerBufferCell.fadeBlendPaint.a(z3);
                                 layerBufferCell.fadeBlendPaint.c((int) ((1.0f - layerBufferCell.fadeProgressRatio) * 255.0f));
-                                gameEngine.renderGraphicsEngine.a(layerBufferCell.fadeOutTexture, layerBufferCell.tileSrcRect, layerBufferCell.screenDstRectF, this.copyBlitPaint);
+                                drawTerrainCell(layerBufferCell, layerBufferCell.fadeOutTexture, this.copyBlitPaint);
                                 if (layerBufferCell.fadeProgressRatio < 0.98d) {
-                                    gameEngine.renderGraphicsEngine.a(layerBufferCell.cellLayerTexture, layerBufferCell.tileSrcRect, layerBufferCell.screenDstRectF, layerBufferCell.fadeBlendPaint);
+                                    drawTerrainCell(layerBufferCell, layerBufferCell.cellLayerTexture, layerBufferCell.fadeBlendPaint);
                                 }
                                 layerBufferCell.fadeProgressRatio -= 0.1f * f;
                             } else if (layerBufferCell.cellLayerTexture.A()) {
                                 gameEngine.renderGraphicsEngine.a(layerBufferCell.cellLayerTexture, layerBufferCell.screenDstRectF, this.copyBlitPaint, 0.0f, 0.0f, 0, 0);
                             } else {
-                                gameEngine.renderGraphicsEngine.a(layerBufferCell.cellLayerTexture, layerBufferCell.tileSrcRect, layerBufferCell.screenDstRectF, this.copyBlitPaint);
+                                drawTerrainCell(layerBufferCell, layerBufferCell.cellLayerTexture, this.copyBlitPaint);
                             }
                         }
                     }

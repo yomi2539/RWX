@@ -1,6 +1,5 @@
 package io.github.rwx.ui.screen
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.horizontalScroll
@@ -20,10 +19,10 @@ import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.dp
 import io.github.rwx.i18n.I18n
+import io.github.rwx.ui.ColorSchemeRegistry
 import io.github.rwx.ui.component.itemAppear
 import io.github.rwx.ui.component.pressScale
 import io.github.rwx.ui.model.*
-import io.github.rwx.ui.ColorSchemeRegistry
 import io.github.rwx.ui.theme.Corners
 import io.github.rwx.ui.theme.LocalColorScheme
 import io.github.rwx.ui.theme.Spacing

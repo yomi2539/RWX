@@ -12,6 +12,8 @@ public class ShaderUniform {
     /* JADX INFO: renamed from: f */
     public Texture texture;
     public boolean g;
+    public boolean repeatTexture;
+    public boolean linearTexture;
     public ShaderUniformValueType valueType = ShaderUniformValueType.FLOAT;
 
     public void a(float f) {

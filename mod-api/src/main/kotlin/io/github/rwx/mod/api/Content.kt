@@ -3,6 +3,12 @@ package io.github.rwx.mod.api
 import kotlin.collections.Map
 
 interface Map {
+    fun info(): MapInfo?
+    fun tileAt(x: Int, y: Int): TerrainTile?
+    fun addOverlay(x: Int, y: Int, binding: TerrainOverlayBinding)
+    fun removeOverlay(x: Int, y: Int, rendererId: RendererId)
+    fun overlayAt(x: Int, y: Int, rendererId: RendererId): TerrainOverlayBinding?
+    fun overlaysAt(x: Int, y: Int): List<TerrainOverlayBinding>
     fun registerMap(definition: MapDefinition)
     fun registerTileset(definition: TilesetDefinition)
 }

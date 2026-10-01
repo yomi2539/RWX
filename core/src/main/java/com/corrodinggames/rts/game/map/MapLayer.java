@@ -322,6 +322,9 @@ public class MapLayer {
                                     graphicsEngine.a(tileset.tilesetBitmap, tileset.getTileRectCached(mapTile.tilesetLocalIndex), rect, gamePaint6);
                                 }
                             }
+                            if (this.isGroundLayer) {
+                                io.github.rwx.mod.registry.TerrainRegistry.drawOverlay(tileMap, i6, i7, graphicsEngine, rectF);
+                            }
                         }
                         if (z && z7 && z2 && (b2 != 0 || bArr3[i6][i7] != 0 || bArr2[i6][i7] != 0)) {
                             if (b2 >= 5) {

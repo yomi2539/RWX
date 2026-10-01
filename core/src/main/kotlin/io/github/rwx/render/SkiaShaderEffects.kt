@@ -17,19 +17,23 @@ import org.jetbrains.skia.SamplingMode
 import org.jetbrains.skia.Shader
 import org.jetbrains.skia.Rect as SkiaRect
 
+val ShaderProgram.disposed: Boolean
+    get() = this.programStatus != 0
 
 internal class SkiaShaderEffects(private val readAsset: (String) -> ByteArray?) : AutoCloseable {
     private val lock = Any()
-    private val cache = mutableMapOf<String, RuntimeEffect?>()
+    private val cache = mutableMapOf<ShaderProgram, RuntimeEffect?>()
     private var closed = false
 
     fun effectFor(program: ShaderProgram): RuntimeEffect? {
-        val name = program.name
         synchronized(lock) {
-            if (cache.containsKey(name)) return cache[name]
-            if (closed) return null
-            val effect = compile(name)
-            cache[name] = effect
+            cache.entries.removeAll { (shader, effect) ->
+                (effect != null && shader.disposed).also { if (it) effect?.close() }
+            }
+            if (closed || program.disposed) return null
+            if (cache.containsKey(program)) return cache[program]
+            val effect = program.skslSource?.let(RuntimeEffect::makeForShader) ?: compile(program.name)
+            cache[program] = effect
             return effect
         }
     }
@@ -49,7 +53,8 @@ internal class SkiaShaderEffects(private val readAsset: (String) -> ByteArray?) 
         return try {
             program.a(paint, texture)
             buildShader(program, image, src, dst, sampling, resolveImage, effect)
-        } catch (_: Exception) {
+        } catch (error: Exception) {
+            if (program.skslSource != null) throw error
             GameEngine.log("shader(" + program.name + "): draw failed, falling back to unshaded")
             null
         }
@@ -71,19 +76,18 @@ internal class SkiaShaderEffects(private val readAsset: (String) -> ByteArray?) 
                 for (uniform in program.uniforms) {
                     bindUniform(builder, uniform, sampling, resolveImage, children)
                 }
-                val scaleX = src.width / dst.width
-                val scaleY = src.height / dst.height
+                val scaleX = dst.width / src.width
+                val scaleY = dst.height / src.height
                 val local = Matrix33(
-                    scaleX, 0f, src.left - dst.left * scaleX,
-                    0f, scaleY, src.top - dst.top * scaleY,
+                    scaleX, 0f, dst.left - src.left * scaleX,
+                    0f, scaleY, dst.top - src.top * scaleY,
                     0f, 0f, 1f,
                 )
                 children.add(image.makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, sampling, local))
                 builder.child("u_texture", children.last())
                 return builder.makeShader()
-            } catch (e: Exception) {
-                children.forEach { runCatching { it.close() } }
-                throw e
+            } finally {
+                children.forEach { it.close() }
             }
         } finally {
             runCatching { builder.close() }
@@ -104,7 +108,9 @@ internal class SkiaShaderEffects(private val readAsset: (String) -> ByteArray?) 
                 builder.uniform(uniform.name, size.width.toFloat(), size.height.toFloat())
             } else {
                 val childImage = resolveImage(texture) ?: return
-                children.add(childImage.makeShader(FilterTileMode.CLAMP, FilterTileMode.CLAMP, sampling, null))
+                val tile = if (uniform.repeatTexture) FilterTileMode.REPEAT else FilterTileMode.CLAMP
+                val filter = if (uniform.linearTexture) SamplingMode.LINEAR else SamplingMode.DEFAULT
+                children.add(childImage.makeShader(tile, tile, filter, null))
                 builder.child(uniform.name, children.last())
             }
             return

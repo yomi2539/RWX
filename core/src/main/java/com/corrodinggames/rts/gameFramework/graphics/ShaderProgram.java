@@ -21,6 +21,7 @@ public class ShaderProgram {
     public String vertexSource;
     /* JADX INFO: renamed from: f */
     public String fragmentSource;
+    public String skslSource;
     /* JADX INFO: renamed from: g */
     public int vertexShaderId;
     /* JADX INFO: renamed from: h */

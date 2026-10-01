@@ -53,7 +53,7 @@ class ApiImpl private constructor(
     override val units: Units = unitApi
     override val unitWorld: UnitWorld = unitWorldApi
     override val commands: UnitCommands = commandApi
-    override val maps: ApiMap = RecordingMapApi()
+    override val maps: ApiMap = MapApi(this)
     override val rules: Rule = RecordingRule()
     override val localization: io.github.rwx.mod.api.Localization = Localization()
     override val audio: Audio = ModAudio(this)
@@ -676,6 +676,12 @@ private class RecordingGraphics(private val api: ApiImpl) : Graphics {
     override fun registerUnitRenderer(id: RendererId, renderer: UnitRenderer) =
         RenderRegistry.registerUnitRenderer(api, id, renderer)
 
+    override fun registerTerrainOverlayRenderer(id: RendererId, renderer: TerrainOverlayRenderer) =
+        TerrainRegistry.registerOverlayRenderer(api, id, renderer)
+
+    override fun registerTerrainShader(definition: TerrainShaderDefinition) =
+        TerrainRegistry.registerShader(api, definition)
+
     override fun registerAnimation(definition: AnimationDefinition) {}
     override fun registerShader(definition: ShaderDefinition) = api.registerShader(definition)
 
@@ -683,7 +689,44 @@ private class RecordingGraphics(private val api: ApiImpl) : Graphics {
     override fun addRenderPass(definition: RenderPassDefinition) {}
 }
 
-private class RecordingMapApi : ApiMap {
+private class MapApi(private val owner: ApiImpl) : ApiMap {
+    override fun info(): MapInfo? = GameEngine.getInstance()?.tileMap?.let {
+        MapInfo(it.tileCountX, it.tileCountY, it.tileWorldSizeX.toFloat(), it.tileWorldSizeY.toFloat())
+    }
+
+    override fun tileAt(x: Int, y: Int): TerrainTile? {
+        val map = GameEngine.getInstance()?.tileMap ?: return null
+        if (x !in 0 until map.tileCountX || y !in 0 until map.tileCountY) return null
+        val tile = map.getTileAt(x, y) ?: return null
+        val occupied = com.corrodinggames.rts.game.units.buildings.BaseBuilding.b(x, y) != null
+        return TerrainTile(
+            tile.isWater && !tile.isWaterBridge, tile.isLava, tile.isCliff,
+            tile.blocksBuildingPlacement || tile.hasLargeObject || occupied
+        )
+    }
+
+    override fun addOverlay(x: Int, y: Int, binding: TerrainOverlayBinding) {
+        val map = GameEngine.getInstance()?.tileMap ?: return
+        TerrainRegistry.addOverlay(owner, map, x, y, binding)
+    }
+
+    override fun removeOverlay(x: Int, y: Int, rendererId: RendererId) {
+        val map = GameEngine.getInstance()?.tileMap ?: return
+        TerrainRegistry.removeOverlay(owner, map, x, y, rendererId)
+    }
+
+    override fun overlayAt(x: Int, y: Int, rendererId: RendererId): TerrainOverlayBinding? {
+        val map = GameEngine.getInstance()?.tileMap ?: return null
+        if (x !in 0 until map.tileCountX || y !in 0 until map.tileCountY) return null
+        return TerrainRegistry.overlayAt(owner, map, x, y, rendererId)
+    }
+
+    override fun overlaysAt(x: Int, y: Int): List<TerrainOverlayBinding> {
+        val map = GameEngine.getInstance()?.tileMap ?: return emptyList()
+        if (x !in 0 until map.tileCountX || y !in 0 until map.tileCountY) return emptyList()
+        return TerrainRegistry.overlaysAt(owner, map, x, y)
+    }
+
     override fun registerMap(definition: MapDefinition) {
         logger.info { "JVM mod map registration recorded: ${definition.id}" }
     }

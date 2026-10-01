@@ -11,6 +11,7 @@ import io.github.rwx.render.canvas.*
 import io.github.rwx.render.frame.*
 import org.lwjgl.BufferUtils
 import org.lwjgl.opengl.GL11
+import org.lwjgl.opengl.GL12
 import org.lwjgl.opengl.GL13
 import org.lwjgl.opengl.GL20
 import org.newdawn.slick.*
@@ -384,12 +385,13 @@ class SlickGraphicsEngine private constructor(
     override fun a(f: Float, f2: Float, f3: Float, paint: Paint?) {
         val g = activeGraphics() ?: return
         withPaint(paint) {
-            g.drawOval(
-                transform.x(f - f3),
-                transform.y(f2 - f3),
-                f3 * 2f * transform.scaleX,
-                f3 * 2f * transform.scaleY
-            )
+            val x = transform.x(f - f3)
+            val y = transform.y(f2 - f3)
+            val width = f3 * 2f * transform.scaleX
+            val height = f3 * 2f * transform.scaleY
+            val style = paint?.d() ?: Paint.Style.FILL
+            if (style != Paint.Style.STROKE) g.fillOval(x, y, width, height)
+            if (style != Paint.Style.FILL) g.drawOval(x, y, width, height)
         }
     }
 
@@ -880,6 +882,7 @@ class SlickGraphicsEngine private constructor(
     }
 
     private fun uploadShaderUniforms(shaderProgram: ShaderProgram, binding: SlickShaderBinding) {
+        var textureUnit = 1
         for (shaderUniform in shaderProgram.uniforms) {
             val uniformSnapshot = shaderUniform.toSlickSnapshot()
             val uniformLocation = binding.uniformLocations.getOrPut(shaderUniform) {
@@ -915,10 +918,15 @@ class SlickGraphicsEngine private constructor(
                         slickTexture.getTextureHeight().toFloat(),
                     )
                 } else {
-                    shaderProgram.b("Updating texture to:" + slickTexture.getTextureID())
-                    GL20.glUniform1i(uniformLocation, 1)
-                    GL13.glActiveTexture(GL13.GL_TEXTURE1)
+                    GL20.glUniform1i(uniformLocation, textureUnit)
+                    GL13.glActiveTexture(GL13.GL_TEXTURE0 + textureUnit++)
                     GL11.glBindTexture(GL11.GL_TEXTURE_2D, slickTexture.getTextureID())
+                    val wrap = if (shaderUniform.repeatTexture) GL11.GL_REPEAT else GL12.GL_CLAMP_TO_EDGE
+                    val filter = if (shaderUniform.linearTexture) GL11.GL_LINEAR else GL11.GL_NEAREST
+                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_S, wrap)
+                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_WRAP_T, wrap)
+                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MIN_FILTER, filter)
+                    GL11.glTexParameteri(GL11.GL_TEXTURE_2D, GL11.GL_TEXTURE_MAG_FILTER, filter)
                     GL13.glActiveTexture(GL13.GL_TEXTURE0)
                 }
             } else {
