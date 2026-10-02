@@ -1,5 +1,5 @@
 [versions]
-androidGradleVersion = "9.1.0"
+androidGradleVersion = "9.1.1"
 desugar_jdk_libsVersion = "2.1.5"
 httpclientVersion = "4.5.14"
 junitPlatformLauncherVersion = "6.1.3"
@@ -8,23 +8,22 @@ junitVintageEngineVersion = "6.1.3"
 jvmLibp2pVersion = "1.2.0-RELEASE"
 kotlinxVersion = "1.11.0"
 ktorVersion = "3.6.0"
-kotlinVersion = "2.4.10"
-lwjgl3AwtVersion = "0.2.4"
-lwjglVersion = "3.3.6"
+kotlinVersion = "2.4.20"
+lwjgl3AwtVersion = "0.2.5"
+lwjglVersion = "3.4.3"
 robolectricVersion = "4.17"
 tomlktVersion = "0.5.0"
-uiTestVersion = "1.12.0"
-webrtcJavaVersion = "0.14.0"
-androidWebrtcVersion = "144.7559.12"
-composeVersion = "1.12.0"
+webrtcJavaVersion = "0.18.0"
+androidWebrtcVersion = "150.7871.01"
+composeVersion = "1.12.1"
 skikoVersion = "0.150.1"
 composeMaterial3Version = "1.9.0"
 navigationeventVersion = "1.1.0"
 koinCoreVersion = "4.2.2"
 activityVersion = "1.13.0"
-slf4jVersion = "2.0.18"
+slf4jVersion = "2.0.20"
 steamworks4j = "1.10.0"
-logbackVersion = "1.6.2"
+logbackVersion = "1.6.4"
 timberVersion = "5.0.1"
 [libraries]
 junit = { module = "junit:junit", version.ref = "junitVersion" }
@@ -53,7 +52,7 @@ lwjgl-opengl = { module = "org.lwjgl:lwjgl-opengl", version.ref = "lwjglVersion"
 lwjgl3-awt = { module = "org.lwjglx:lwjgl3-awt", version.ref = "lwjgl3AwtVersion" }
 robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectricVersion" }
 tomlkt = { module = "net.peanuuutz.tomlkt:tomlkt", version.ref = "tomlktVersion" }
-ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "uiTestVersion" }
+ui-test = { module = "org.jetbrains.compose.ui:ui-test", version.ref = "composeVersion" }
 webrtc-java = { module = "dev.onvoid.webrtc:webrtc-java", version.ref = "webrtcJavaVersion" }
 android-webrtc = { module = "io.github.webrtc-sdk:android", version.ref = "androidWebrtcVersion" }
 koin-core = { module = "io.insert-koin:koin-core", version.ref = "koinCoreVersion" }
