@@ -183,8 +183,8 @@ internal class ActionRouter(
             BattleRoomOutcome.AddAI -> battleRoomAdminController.addAiToBattleRoom()
             BattleRoomOutcome.OpenGameOptions -> battleRoomAdminController.showBattleRoomOptionsDialog()
             BattleRoomOutcome.OpenMapSelect -> {
-                battleRoomController.isSelectingMapForBattleRoom = true
-                levelSelectSceneHost.updateMaps(battleRoomController.selectedMode)
+                val mode = battleRoomController.openMapSelect()
+                levelSelectSceneHost.updateMaps(mode, battleRoomController.allowedMapSelectModes())
                 navigator.navigateTo(AppScreen.LevelSelect)
             }
 

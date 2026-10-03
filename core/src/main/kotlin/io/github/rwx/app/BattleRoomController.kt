@@ -59,7 +59,7 @@ internal class BattleRoomController(
     fun selectDefaultMap(): MapEntry? {
         selectedMap?.let { return it }
         return runCatching {
-            levelSelectViewModelFactory.create(selectedMode).items().firstOrNull()
+            levelSelectViewModelFactory.create(LevelSelectMode.Skirmish).items().firstOrNull()
         }.onFailure { error ->
             logger.warn(error) { "Unable to select default RW map for ${selectedMode.label}" }
         }.getOrNull()?.also { map ->
@@ -131,7 +131,7 @@ internal class BattleRoomController(
     fun selectBattleRoomMap(map: MapEntry) {
         selectedMap = map
         runCatching {
-            check(gameSession.setBattleRoomMap(map.mapAssetPath, map.isSavedGame)) {
+            check(gameSession.setBattleRoomMap(map.mapAssetPath, gameModeTypeFor(map))) {
                 "Game session rejected map change"
             }
         }.onFailure { error ->
@@ -157,6 +157,21 @@ internal class BattleRoomController(
         if (!roomOpen) return false
         if (snapshot != null) publishRoom(snapshot) else updateFromNetwork()
         return sceneHost.snapshot().isAvailable
+    }
+
+    fun isMultiplayerRoom(): Boolean =
+        runCatching { currentSnapshot(refreshNetworkStatus = false)?.isNetworkMultiplayer }
+            .getOrNull() ?: (returnScreen == AppScreen.Multiplayer)
+
+    fun allowedMapSelectModes(): List<LevelSelectMode> =
+        if (isMultiplayerRoom()) MULTIPLAYER_MAP_MODES else LevelSelectMode.entries
+
+    fun openMapSelect(): LevelSelectMode {
+        if (isMultiplayerRoom() && selectedMode !in MULTIPLAYER_MAP_MODES) {
+            selectedMode = LevelSelectMode.Skirmish
+        }
+        isSelectingMapForBattleRoom = true
+        return selectedMode
     }
 
     fun returnToRoom() {
@@ -219,4 +234,15 @@ internal class BattleRoomController(
         }.onFailure { error ->
             logger.warn(error) { "Unable to select sandbox map" }
         }.getOrNull()
+
+    companion object {
+        val MULTIPLAYER_MAP_MODES: List<LevelSelectMode> =
+            listOf(LevelSelectMode.Skirmish, LevelSelectMode.CustomMaps, LevelSelectMode.SavedGames)
+
+        fun gameModeTypeFor(map: MapEntry): GameModeType = when (map.type) {
+            LevelSelectMode.SavedGames -> GameModeType.savedGame
+            LevelSelectMode.CustomMaps -> GameModeType.customMap
+            else -> GameModeType.skirmishMap
+        }
+    }
 }

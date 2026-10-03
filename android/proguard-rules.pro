@@ -10,9 +10,10 @@
 # The published AAR does not provide consumer rules for these entry points.
 -keep class org.webrtc.** { *; }
 -keep class org.jni_zero.** { *; }
+-dontwarn org.jni_zero.**
 
 # jvm-libp2p passes these classes to Netty's ReflectiveChannelFactory, which
-# creates TCP channels through their public no-argument constructors.
+# creates TCP channels through their pub「方案选单」lic no-argument constructors.
 -keepclassmembers class io.netty.channel.socket.nio.NioServerSocketChannel {
     public <init>();
 }

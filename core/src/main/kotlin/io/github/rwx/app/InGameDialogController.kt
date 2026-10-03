@@ -290,7 +290,14 @@ internal class InGameDialogController(
                     }
                 )
             }
-            add(DialogButton(I18n.common.cancel()))
+            add(DialogButton(I18n.common.cancel()) {
+                if (!gameSession.isEngineGameLoaded()) {
+                    if (multiplayer != null) {
+                        gameSession.disconnectRunningMultiplayer()
+                    }
+                    onExit()
+                }
+            })
         }
         showDialogOverGame(
             Dialog(

@@ -627,24 +627,32 @@ abstract class GameSession {
         return runBattleRoomCommand(label, commandLiveRoom)
     }
 
-    open fun setBattleRoomMap(mapPath: String, savedGame: Boolean = false): Boolean {
+    open fun setBattleRoomMap(mapPath: String, gameModeType: GameModeType): Boolean {
         val requestedMapPath = mapPath.takeIf { it.isNotBlank() } ?: return false
+        val isSavedGame = gameModeType == GameModeType.savedGame
         return editBattleRoom(
             "set battle room map",
             editDraft = { state, draft ->
+                val newOptions = draft.room.options.clone().apply {
+                    this.gameModeType = gameModeType
+                    this.mapPath = if (isSavedGame) requestedMapPath
+                    else MapMetadata.getMapNameFromPath(requestedMapPath)
+                }
                 state.copy(
                     pendingMapPath = requestedMapPath,
-                    pendingRendererBattleRoomConfig = draft.apply {
-                        if (savedGame)
-                            room.options.gameModeType = GameModeType.savedGame
-                    },
+                    pendingRendererBattleRoomConfig = draft.copy(
+                        room = draft.room.copy(
+                            mapPath = requestedMapPath,
+                            options = newOptions,
+                        ),
+                    ),
                 )
             },
         ) { engine, networkEngine ->
-            initBattleRoomMap(engine, requestedMapPath, force = true, savedGame = savedGame)
+            initBattleRoomMap(engine, requestedMapPath, force = true, savedGame = isSavedGame)
             networkEngine.getEditableRoomSettings()?.let { settings ->
-                settings.gameModeType = if (savedGame) GameModeType.savedGame else engine.getGameModeType()
-                settings.mapPath = if (savedGame) requestedMapPath else engine.currentMapFilename
+                settings.gameModeType = gameModeType
+                settings.mapPath = if (isSavedGame) requestedMapPath else engine.currentMapFilename
                 networkEngine.a(settings)
             }
             BattleRoomUiBridge.updateUI()
@@ -1244,6 +1252,13 @@ abstract class GameSession {
             }
             createdCount
         } ?: 0
+    }
+
+    open fun isEngineGameLoaded(): Boolean {
+        val engine = gameEngine ?: return false
+        synchronized(gameLock) {
+            return engine.hasLoadedLevel
+        }
     }
 
     open fun isMapLoaded(mapPath: String? = runningMapPath()): Boolean {
