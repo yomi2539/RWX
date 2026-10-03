@@ -1013,16 +1013,12 @@ public final class AIController extends PlayerTeam {
         int size = BaseUnit.bE.size();
         for (int i = 0; i < size; i++) {
             BaseUnit baseUnit = baseUnitArrA[i];
-            if (!(baseUnit instanceof FireUnit)) {
-                continue;
-            }
-            FireUnit fireUnit = (FireUnit) baseUnit;
-            if (fireUnit.team == this && (unitFilterMode == UnitFilterMode.include || !fireUnit.isActive)) {
-                if (fireUnit.unitType == unitType) {
+            if (baseUnit.team == this && (unitFilterMode == UnitFilterMode.include || !baseUnit.isActive)) {
+                if (baseUnit.unitType == unitType) {
                     iH++;
                 }
-                if (z && (fireUnit instanceof FactoryQueueInterface)) {
-                    iH += ((FactoryQueueInterface) fireUnit).h(unitType);
+                if (z && (baseUnit instanceof FactoryQueueInterface)) {
+                    iH += ((FactoryQueueInterface) baseUnit).h(unitType);
                 }
             }
         }
