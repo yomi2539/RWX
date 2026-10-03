@@ -1,6 +1,5 @@
 package io.github.rwx.ui.screen
 
-import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.MarqueeAnimationMode
 import androidx.compose.foundation.background
 import androidx.compose.foundation.basicMarquee
@@ -119,17 +118,7 @@ fun MultiplayerScreen(
             }
             val status = state.errorText ?: state.statusText
             if (state.rooms.isNotEmpty()) {
-                if (shortWindow) {
-                    MultiplayerRoomHeaderRow(
-                        cardPadding,
-                        listOf(
-                            I18n.multiplayer.heading.host() to 2f,
-                            I18n.multiplayer.heading.map() to 3f,
-                            I18n.multiplayer.heading.players() to 1.3f,
-                            I18n.multiplayer.heading.state() to 1.2f,
-                        ),
-                    )
-                } else if (!compactRooms) {
+                if (!compactRooms) {
                     MultiplayerRoomHeaderRow(
                         cardPadding,
                         listOf(
@@ -177,7 +166,7 @@ fun MultiplayerScreen(
                     containerColor = palette.primaryContainer,
                     contentColor = palette.onPrimary,
                 ) {
-                    Icon(Icon.Start, Layout.contentIconSize, palette.onPrimary)
+                    Icon(Icon.Add, Layout.contentIconSize, palette.onPrimary)
                 }
                 if (!state.lastJoinAddress.isNullOrBlank()) {
                     ExtendedFloatingActionButton(

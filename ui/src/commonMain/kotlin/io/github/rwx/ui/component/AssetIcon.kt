@@ -9,7 +9,8 @@ import androidx.compose.ui.graphics.ColorFilter
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.unit.Dp
 import io.github.rwx.ui.generated.resources.Res
-import io.github.rwx.ui.generated.resources.add_ai
+import io.github.rwx.ui.generated.resources.add
+import io.github.rwx.ui.generated.resources.addPerson
 import io.github.rwx.ui.generated.resources.apply
 import io.github.rwx.ui.generated.resources.back
 import io.github.rwx.ui.generated.resources.campaign
@@ -18,7 +19,7 @@ import io.github.rwx.ui.generated.resources.change_team
 import io.github.rwx.ui.generated.resources.close
 import io.github.rwx.ui.generated.resources.`continue`
 import io.github.rwx.ui.generated.resources.delete
-import io.github.rwx.ui.generated.resources.disable_all
+import io.github.rwx.ui.generated.resources.disable
 import io.github.rwx.ui.generated.resources.discord
 import io.github.rwx.ui.generated.resources.display
 import io.github.rwx.ui.generated.resources.exit
@@ -55,7 +56,8 @@ import org.jetbrains.compose.resources.painterResource
 
 internal val Icon.drawable: DrawableResource
     get() = when (this) {
-        Icon.AddAi -> Res.drawable.add_ai
+        Icon.Add -> Res.drawable.add
+        Icon.AddPerson -> Res.drawable.addPerson
         Icon.Apply -> Res.drawable.apply
         Icon.Back -> Res.drawable.back
         Icon.Campaign -> Res.drawable.campaign
@@ -64,7 +66,7 @@ internal val Icon.drawable: DrawableResource
         Icon.Close -> Res.drawable.close
         Icon.Continue -> Res.drawable.`continue`
         Icon.Delete -> Res.drawable.delete
-        Icon.DisableAll -> Res.drawable.disable_all
+        Icon.Disable -> Res.drawable.disable
         Icon.Display -> Res.drawable.display
         Icon.Discord -> Res.drawable.discord
         Icon.Exit -> Res.drawable.exit

@@ -17,7 +17,6 @@ import io.github.rwx.ui.model.*
 import io.github.rwx.ui.theme.LocalColorScheme
 import io.github.rwx.ui.theme.Spacing
 
-@OptIn(ExperimentalFoundationApi::class)
 @Composable
 internal fun KeyBindingsContent(
     state: KeyBindingsState,

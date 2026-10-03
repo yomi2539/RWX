@@ -111,7 +111,7 @@ fun BattleRoomScreen(
                     containerColor = palette.primaryContainer,
                     contentColor = palette.onPrimary,
                 ) {
-                    Icon(Icon.AddAi, Layout.contentIconSize, palette.onPrimary)
+                    Icon(Icon.AddPerson, Layout.contentIconSize, palette.onPrimary)
                 }
                 FloatingActionButton(
                     onClick = { onAction(BattleRoomAction.Start) },

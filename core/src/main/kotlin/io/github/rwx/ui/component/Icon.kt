@@ -1,7 +1,8 @@
 package io.github.rwx.ui.component
 
 enum class Icon {
-    AddAi,
+    Add,
+    AddPerson,
     Apply,
     Back,
     Campaign,
@@ -10,7 +11,7 @@ enum class Icon {
     Close,
     Continue,
     Delete,
-    DisableAll,
+    Disable,
     Display,
     Discord,
     Exit,

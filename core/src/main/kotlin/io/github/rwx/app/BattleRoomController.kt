@@ -129,25 +129,10 @@ internal class BattleRoomController(
     }
 
     fun selectBattleRoomMap(map: MapEntry) {
-        val previousMap = selectedMap
         selectedMap = map
-        val snapshot = currentSnapshot(refreshNetworkStatus = false)
-        val currentAiCount = snapshot?.players?.count { it.isAI } ?: 0
-        val targetAiCount =
-            if (currentAiCount == defaultBattleRoomAiPlayerCount(playerCount = previousMap?.playerCount)) {
-                defaultBattleRoomAiPlayerCount(playerCount = map.playerCount)
-            } else {
-                currentAiCount
-            }
         runCatching {
             check(gameSession.setBattleRoomMap(map.mapAssetPath, map.isSavedGame)) {
                 "Game session rejected map change"
-            }
-            val diff = targetAiCount - currentAiCount
-            when {
-                diff > 0 -> gameSession.addBattleRoomAi(diff)
-                diff < 0 -> snapshot?.players?.filter { it.isAI }?.sortedBy { it.spawnColorIndex }?.takeLast(-diff)
-                    ?.forEach { gameSession.kickBattleRoomPlayer(it.id) }
             }
         }.onFailure { error ->
             logger.warn(error) { "Unable to set battle room map" }
