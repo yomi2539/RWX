@@ -15,7 +15,9 @@ import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.withFrameNanos
-import kotlinx.coroutines.delay
+import kotlinx.coroutines.asCoroutineDispatcher
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.withContext
 import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.awt.awtEventOrNull
@@ -35,9 +37,9 @@ import io.github.rwx.ui.AppUiState
 import io.github.rwx.ui.input.desktopGameKeyCode
 import io.github.rwx.ui.model.GameInputEvent
 import io.github.rwx.ui.model.GamePointerButton
+import java.util.concurrent.Executors
 import java.util.concurrent.atomic.AtomicLong
 import kotlin.math.roundToInt
-import kotlin.time.Duration.Companion.milliseconds
 
 @OptIn(ExperimentalComposeUiApi::class)
 @Composable
@@ -59,16 +61,15 @@ fun SkiaGameView(
     }
     LaunchedEffect(session, running) {
         if (running) {
-            var nextFrameNanos = System.nanoTime()
-            while (true) {
-                withFrameNanos { frameNanos = it }
-                nextFrameNanos += FRAME_BUDGET_NANOS
-                val remaining = nextFrameNanos - System.nanoTime()
-                if (remaining <= 0) {
-                    nextFrameNanos = System.nanoTime()
-                } else {
-                    if (remaining > 1_500_000L) delay((remaining / 1_000_000L).milliseconds)
-                    while (System.nanoTime() < nextFrameNanos) Thread.yield()
+            Executors.newSingleThreadExecutor { task ->
+                Thread(task, "skia-frame-pacer").apply { isDaemon = true }
+            }.asCoroutineDispatcher().use { dispatcher ->
+                withContext(dispatcher) {
+                    val pacer = SkiaFramePacer(FRAME_BUDGET_NANOS)
+                    while (isActive) {
+                        pacer.awaitNextFrame()
+                        withFrameNanos { frameNanos = it }
+                    }
                 }
             }
         }
