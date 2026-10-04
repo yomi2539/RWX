@@ -550,7 +550,9 @@ class SlickGame(
             check(networkEngine.hasActiveStartedGameConnection()) {
                 "Battle room network connection is no longer active"
             }
-            if (activeEngine.hasLoadedLevel && !activeEngine.isMenuBackgroundMap) {
+            if (activeEngine.hasLoadedLevel && !activeEngine.isMenuBackgroundMap &&
+                runningMapPath == request.mapPath
+            ) {
                 startedBattleRoomGameSetupComplete = true
                 runningMenuBackground = false
                 beginRunningMap(
@@ -558,6 +560,9 @@ class SlickGame(
                         ?: activeEngine.currentMapPath
                         ?: request.mapPath
                 )
+            } else if (activeEngine.hasLoadedLevel && !activeEngine.isMenuBackgroundMap) {
+                startedBattleRoomGameSetupComplete = false
+                completeStartedBattleRoomGame(activeEngine)
             } else {
                 completeStartedBattleRoomGame(activeEngine)
             }
