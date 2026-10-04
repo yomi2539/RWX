@@ -39,7 +39,7 @@ public final class Effect {
     static {
         for (int i2 = 0; i2 < alphaTextures.length; i2++) {
             alphaTextures[i2] = getFreshTexture();
-            alphaTextures[i2].c((int) ((i2 / (alphaTextures.length - 1)) * 255.0f));
+            alphaTextures[i2].c((int) ((i2 / (float) (alphaTextures.length - 1)) * 255.0f));
         }
     }
 
