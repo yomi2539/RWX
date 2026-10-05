@@ -79,7 +79,7 @@ internal fun String.toBattleRoomTeamLayoutOrNull(): BattleRoomTeamLayout? =
     }
 
 internal fun Map<String, String>.toGameRoomSettings(base: GameRoomSettings = GameRoomSettings()): GameRoomSettings =
-    GameRoomSettings().apply {
+    base.clone().apply {
         aiDifficulty = get("aiDifficulty")?.toIntOrNull() ?: base.aiDifficulty
         startingUnits = get("startingUnits")?.toIntOrNull() ?: base.startingUnits
         fogMode = get("fogMode")?.toIntOrNull() ?: base.fogMode
