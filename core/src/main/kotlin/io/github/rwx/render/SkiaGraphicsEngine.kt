@@ -2,6 +2,8 @@ package io.github.rwx.render
 
 import com.corrodinggames.rts.gameFramework.graphics.GraphicsBackendCapabilities
 import com.corrodinggames.rts.gameFramework.graphics.GraphicsEngine
+import com.corrodinggames.rts.gameFramework.graphics.GamePaint
+import com.corrodinggames.rts.gameFramework.graphics.RenderTargetMode
 import com.corrodinggames.rts.gameFramework.graphics.ShaderProgram
 import com.corrodinggames.rts.gameFramework.graphics.Texture
 import com.corrodinggames.rts.gameFramework.utility.AssetInputStream
@@ -12,6 +14,7 @@ import io.github.rwx.render.canvas.Paint
 import io.github.rwx.render.frame.GameCanvasBlendMode
 import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.EncodedImageFormat
+import org.jetbrains.skia.Image
 import org.jetbrains.skia.Matrix33
 import org.jetbrains.skia.SamplingMode
 import org.jetbrains.skia.Rect as SkiaRect
@@ -94,6 +97,14 @@ class SkiaGraphicsEngine private constructor(
         return SkiaGraphicsEngine(resources, native, texture)
     }
 
+    override fun b(texture: Texture?, mode: RenderTargetMode): SkiaGraphicsEngine {
+        val graphics = b(texture)
+        // The engine marks retained layer buffers with b(true). Atlases and the
+        // minimap keep raster storage, where their CPU pixel access remains cheap.
+        if (mode == RenderTargetMode.IMMEDIATE && texture is SkiaTexture && texture.d()) texture.enableRecording()
+        return graphics
+    }
+
     override fun a(lock: Lock?) {
         lock?.lock()
     }
@@ -137,12 +148,13 @@ class SkiaGraphicsEngine private constructor(
     }
 
     override fun a(texture: Texture?, rect: Rect?, rect2: Rect?, paint: Paint?) {
-        if (rect2 != null) a(texture, rect, RectF(rect2), paint)
+        if (texture == null || rect2 == null) return
+        drawImage(texture, rect, rect2.a.toFloat(), rect2.b.toFloat(), rect2.c.toFloat(), rect2.d.toFloat(), paint)
     }
 
     override fun a(texture: Texture?, rect: Rect?, rectF: RectF?, paint: Paint?) {
         if (texture == null || rectF == null) return
-        drawImage(texture, rect?.toSkia(), rectF.toSkia(), paint)
+        drawImage(texture, rect, rectF.a, rectF.b, rectF.c, rectF.d, paint)
     }
 
     override fun a(texture: Texture?, f: Float, f2: Float, paint: Paint?) {
@@ -160,7 +172,7 @@ class SkiaGraphicsEngine private constructor(
 
     override fun b(texture: Texture?, f: Float, f2: Float, paint: Paint?) {
         texture ?: return
-        drawImage(texture, null, SkiaRect.makeXYWH(f, f2, texture.width().toFloat(), texture.height().toFloat()), paint)
+        drawImage(texture, null, f, f2, f + texture.width(), f2 + texture.height(), paint)
     }
 
     override fun b(texture: Texture?, rect: Rect?, rect2: Rect?, paint: Paint?) = a(texture, rect, rect2, paint)
@@ -190,13 +202,19 @@ class SkiaGraphicsEngine private constructor(
 
     override fun b(i: Int) = a(i, GameCanvasBlendMode.SourceOver)
     override fun a(i: Int, mode: GameCanvasBlendMode?) {
-        withCanvas { canvas ->
+        val replaces = state == INITIAL_STATE && (mode == GameCanvasBlendMode.Clear ||
+                mode == GameCanvasBlendMode.ClearAlpha || mode == GameCanvasBlendMode.Source ||
+                (mode == null || mode == GameCanvasBlendMode.SourceOver) && i ushr 24 == 255)
+        withCanvas(replaceContents = replaces) { canvas ->
             val paint = paints.configure(
                 null, colorOverride = i,
                 blendOverride = (mode ?: GameCanvasBlendMode.SourceOver).toSkia()
             )
             canvas.drawPaint(paint)
         }
+        if (replaces && (mode == GameCanvasBlendMode.Clear || mode == GameCanvasBlendMode.ClearAlpha ||
+                    mode == GameCanvasBlendMode.Source && i ushr 24 == 0)
+        ) target?.markCleared()
     }
 
     override fun a(str: String?, f: Float, f2: Float, paint: Paint?, paint2: Paint?, f3: Float) {
@@ -293,7 +311,11 @@ class SkiaGraphicsEngine private constructor(
         if (i2 == 0) return
         withCanvas { canvas ->
             val nativePaint = paints.configure(paint)
-            for (offset in i until i + i2 step 2) canvas.drawPoint(fArr[offset], fArr[offset + 1], nativePaint)
+            if (nativePaint.blendMode.ordinal <= org.jetbrains.skia.BlendMode.SCREEN.ordinal) {
+                canvas.drawPoints(if (i == 0 && i2 == fArr.size) fArr else fArr.copyOfRange(i, i + i2), nativePaint)
+            } else {
+                for (offset in i until i + i2 step 2) canvas.drawPoint(fArr[offset], fArr[offset + 1], nativePaint)
+            }
         }
     }
 
@@ -308,12 +330,20 @@ class SkiaGraphicsEngine private constructor(
     override fun k() = i()
     override fun l() = j()
     override fun a(f: Float, f2: Float, f3: Float) = concat(rotationMatrix(f, f2, f3))
-    override fun a(f: Float, f2: Float) = concat(Matrix33.makeScale(f, f2))
+    override fun a(f: Float, f2: Float) {
+        checkOpen()
+        if (f != 1f || f2 != 1f) concat(Matrix33.makeScale(f, f2))
+    }
     override fun a(f: Float, f2: Float, f3: Float, f4: Float) {
-        b(f3, f4); a(f, f2); b(-f3, -f4)
+        checkOpen()
+        if (f == 1f && f2 == 1f && f3.isFinite() && f4.isFinite()) return
+        concat(Matrix33(f, 0f, f3 - f * f3, 0f, f2, f4 - f2 * f4, 0f, 0f, 1f))
     }
 
-    override fun b(f: Float, f2: Float) = concat(Matrix33.makeTranslate(f, f2))
+    override fun b(f: Float, f2: Float) {
+        checkOpen()
+        if (f != 0f || f2 != 0f) concat(Matrix33.makeTranslate(f, f2))
+    }
     override fun a(f: Float, f2: Float, f3: Float, f4: Float, paint: Paint?) {
         withCanvas { it.drawLine(f, f2, f3, f4, paints.configure(paint)) }
     }
@@ -330,7 +360,7 @@ class SkiaGraphicsEngine private constructor(
 
     override fun o() = a(0, GameCanvasBlendMode.Clear)
     override fun p() {
-        checkOpen(); target?.surface()?.flushAndSubmit()
+        checkOpen(); target?.flush()
     }
 
     override fun q() = close()
@@ -361,36 +391,115 @@ class SkiaGraphicsEngine private constructor(
     }
 
     private fun drawRect(rect: SkiaRect, paint: Paint?) = withCanvas { it.drawRect(rect, paints.configure(paint)) }
-    private fun drawImage(texture: Texture, source: SkiaRect?, destination: SkiaRect, paint: Paint?) {
+    private fun drawImage(
+        texture: Texture, source: Rect?, left: Float, top: Float, right: Float, bottom: Float, paint: Paint?,
+    ) {
         checkOpen()
         // Resolve the source before touching the destination: self-blits require copy-on-write.
-        val image = resources.resolve(texture).image()
-        val src = source ?: SkiaRect.makeWH(image.width.toFloat(), image.height.toFloat())
-        if (src.isEmpty || destination.isEmpty) return
-        withCanvas { canvas ->
-            val sampling =
-                if (paint?.isFilterBitmap() == true || texture.o) SamplingMode.LINEAR else SamplingMode.DEFAULT
-            val nativePaint = paints.configure(paint, image = true)
-            // When a shader paint is used the image must come through the
-            // u_texture child shader for exact UV control, so draw the effect
-            // over the destination rect instead of drawImageRect.
-            val shader = resources.shaderEffects.shaderForDraw(paint, texture, image, src, destination, sampling) {
-                runCatching { resources.resolve(it).image() }.getOrNull()
+        val resolved = resources.resolve(texture)
+        val srcLeft = source?.a?.toFloat() ?: 0f
+        val srcTop = source?.b?.toFloat() ?: 0f
+        val srcRight = source?.c?.toFloat() ?: resolved.width().toFloat()
+        val srcBottom = source?.d?.toFloat() ?: resolved.height().toFloat()
+        if (srcLeft >= srcRight || srcTop >= srcBottom || left >= right || top >= bottom) return
+        val recorded = resolved.recordedPicture()
+        if (recorded != null && (paint as? GamePaint)?.shaderProgram() == null && texture.B() == null) {
+            if (paint == null && state === INITIAL_STATE && target != null && target !== resolved &&
+                srcLeft == 0f && srcTop == 0f && srcRight == resolved.width().toFloat() &&
+                srcBottom == resolved.height().toFloat() && left == 0f && top == 0f &&
+                right == srcRight && bottom == srcBottom && right == target.width().toFloat() &&
+                bottom == target.height().toFloat() && target.canReplaceRecording()
+            ) {
+                // Replay a full copy into an empty layer without another GPU
+                // surface between the recorded tiles and their display cache.
+                withCanvas { it.drawPicture(recorded) }
+                return
             }
-            if (shader == null) {
-                canvas.drawImageRect(image, src, destination, sampling, nativePaint, true)
-                return@withCanvas
+            val clippedLeft = maxOf(0f, srcLeft)
+            val clippedTop = maxOf(0f, srcTop)
+            val clippedRight = minOf(resolved.width().toFloat(), srcRight)
+            val clippedBottom = minOf(resolved.height().toFloat(), srcBottom)
+            if (clippedLeft >= clippedRight || clippedTop >= clippedBottom) return
+            val scaleX = (right - left) / (srcRight - srcLeft)
+            val scaleY = (bottom - top) / (srcBottom - srcTop)
+            val destination = SkiaRect(
+                left + (clippedLeft - srcLeft) * scaleX, top + (clippedTop - srcTop) * scaleY,
+                right - (srcRight - clippedRight) * scaleX, bottom - (srcBottom - clippedBottom) * scaleY,
+            )
+            resources.pictureSampler.makeShader(
+                recorded, SkiaRect(clippedLeft, clippedTop, clippedRight, clippedBottom), destination,
+                paint?.isFilterBitmap() == true || texture.o,
+            ).use { shader ->
+                withCanvas { canvas ->
+                    val nativePaint = paints.configure(paint, image = true)
+                    nativePaint.shader = shader
+                    try {
+                        canvas.drawRect(destination, nativePaint)
+                    } finally {
+                        nativePaint.shader = null
+                    }
+                }
             }
-            shader.use { effect ->
-                nativePaint.shader = effect
-                try {
-                    canvas.drawRect(destination, nativePaint)
-                } finally {
-                    nativePaint.shader = null
+            return
+        }
+        val image = resolved.image()
+        val sampling = if (paint?.isFilterBitmap() == true || texture.o) SamplingMode.LINEAR else SamplingMode.DEFAULT
+        val hasShader = (paint as? GamePaint)?.shaderProgram() != null || texture.B() != null
+        if (!hasShader && sampling == SamplingMode.DEFAULT && state === INITIAL_STATE &&
+            target?.recordingEnabled == true && target !== resolved &&
+            srcLeft >= 0f && srcTop >= 0f && srcRight <= image.width && srcBottom <= image.height &&
+            unambiguousSampling(left, right, srcRight - srcLeft) &&
+            unambiguousSampling(top, bottom, srcBottom - srcTop) &&
+            target?.recordImage(
+                image, paints.configure(paint, image = true), srcLeft, srcTop, srcRight, srcBottom,
+                left, top, right, bottom,
+            ) == true
+        ) return
+        // Resolve every shader input before beginning a destination batch. A sampler
+        // may read this same target; finishing its picture while its canvas is in use
+        // would drop the draw and could close the source image underneath the shader.
+        val shader = if (hasShader) {
+            resources.shaderEffects.shaderForDraw(
+                paint, texture, image,
+                SkiaRect(srcLeft, srcTop, srcRight, srcBottom),
+                SkiaRect(left, top, right, bottom), sampling,
+            ) { runCatching { resources.resolve(it).image() }.getOrNull() }
+        } else {
+            null
+        }
+        shader.use { effect ->
+            withCanvas(sourceImage = image) { canvas ->
+                val nativePaint = paints.configure(paint, image = true)
+                if (effect == null) {
+                    // Ordinary atlas draws need no rectangle wrappers or shader resolver.
+                    canvas.drawImageRect(
+                        image,
+                        srcLeft,
+                        srcTop,
+                        srcRight,
+                        srcBottom,
+                        left,
+                        top,
+                        right,
+                        bottom,
+                        sampling,
+                        nativePaint,
+                        true,
+                    )
+                } else {
+                    nativePaint.shader = effect
+                    try {
+                        canvas.drawRect(SkiaRect(left, top, right, bottom), nativePaint)
+                    } finally {
+                        nativePaint.shader = null
+                    }
                 }
             }
         }
     }
+
+    private fun unambiguousSampling(start: Float, end: Float, texels: Float): Boolean =
+        resources.samplingGuard.allowsBatch(start, end, texels)
 
     private fun tile(
         texture: Texture,
@@ -416,7 +525,9 @@ class SkiaGraphicsEngine private constructor(
             val columns = ceil((rect.right - startX) / stepX).toInt()
             val rows = ceil((rect.bottom - startY) / stepY).toInt()
             for (x in 0 until columns) for (y in 0 until rows) {
-                drawImage(texture, null, SkiaRect.makeXYWH(startX + x * stepX, startY + y * stepY, tw, th), paint)
+                val left = startX + x * stepX
+                val top = startY + y * stepY
+                drawImage(texture, null, left, top, left + tw, top + th, paint)
             }
         } finally {
             j()
@@ -429,7 +540,11 @@ class SkiaGraphicsEngine private constructor(
     }
 
     private fun concat(matrix: Matrix33) {
-        checkOpen(); state = state.copy(matrix = state.matrix.makeConcat(matrix))
+        checkOpen()
+        if (matrix.mat === Matrix33.IDENTITY.mat) return
+        state = state.copy(
+            matrix = if (state.matrix.mat === Matrix33.IDENTITY.mat) matrix else state.matrix.makeConcat(matrix)
+        )
     }
 
     private inline fun transformed(matrix: Matrix33, draw: () -> Unit) {
@@ -441,7 +556,11 @@ class SkiaGraphicsEngine private constructor(
         }
     }
 
-    private inline fun withCanvas(draw: (Canvas) -> Unit) {
+    private inline fun withCanvas(
+        sourceImage: Image? = null,
+        replaceContents: Boolean = false,
+        draw: (Canvas) -> Unit
+    ) {
         checkOpen()
         if (foreignTarget != null && (foreignRevision != foreignTarget.getPixelRevision() ||
                     target!!.usesPremultipliedAlpha() != foreignTarget.usesPremultipliedAlpha())
@@ -449,16 +568,22 @@ class SkiaGraphicsEngine private constructor(
             foreignTarget.argbPixelsCopy?.let { target!!.setCommittedArgbPixels(it) }
             target!!.setPremultipliedAlpha(foreignTarget.usesPremultipliedAlpha())
         }
-        val canvas = target?.surface()?.canvas
+        val canvas = target?.canvasForDrawing(sourceImage, replaceContents)
             ?: checkNotNull(borrowedCanvas) { "Drawing requires render() or a texture target" }
         // The borrowed frame owns a save level. Keep its native state until the
         // logical state changes; reading and rebuilding it for every sprite allocates
         // several matrix arrays and repeats JNI calls for the same clip.
         val restoreCount = if (target == null) {
             if (appliedState !== state) {
-                canvas.restoreToCount(frameStateRestoreCount)
-                canvas.save()
-                applyState(canvas, frameBaseMatrix)
+                if (appliedState?.clips === state.clips) {
+                    // Clips are already in device space. Moving/rotating the next
+                    // sprite only needs a matrix update, including a return to identity.
+                    canvas.setMatrix(frameBaseMatrix.makeConcat(state.matrix))
+                } else {
+                    canvas.restoreToCount(frameStateRestoreCount)
+                    canvas.save()
+                    applyState(canvas, frameBaseMatrix)
+                }
                 appliedState = state
             }
             null
@@ -505,6 +630,7 @@ class SkiaGraphicsEngine private constructor(
     private companion object {
         val INITIAL_STATE = CanvasState()
         val BACKEND_CAPABILITIES = GraphicsBackendCapabilities(
+            clearLayerBuffersBeforeCopy = true,
             requiresImageTintColorFilter = false,
             supportsSmoothFogLayerBuffers = false,
         )
@@ -515,6 +641,7 @@ private fun Rect.toSkia() = SkiaRect(a.toFloat(), b.toFloat(), c.toFloat(), d.to
 private fun RectF.toSkia() = SkiaRect(a, b, c, d)
 
 private fun rotationMatrix(degrees: Float, pivotX: Float, pivotY: Float): Matrix33 {
+    if (degrees == 0f && pivotX.isFinite() && pivotY.isFinite()) return Matrix33.IDENTITY
     val radians = Math.toRadians(degrees.toDouble())
     val cosine = cos(radians).toFloat()
     val sine = sin(radians).toFloat()

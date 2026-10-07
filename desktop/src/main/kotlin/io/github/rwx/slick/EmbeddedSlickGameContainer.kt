@@ -1,6 +1,5 @@
 package io.github.rwx.slick
 
-import com.corrodinggames.rts.gameFramework.GameEngine
 import org.lwjgl.opengl.GL11
 import org.lwjgl.opengl.awt.AWTGLCanvas
 import org.newdawn.slick.*
@@ -155,7 +154,7 @@ internal class EmbeddedSlickGameContainer(
                     terminalFailure = error
                     running = false
                 } catch (error: Throwable) {
-                    GameEngine.log("Slick AWT container failed", error)
+                    logger.warn(error) { "Slick AWT container failed" }
                     terminalFailure = error
                     running = false
                 }
@@ -165,11 +164,11 @@ internal class EmbeddedSlickGameContainer(
                 skipFrameUntilCanvasReady()
                 return
             }
-            GameEngine.log("Slick AWT container failed", error)
+            logger.warn(error) { "Slick AWT container failed" }
             terminalFailure = error
             running = false
         } catch (error: Throwable) {
-            GameEngine.log("Slick AWT container failed", error)
+            logger.warn(error) { "Slick AWT container failed" }
             terminalFailure = error
             running = false
         }

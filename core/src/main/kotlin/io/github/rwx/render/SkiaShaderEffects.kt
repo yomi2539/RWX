@@ -1,7 +1,7 @@
 package io.github.rwx.render
 
-import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.graphics.GamePaint
+import io.github.rwx.logger
 import com.corrodinggames.rts.gameFramework.graphics.ShaderProgram
 import com.corrodinggames.rts.gameFramework.graphics.ShaderUniform
 import com.corrodinggames.rts.gameFramework.graphics.ShaderUniformValueType
@@ -55,7 +55,7 @@ internal class SkiaShaderEffects(private val readAsset: (String) -> ByteArray?) 
             buildShader(program, image, src, dst, sampling, resolveImage, effect)
         } catch (error: Exception) {
             if (program.skslSource != null) throw error
-            GameEngine.log("shader(" + program.name + "): draw failed, falling back to unshaded")
+            logger.warn(error) { "shader(" + program.name + "): draw failed, falling back to unshaded" }
             null
         }
     }
@@ -136,7 +136,7 @@ internal class SkiaShaderEffects(private val readAsset: (String) -> ByteArray?) 
                 ?: throw IllegalStateException("missing shader source")
             RuntimeEffect.makeForShader(bytes.toString(Charsets.UTF_8))
         } catch (e: Exception) {
-            GameEngine.log("shader($name): SkSL unavailable, draws fall back to unshaded: " + e.message)
+            logger.warn(e) { "shader($name): SkSL unavailable, draws fall back to unshaded: " + e.message }
             null
         }
     }

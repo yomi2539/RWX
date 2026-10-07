@@ -2,10 +2,12 @@ package io.github.rwx.render
 
 import com.corrodinggames.rts.gameFramework.graphics.Texture
 import org.jetbrains.skia.Bitmap
+import org.jetbrains.skia.Canvas
 import org.jetbrains.skia.ColorAlphaType
 import org.jetbrains.skia.ColorType
 import org.jetbrains.skia.Image
 import org.jetbrains.skia.ImageInfo
+import org.jetbrains.skia.Picture
 import org.jetbrains.skia.Surface
 
 /** A raster render target with lazy, unpremultiplied ARGB readback. Use on the render thread. */
@@ -14,12 +16,20 @@ class SkiaTexture internal constructor(
     height: Int,
     hasAlpha: Boolean,
     private val createSibling: (Int, Int, Boolean) -> SkiaTexture,
+    private val atlasBuffers: SkiaAtlasBuffers,
     private val onClose: (SkiaTexture) -> Unit,
 ) : Texture(), AutoCloseable {
     private val surface = Surface.makeRasterN32Premul(width, height)
     private var snapshot: Image? = null
     private var uploadedRevision = 0
     private var uploadedPremultiplied = false
+    private val pixelLoader = { readPixels() }
+    internal var recordingEnabled = false
+        private set
+    private val atlasBatch = lazy(LazyThreadSafetyMode.NONE) { SkiaAtlasBatch(atlasBuffers) }
+    private var recorded: SkiaRecordedTarget? = null
+    private var rasterCurrent = true
+    private var cleared = false
     var isClosed: Boolean = false
         private set
 
@@ -33,9 +43,18 @@ class SkiaTexture internal constructor(
     }
 
     internal fun surface(): Surface {
+        synchronizePixels()
+        materializeRecording()
+        return surface
+    }
+
+    private fun synchronizePixels() {
         check(!isClosed) { "Texture is closed" }
         if (uploadedRevision != getPixelRevision() || uploadedPremultiplied != usesPremultipliedAlpha()) {
+            cleared = false
             val pixels = argbPixelsCopy
+            discardRecording()
+            discardSnapshot()
             if (pixels != null) {
                 require(pixels.size == Math.multiplyExact(p, q)) { "Texture pixel count does not match its dimensions" }
                 Bitmap().use { bitmap ->
@@ -47,12 +66,89 @@ class SkiaTexture internal constructor(
                     surface.writePixels(bitmap, 0, 0)
                 }
             }
-            snapshot?.close()
-            snapshot = null
             uploadedRevision = getPixelRevision()
             uploadedPremultiplied = usesPremultipliedAlpha()
         }
-        return surface
+    }
+
+    internal fun enableRecording() {
+        check(!isClosed) { "Texture is closed" }
+        recordingEnabled = true
+    }
+
+    internal fun markCleared() {
+        cleared = true
+    }
+
+    internal fun canReplaceRecording(): Boolean {
+        synchronizePixels()
+        return recordingEnabled && cleared
+    }
+
+    internal fun recordedPicture(): Picture? {
+        synchronizePixels()
+        return recorded?.snapshot()
+    }
+
+    internal fun canvasForDrawing(sourceImage: Image? = null, replaceContents: Boolean = false): Canvas {
+        if (!recordingEnabled) return surfaceForDrawing(sourceImage).canvas
+        return recordingForDrawing(sourceImage, replaceContents).canvas()
+    }
+
+    internal fun recordImage(
+        image: Image, paint: org.jetbrains.skia.Paint,
+        sl: Float, st: Float, sr: Float, sb: Float, dl: Float, dt: Float, dr: Float, db: Float,
+    ): Boolean {
+        // Advanced blend modes can need a destination read between overlapping
+        // quads; preserve separate draws instead of merging them into one mesh.
+        if (!recordingEnabled || paint.blendMode.ordinal > org.jetbrains.skia.BlendMode.SCREEN.ordinal) return false
+        recordingForDrawing(image, false).addImage(image, paint, sl, st, sr, sb, dl, dt, dr, db)
+        rendered()
+        return true
+    }
+
+    private fun recordingForDrawing(sourceImage: Image?, replaceContents: Boolean): SkiaRecordedTarget {
+        synchronizePixels()
+        if (replaceContents) discardRecording()
+        // Bound incremental histories such as scorch marks. Full terrain redraws
+        // start with a clear and never need this CPU checkpoint.
+        if (!replaceContents && recorded?.generations?.let { it >= 8 } == true) {
+            materializeRecording()
+            discardRecording()
+        }
+        val batch = recorded ?: SkiaRecordedTarget(p, q, if (replaceContents) null else image(), atlasBatch)
+            .also { recorded = it }
+        if (snapshot !== sourceImage) discardSnapshot()
+        rasterCurrent = false
+        return batch
+    }
+
+    internal fun flush() {
+        if (recorded != null) recorded!!.snapshot() else surface().flushAndSubmit()
+    }
+
+    private fun materializeRecording() {
+        if (rasterCurrent) return
+        discardSnapshot()
+        surface.canvas.clear(0)
+        surface.canvas.drawPicture(checkNotNull(recorded).snapshot())
+        rasterCurrent = true
+    }
+
+    private fun discardRecording() {
+        recorded?.close()
+        recorded = null
+        rasterCurrent = true
+    }
+
+    internal fun surfaceForDrawing(sourceImage: Image? = null): Surface {
+        val target = surface()
+        discardRecording()
+        // Drop our private reference before writing so Skia can reuse the pixels.
+        // External readers (e.g. a recorded frame) still trigger native copy-on-write.
+        // A self-blit needs this wrapper alive until drawImageRect has consumed it.
+        if (snapshot !== sourceImage) discardSnapshot()
+        return target
     }
 
     internal fun image(): Image {
@@ -62,16 +158,22 @@ class SkiaTexture internal constructor(
 
     internal fun rendered() {
         check(!isClosed) { "Texture is closed" }
-        snapshot?.close()
-        snapshot = null
+        cleared = false
+        discardSnapshot()
         setPremultipliedAlpha(false)
-        invalidateArgbPixelSnapshot { readPixels() }
+        invalidateArgbPixelSnapshot(pixelLoader)
         uploadedRevision = getPixelRevision()
         uploadedPremultiplied = false
     }
 
+    private fun discardSnapshot() {
+        snapshot?.close()
+        snapshot = null
+    }
+
     private fun readPixels(): IntArray {
         check(!isClosed) { "Texture is closed" }
+        materializeRecording()
         return Bitmap().use { bitmap ->
             val info = ImageInfo(p, q, ColorType.RGBA_8888, ColorAlphaType.UNPREMUL)
             check(bitmap.allocPixels(info)) { "Cannot allocate texture readback" }
@@ -127,6 +229,7 @@ class SkiaTexture internal constructor(
         isClosed = true
         snapshot?.close()
         snapshot = null
+        discardRecording()
         surface.close()
         invalidateArgbPixelSnapshot()
         super.o()

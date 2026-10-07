@@ -292,7 +292,7 @@ class SlickGame(
             }
             pointerImage != null
         }.onFailure { error ->
-            GameEngine.log("Failed to apply Slick mouse cursor", error)
+            logger.warn(error) { "Failed to apply Slick mouse cursor" }
         }.getOrDefault(false)
 
     private fun resetSlickRenderCaches(activeEngine: GameEngine) {
@@ -327,7 +327,7 @@ class SlickGame(
         val delivered = runCatching {
             onTextInputRequest(this, request)
         }.onFailure { error ->
-            GameEngine.log("Failed to deliver Slick text input request", error)
+            logger.warn(error) { "Failed to deliver Slick text input request" }
         }.getOrDefault(false)
         logSlickMenuInput(
             "DesktopSlickGame.queueTextInputRequest" +
@@ -828,7 +828,7 @@ class SlickGame(
             pending.result.get(timeoutMillis, TimeUnit.MILLISECONDS) as T?
         } catch (error: Exception) {
             pending.abandoned.set(true)
-            GameEngine.log("Engine command did not complete on the render thread: $label ($error)")
+            logger.info { "Engine command did not complete on the render thread: $label ($error)" }
             null
         }
     }
@@ -919,7 +919,7 @@ class SlickGame(
             activeEngine.settingsEngine.save()
             activeEngine.gameUI?.showMediumPriorityMessage("Mods reloaded")
         } catch (error: Throwable) {
-            GameEngine.log("Failed to reload mods", error)
+            logger.warn(error) { "Failed to reload mods" }
             activeEngine.gameUI?.showHighPriorityMessage("Mod reload failed: ${error.message ?: error.javaClass.simpleName}")
             throw error
         }
@@ -933,7 +933,7 @@ class SlickGame(
             if (pending.abandoned.get()) continue
             val outcome = runCatching { pending.command(activeEngine) }
             outcome.exceptionOrNull()?.let { error ->
-                GameEngine.log("Engine command failed: ${pending.label}", error)
+                logger.warn(error) { "Engine command failed: ${pending.label}" }
             }
             pending.result.complete(outcome.getOrNull())
         }
@@ -953,7 +953,7 @@ class SlickGame(
                     handler.submitPassword(response.text.orEmpty())
                 }
             }.onFailure { error ->
-                GameEngine.log("Failed to apply Slick text input response", error)
+                logger.warn(error) { "Failed to apply Slick text input response" }
             }
         }
         return didWork
@@ -988,7 +988,7 @@ class SlickGame(
         return runCatching {
             readBackBufferSnapshot(width, height, ++latestFrameSnapshotSequence).also { latestFrameSnapshot = it }
         }.onFailure { error ->
-            GameEngine.log("Failed to capture Slick frame snapshot", error)
+            logger.warn(error) { "Failed to capture Slick frame snapshot" }
         }.getOrNull()
     }
 
@@ -1132,7 +1132,7 @@ class SlickGame(
 
     private fun logSlickMenuInput(message: String) {
         if (debugSlickMenuInput) {
-            GameEngine.log("RWX_DEBUG_SLICK_MENU $message")
+            logger.info { "RWX_DEBUG_SLICK_MENU $message" }
         }
     }
 

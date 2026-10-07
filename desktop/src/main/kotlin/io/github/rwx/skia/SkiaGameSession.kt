@@ -91,16 +91,20 @@ class SkiaGameSession(
             applyViewport(engine, viewport)
             loadPendingMap(engine)
             drainInput(engine)
-            if (engine.hasLoadedLevel && engine.tileMap != null) {
+            val hidden = !requestedGameVisible && !pausedBackground
+            val paused = !hidden && shouldRenderPausedFrame(engine)
+            // Active frames redraw visible cells after updating the camera. Draining
+            // here would rebuild the old grid just before a zoom invalidates it.
+            if ((hidden || paused) && engine.hasLoadedLevel && engine.tileMap != null) {
                 com.corrodinggames.rts.game.map.TileMap.layerBufferManager
                     .renderPendingRedraws(LAYER_REDRAW_BUDGET_MS)
             }
             runCatching {
-                if (!requestedGameVisible && !pausedBackground) {
+                if (hidden) {
                     graphics.render(canvas, viewport.width, viewport.height) {
                         it.a(Rect(0, 0, viewport.width, viewport.height), hiddenFill)
                     }
-                } else if (shouldRenderPausedFrame(engine)) {
+                } else if (paused) {
                     graphics.render(canvas, viewport.width, viewport.height) {
                         (engine as com.corrodinggames.rts.game.GameLogic).drawWorldOnlyThreadSafe(0f)
                     }

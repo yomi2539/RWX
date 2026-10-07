@@ -4,7 +4,9 @@ import java.io.BufferedWriter
 import java.io.File
 import java.io.FileWriter
 
-class BenchFrameProbe(csvPath: String? = System.getenv("RWX_BENCH_CSV")) {
+class BenchFrameProbe(
+    csvPath: String? = System.getProperty("benchmark.frames.path") ?: System.getenv("RWX_BENCH_CSV")
+) {
     val isEnabled: Boolean = !csvPath.isNullOrBlank()
 
     private var writer: BufferedWriter? = null

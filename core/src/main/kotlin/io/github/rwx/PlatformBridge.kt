@@ -66,7 +66,7 @@ data class AppMetadata(
     companion object {
         const val DEFAULT_PACKAGE_NAME = "com.corrodinggames.rts.gdx"
         const val DEFAULT_INSTALLER_PACKAGE_NAME = "java-gdx"
-        const val VERSION_NAME = "1.1.2"
+        const val VERSION_NAME = "1.1.3"
         val VERSION_CODE = VERSION_NAME.split('.', '-', '+')
             .take(3)
             .map { it.toIntOrNull() ?: 0 }

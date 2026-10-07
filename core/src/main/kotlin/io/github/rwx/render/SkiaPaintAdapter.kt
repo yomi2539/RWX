@@ -34,10 +34,12 @@ internal class SkiaPaintAdapter : AutoCloseable {
         val filter = source?.colorFilter()
         // Paint is mutable (including public legacy fields), so compare values instead
         // of relying on its identity/revision. Setters cross JNI even for unchanged values.
-        val nextAntiAlias = source?.isAntiAlias() ?: false
+        // Texture quads follow the desktop renderer's hard geometry edges. Bitmap
+        // filtering and alpha still apply; shapes and text keep their requested AA.
+        val nextAntiAlias = !image && (source?.isAntiAlias() ?: false)
         val nextDither = source?.isDither() ?: false
         val nextStrokeWidth = (source?.strokeWidth() ?: 0f).coerceAtLeast(0f)
-        val nextMode = when (source?.style()) {
+        val nextMode = when (if (image) null else source?.style()) {
             Paint.Style.STROKE -> PaintMode.STROKE
             Paint.Style.FILL_AND_STROKE -> PaintMode.STROKE_AND_FILL
             else -> PaintMode.FILL

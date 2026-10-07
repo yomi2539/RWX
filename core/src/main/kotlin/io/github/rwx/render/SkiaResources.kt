@@ -8,9 +8,12 @@ import org.jetbrains.skia.Paint
 
 internal class SkiaResources(val readAsset: (String) -> ByteArray?) : AutoCloseable {
     private val textures = mutableSetOf<SkiaTexture>()
+    private val atlasBuffers = SkiaAtlasBuffers()
     private val imports = LinkedHashMap<Texture, ImportedTexture>(16, 0.75f, true)
     val fonts = SkiaFonts(readAsset)
     val shaderEffects = SkiaShaderEffects(readAsset)
+    val pictureSampler = SkiaPictureSampler()
+    val samplingGuard = SkiaSamplingGuard()
     var isClosed = false
         private set
     val fallback: SkiaTexture by lazy {
@@ -24,7 +27,13 @@ internal class SkiaResources(val readAsset: (String) -> ByteArray?) : AutoClosea
         check(!isClosed) { "Renderer is closed" }
         require(width > 0 && height > 0) { "Texture dimensions must be positive" }
         Math.multiplyExact(Math.multiplyExact(width, height), 4)
-        return SkiaTexture(width, height, alpha, ::create) { textures.remove(it) }.also { textures.add(it) }
+        return SkiaTexture(
+            width,
+            height,
+            alpha,
+            ::create,
+            atlasBuffers
+        ) { textures.remove(it) }.also { textures.add(it) }
     }
 
     fun decode(bytes: ByteArray, name: String? = null): SkiaTexture {
@@ -87,9 +96,11 @@ internal class SkiaResources(val readAsset: (String) -> ByteArray?) : AutoClosea
         if (isClosed) return
         isClosed = true
         textures.toList().forEach { it.close() }
+        atlasBuffers.clear()
         imports.clear()
         fonts.close()
         shaderEffects.close()
+        pictureSampler.close()
     }
 
     private data class ImportedTexture(
