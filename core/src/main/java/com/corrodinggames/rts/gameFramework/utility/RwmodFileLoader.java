@@ -182,6 +182,22 @@ public class RwmodFileLoader extends IFileLoader {
         return zipHelper;
     }
 
+    public static void closeTransferArchives(java.util.Collection<String> paths) {
+        java.util.Set<java.nio.file.Path> targets = new java.util.HashSet<>();
+        for (String path : paths) {
+            targets.add(java.nio.file.Paths.get(FileHelper.convertAbstractPath(path)).toAbsolutePath().normalize());
+        }
+        synchronized (zipFileCache) {
+            for (String key : new java.util.ArrayList<String>(zipFileCache.keySet())) {
+                java.nio.file.Path path = java.nio.file.Paths.get(FileHelper.convertAbstractPath(key)).toAbsolutePath().normalize();
+                if (targets.contains(path)) {
+                    ZipHelper helper = (ZipHelper) zipFileCache.remove(key);
+                    if (helper != null) helper.a();
+                }
+            }
+        }
+    }
+
     public static void closeZipFile(String str, boolean z) {
         final String strJ = getRwmodArchivePath(str);
         synchronized (zipFileCache) {

@@ -105,7 +105,6 @@ internal fun p2pRoomToMultiplayerItem(room: P2PRoomAdvertisement): MultiplayerRo
         hasMods = room.hasMods,
         transportLabel = when {
             !room.webrtcSignaling.isNullOrBlank() -> "WebRTC"
-            room.transport.isNotBlank() -> room.transport
             else -> "P2P"
         },
         stateLabel = room.gameState ?: "Unknown",

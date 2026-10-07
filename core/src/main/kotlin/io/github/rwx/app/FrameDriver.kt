@@ -15,6 +15,7 @@ internal class FrameDriver(
     private val battleRoomLaunchController: BattleRoomLaunchController,
     private val mapController: MapController,
     private val battleRoomJoinController: BattleRoomJoinController,
+    private val p2pPreparation: P2PJoinPreparationController,
     private val pendingStartController: PendingStartController,
     private val externalGameController: ExternalGameController,
     private val modsController: ModsController,
@@ -24,6 +25,7 @@ internal class FrameDriver(
     private var nextBattleRoomNetworkPollMillis: Long = 0L
 
     fun drive(deltaSeconds: Float, isRenderLoopFrame: Boolean = false) {
+        p2pPreparation.drive()
         if (modsController.driveReload()) {
             return
         }

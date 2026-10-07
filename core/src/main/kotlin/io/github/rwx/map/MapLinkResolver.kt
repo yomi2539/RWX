@@ -1,7 +1,7 @@
 package io.github.rwx.map
 
 import com.corrodinggames.rts.game.map.TileMap
-import com.corrodinggames.rts.gameFramework.GameEngine
+import io.github.rwx.logger
 import io.github.rwx.PlatformStorage
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
@@ -82,7 +82,7 @@ object MapLinkResolver {
         return runCatching {
             TileMap.openMapInputStreamWithMovedFallback(path)?.use { parseInfo(it) }
         }.getOrElse { error ->
-            GameEngine.log("RWX map link read failed for $path: ${error.message}")
+            logger.warn(error) { "RWX map link read failed for $path: ${error.message}" }
             null
         }
     }
@@ -121,7 +121,7 @@ object MapLinkResolver {
                 val virtualPath = storage.mapsDir.virtualPath.trimEnd('/') + "/" + relative
                 val info = runCatching { parseInfo(file.inputStream()) }
                     .getOrElse { error ->
-                        GameEngine.log("RWX map link read failed for $virtualPath: ${error.message}")
+                        logger.warn(error) { "RWX map link read failed for $virtualPath: ${error.message}" }
                         return@mapFile
                     }
                 addMap(virtualPath, info)

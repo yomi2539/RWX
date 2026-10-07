@@ -197,9 +197,11 @@ internal fun AndroidOverlayContent(
         Box(Modifier.fillMaxSize()) {
             val snackbarHostState = remember { SnackbarHostState() }
             LaunchedEffect(state.mods?.noticeRevision) {
-                val text = state.mods?.noticeText.orEmpty()
-                val revision = state.mods?.noticeRevision ?: 0L
-                if (state.mods != null && revision > 0 && text.isNotBlank()) {
+                val mods = state.mods
+                val text = mods?.noticeText.orEmpty()
+                val revision = mods?.noticeRevision ?: 0L
+                if (mods != null && revision > 0 && text.isNotBlank()) {
+                    onModsAction(mods.revision, ModsAction.ConsumeNotice(revision))
                     snackbarHostState.showSnackbar(message = text)
                 }
             }

@@ -2026,6 +2026,145 @@ object I18n {
             ),
         )
 
+        object modTransfer {
+            val busy = entry(
+                key = "multiplayer.modTransfer.busy",
+                translations = linkedMapOf(
+                    "en" to "Wait for the current mod operation to finish.",
+                    "zh-CN" to "请等待当前模组操作完成。",
+                ),
+            )
+
+            val checking = entry(
+                key = "multiplayer.modTransfer.checking",
+                translations = linkedMapOf(
+                    "en" to "Checking loaded mods...",
+                    "zh-CN" to "正在检查已加载的模组...",
+                ),
+            )
+
+            val connecting = entry(
+                key = "multiplayer.modTransfer.connecting",
+                translations = linkedMapOf(
+                    "en" to "Connecting to the host...",
+                    "zh-CN" to "正在连接房主...",
+                ),
+            )
+
+            val downloading = entry(
+                key = "multiplayer.modTransfer.downloading",
+                translations = linkedMapOf(
+                    "en" to "Downloading mods",
+                    "zh-CN" to "正在下载模组",
+                ),
+            )
+
+            val failed = entry(
+                key = "multiplayer.modTransfer.failed",
+                translations = linkedMapOf(
+                    "en" to "Unable to prepare room mods ({0}).",
+                    "zh-CN" to "房间模组准备失败（{0}）。",
+                ),
+            )
+
+            val hosting = entry(
+                key = "multiplayer.modTransfer.hosting",
+                translations = linkedMapOf(
+                    "en" to "Preparing the P2P room...",
+                    "zh-CN" to "正在准备 P2P 房间...",
+                ),
+            )
+
+            val joinPrepared = entry(
+                key = "multiplayer.modTransfer.joinPrepared",
+                translations = linkedMapOf(
+                    "en" to "Join with my installed mods",
+                    "zh-CN" to "使用已安装的模组加入",
+                ),
+            )
+
+            val loading = entry(
+                key = "multiplayer.modTransfer.loading",
+                translations = linkedMapOf(
+                    "en" to "Loading room mods...",
+                    "zh-CN" to "正在加载房间模组...",
+                ),
+            )
+
+            val manual = entry(
+                key = "multiplayer.modTransfer.manual",
+                translations = linkedMapOf(
+                    "en" to "The host is not sharing supported mods. Prepare them manually before joining.",
+                    "zh-CN" to "房主未共享受支持的模组，请自行准备后再加入。",
+                ),
+            )
+
+            val password = entry(
+                key = "multiplayer.modTransfer.password",
+                translations = linkedMapOf(
+                    "en" to "Enter the room password to access its mods.",
+                    "zh-CN" to "请输入房间密码以获取模组。",
+                ),
+            )
+
+            val recovery = entry(
+                key = "multiplayer.modTransfer.recovery",
+                translations = linkedMapOf(
+                    "en" to "Your mod selection could not be restored. Restart to retry recovery.",
+                    "zh-CN" to "模组选择未能恢复，请重启以重试恢复；恢复前不能再次加入。",
+                ),
+            )
+
+            val restoring = entry(
+                key = "multiplayer.modTransfer.restoring",
+                translations = linkedMapOf(
+                    "en" to "Restoring your mod selection...",
+                    "zh-CN" to "正在恢复原有模组选择...",
+                ),
+            )
+
+            val share = entry(
+                key = "multiplayer.modTransfer.share",
+                translations = linkedMapOf(
+                    "en" to "Allow room mod downloads",
+                    "zh-CN" to "允许下载房间模组",
+                ),
+            )
+
+            val title = entry(
+                key = "multiplayer.modTransfer.title",
+                translations = linkedMapOf(
+                    "en" to "Preparing room mods",
+                    "zh-CN" to "正在准备房间模组",
+                ),
+            )
+
+            val trust = entry(
+                key = "multiplayer.modTransfer.trust",
+                translations = linkedMapOf(
+                    "en" to "Verify this fingerprint with the host before sending the room password:\n{0}",
+                    "zh-CN" to "发送房间密码前，请先与房主核对以下指纹：\n{0}",
+                ),
+            )
+
+            val trustTitle = entry(
+                key = "multiplayer.modTransfer.trustTitle",
+                translations = linkedMapOf(
+                    "en" to "Verify host identity",
+                    "zh-CN" to "核对房主身份",
+                ),
+            )
+
+            val waiting = entry(
+                key = "multiplayer.modTransfer.waiting",
+                translations = linkedMapOf(
+                    "en" to "Waiting for the host to prepare mods...",
+                    "zh-CN" to "正在等待房主准备模组...",
+                ),
+            )
+
+        }
+
         val noRooms = entry(
             key = "multiplayer.noRooms",
             translations = linkedMapOf(

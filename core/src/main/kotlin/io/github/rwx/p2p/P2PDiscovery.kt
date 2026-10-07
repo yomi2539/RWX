@@ -1,8 +1,6 @@
 package io.github.rwx.p2p
 
-import com.corrodinggames.rts.gameFramework.GameEngine
 import io.github.rwx.logger
-import kotlinx.serialization.Serializable
 import java.io.ByteArrayOutputStream
 import java.io.IOException
 import java.io.InputStream
@@ -10,10 +8,8 @@ import java.net.HttpURLConnection
 import java.net.URL
 
 enum class P2PDiscoverySource(val id: String) {
-    GOSSIPSUB("gossipsub"),
     MDNS("mdns"),
     SERVICE("service"),
-    DHT("dht"),
     MANUAL("manual")
 }
 
@@ -23,48 +19,6 @@ data class P2PDiscoveryResult(
     val trustScore: Int = 0,
     val receivedAtMs: Long = System.currentTimeMillis()
 )
-
-@Serializable
-data class P2PBootstrapNode(
-    var name: String? = null,
-    var kind: String? = null,
-    var stability: String? = null,
-    var addresses: MutableList<String> = mutableListOf()
-)
-
-class P2PBootstrapNodeSource(
-    private val urls: List<String>,
-) {
-    companion object {
-        private const val MAX_BYTES = 262144
-    }
-
-    fun fetchPeers(): List<String> {
-        if (urls.isEmpty()) return emptyList()
-        return urls.flatMap { fetchPeers(it) }.filter { it.startsWith("/") }.distinct()
-    }
-
-    private fun fetchPeers(url: String): List<String> {
-        return runCatching {
-            val apiUrl = normalizeNodesUrl(url)
-            val bytes = fetchBytes(apiUrl)
-            val nodes = P2PJson.decodeFromString<List<P2PBootstrapNode>>(bytes.toString(Charsets.UTF_8))
-            nodes.flatMap { it.addresses }
-        }.onFailure { e ->
-            GameEngine.log("P2P bootstrap node source failed: $url - ${e.message}")
-        }.getOrDefault(emptyList())
-    }
-
-    private fun fetchBytes(url: String): ByteArray {
-        val connection = URL(url).openConnection() as HttpURLConnection
-        connection.connectTimeout = 5000
-        connection.readTimeout = 5000
-        connection.instanceFollowRedirects = true
-        connection.setRequestProperty("Accept", "application/json")
-        connection.setRequestProperty("User-Agent", "RWX-P2P-Discovery")
-        return connection.inputStream.use { readBytesLimited(it, MAX_BYTES) }
-    }
-}
 
 class P2PServiceDiscoveryProvider(
     private val config: P2PConfig.ServiceDiscoveryConfig,
@@ -94,8 +48,41 @@ class P2PServiceDiscoveryProvider(
                 }
                 .toList()
         }.onFailure { e ->
-            GameEngine.log("Lobby service discovery failed: $url - ${e.message}")
+            logger.warn(e) { "Lobby service discovery failed: $url - ${e.message}" }
         }.getOrDefault(emptyList())
+    }
+
+    fun fetchCapabilities(baseUrl: String): io.github.rwx.p2p.transfer.SignalingCapabilities {
+        val bytes = fetchSignalBytes(normalizeRoomsUrl(baseUrl).removeSuffix("/rooms") + "/capabilities")
+        return P2PJson.decodeFromString(io.github.rwx.p2p.transfer.SignalingCapabilities.serializer(), bytes.toString(Charsets.UTF_8))
+    }
+
+    fun fetchSignals(baseUrl: String, roomId: String, sinceSeq: Long, toClientId: String): List<SignalEnvelope> {
+        if (!config.enable) return emptyList()
+        val limit = config.signalMaxEnvelopes.coerceIn(1, 200)
+        val url = buildSignalUrl(baseUrl, roomId) + "?sinceSeq=$sinceSeq&limit=$limit&to=" +
+            java.net.URLEncoder.encode(toClientId, "UTF-8")
+        val bytes = fetchSignalBytes(url)
+        return P2PJson.decodeFromString(
+            kotlinx.serialization.builtins.ListSerializer(SignalEnvelope.serializer()),
+            bytes.toString(Charsets.UTF_8),
+        ).sortedBy { it.seq }.take(limit)
+    }
+
+    private fun fetchSignalBytes(url: String): ByteArray {
+        val connection = URL(url).openConnection() as HttpURLConnection
+        connection.connectTimeout = config.timeoutMs.coerceAtLeast(1000)
+        connection.readTimeout = config.timeoutMs.coerceAtLeast(1000)
+        connection.instanceFollowRedirects = false
+        connection.setRequestProperty("Accept", "application/json")
+        connection.setRequestProperty("User-Agent", "P2P-Signaling")
+        try {
+            val status = connection.responseCode
+            if (status !in 200..299) throw IOException("Lobby service signal HTTP $status")
+            return connection.inputStream.use { readBytesLimited(it, config.maxBytes.coerceAtLeast(1024)) }
+        } finally {
+            connection.disconnect()
+        }
     }
 
     private fun fetchBytes(url: String): ByteArray {
@@ -157,7 +144,19 @@ class P2PServicePublisher(
             request(url, "PUT", P2PJson.encodeToString(room).encodeToByteArray())
             true
         }.onFailure { e ->
-            GameEngine.log("Lobby service publish failed: $baseUrl - ${e.message}")
+            logger.warn(e) { "Lobby service publish failed: $baseUrl - ${e.message}" }
+        }.getOrDefault(false)
+    }
+
+    fun postSignal(baseUrl: String, roomId: String, envelope: SignalEnvelope): Boolean {
+        if (serviceUrls.isEmpty()) return false
+        return runCatching {
+            require(envelope.roomId == roomId && envelope.isValid()) { "Invalid signal envelope" }
+            val url = buildSignalUrl(baseUrl, roomId)
+            request(url, "PUT", P2PJson.encodeToString(SignalEnvelope.serializer(), envelope).encodeToByteArray())
+            true
+        }.onFailure { e ->
+            logger.warn(e) { "Lobby service signal publish failed: $baseUrl - ${e.message}" }
         }.getOrDefault(false)
     }
 
@@ -167,7 +166,7 @@ class P2PServicePublisher(
             request(url, "DELETE", null)
             true
         }.onFailure { e ->
-            GameEngine.log("Lobby service delete failed: $baseUrl - ${e.message}")
+            logger.warn(e) { "Lobby service delete failed: $baseUrl - ${e.message}" }
         }.getOrDefault(false)
     }
 
@@ -201,27 +200,6 @@ class P2PServicePublisher(
     }
 }
 
-class P2PDhtDiscoveryProvider(private val config: P2PConfig.DhtDiscoveryConfig) {
-    private var warned = false
-
-    fun fetchRooms(): List<P2PDiscoveryResult> {
-        if (!config.enable) return emptyList()
-        if (!warned) {
-            warned = true
-            GameEngine.log("DHT P2P discovery is enabled but unavailable: jvm-libp2p 1.2.0 does not expose Kad-DHT provider APIs")
-        }
-        return emptyList()
-    }
-
-    fun publishRoom(room: P2PRoomAdvertisement?) {
-        if (!config.enable || room == null) return
-        if (!warned) {
-            warned = true
-            GameEngine.log("DHT P2P publish skipped: jvm-libp2p 1.2.0 does not expose Kad-DHT provider APIs")
-        }
-    }
-}
-
 private fun normalizeBaseUrl(url: String): String {
     return url.trim().trimEnd('/')
 }
@@ -232,10 +210,9 @@ private fun normalizeRoomsUrl(url: String): String {
     return if (base.endsWith("/rooms")) base else "$base/rooms"
 }
 
-private fun normalizeNodesUrl(url: String): String {
-    val base = normalizeBaseUrl(url)
-    if (base.isBlank()) return base
-    return if (base.endsWith("/nodes")) base else "$base/nodes"
+private fun buildSignalUrl(baseUrl: String, roomId: String): String {
+    require(roomId.matches(Regex("[A-Za-z0-9_-]{1,128}"))) { "Invalid signal room ID" }
+    return "${normalizeRoomsUrl(baseUrl)}/$roomId/signals"
 }
 
 private fun readBytesLimited(input: InputStream, maxBytes: Int): ByteArray {

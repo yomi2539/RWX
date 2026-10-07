@@ -20,6 +20,7 @@ data class ModsUiState(
 ) {
     internal fun resolveAction(requestRevision: Long, action: ModsAction): ModsAction? {
         if (action == ModsAction.Back) return action
+        if (action is ModsAction.ConsumeNotice) return action
         if (requestRevision != revision) return null
         val modId = when (action) {
             is ModsAction.ToggleEnable -> action.modId

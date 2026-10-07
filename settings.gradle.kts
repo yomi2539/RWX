@@ -13,7 +13,6 @@ dependencyResolutionManagement {
     repositories {
         google()
         mavenCentral()
-        maven("https://dl.cloudsmith.io/public/libp2p/jvm-libp2p/maven/")
         maven("https://artifacts.consensys.net/public/maven/maven/")
         maven("https://jitpack.io")
         gradlePluginPortal()

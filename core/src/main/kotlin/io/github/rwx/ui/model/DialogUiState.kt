@@ -26,6 +26,7 @@ data class DialogInputState(
     val trailingIconTooltip: String? = null,
     val canChooseInput: Boolean = false,
     val valueRevision: Long = 0,
+    val password: Boolean = false,
 )
 
 data class DialogInfoRowState(val icon: Icon, val label: String, val value: String, val emphasis: Boolean, val isClickable: Boolean)
@@ -127,7 +128,8 @@ class DialogStateStore(private val onChanged: () -> Unit = {}) {
             buttonLabels = dialog.buttons.map { it.label },
             textInput = dialog.textInput?.let {
                 DialogInputState(current.draft.inputText, it.hint, it.trailingIcon, it.trailingIconTooltip,
-                    it.onChooseInput != null, current.inputValueRevision)
+                    it.onChooseInput != null, current.inputValueRevision, it.password
+                )
             },
             fields = fields,
             formValues = current.draft.formValues,

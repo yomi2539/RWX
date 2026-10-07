@@ -228,6 +228,10 @@ internal class ActionRouter(
     }
 
     private fun handleModsAction(action: ModsAction) {
+        if (action is ModsAction.ConsumeNotice) {
+            modsController.consumeNotice(action.noticeRevision)
+            return
+        }
         if (navigator.current != AppScreen.Mods) return
         when (val outcome = ModsNavigation.outcomeFor(action)) {
             is ModsOutcome.Navigate -> {
@@ -247,6 +251,7 @@ internal class ActionRouter(
             is ModsOutcome.Delete -> modsController.deleteAndRefresh(outcome.modId)
             is ModsOutcome.ShowDescription -> modsController.showDetails(outcome.modId, error = false)
             is ModsOutcome.ShowError -> modsController.showDetails(outcome.modId, error = true)
+            is ModsOutcome.ConsumeNotice -> modsController.consumeNotice(outcome.noticeRevision)
         }
     }
 

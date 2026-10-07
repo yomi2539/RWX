@@ -67,6 +67,8 @@ sealed interface ModsAction {
 
     data class ShowDescription(val modId: String) : ModsAction
     data class ShowError(val modId: String) : ModsAction
+
+    data class ConsumeNotice(val noticeRevision: Long) : ModsAction
 }
 
 sealed interface ModsOutcome {
@@ -79,6 +81,7 @@ sealed interface ModsOutcome {
     data class Delete(val modId: String) : ModsOutcome
     data class ShowDescription(val modId: String) : ModsOutcome
     data class ShowError(val modId: String) : ModsOutcome
+    data class ConsumeNotice(val noticeRevision: Long) : ModsOutcome
 }
 
 
@@ -117,5 +120,6 @@ object ModsNavigation {
         is ModsAction.Delete -> ModsOutcome.Delete(action.modId)
         is ModsAction.ShowDescription -> ModsOutcome.ShowDescription(action.modId)
         is ModsAction.ShowError -> ModsOutcome.ShowError(action.modId)
+        is ModsAction.ConsumeNotice -> ModsOutcome.ConsumeNotice(action.noticeRevision)
     }
 }

@@ -493,6 +493,7 @@ public class GameLogic extends GameEngine {
         this.gameStatistics = new GameStatistics();
         loadLevel("ModEngine");
         this.modManager = new ModManager();
+        io.github.rwx.p2p.transfer.TransferRecovery.beforeInitialScanOrReset(this);
         this.modManager.loadAndApply();
         if (this.isSafeMode) {
             this.modManager.disableAllMods();

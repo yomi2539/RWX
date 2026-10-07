@@ -1087,7 +1087,31 @@ abstract class GameSession {
         }
     }
 
-    open suspend fun requestReloadMods(): Boolean {
+    fun captureTransferState(): io.github.rwx.p2p.transfer.ModEngineSnapshot? =
+        runEngineCommand("capture mod state", io.github.rwx.p2p.transfer.ModTransferEngine::capture)
+
+    fun selectTransferArtifacts(existingIds: Set<String>, installedNames: Set<String>): Boolean =
+        runEngineCommand("select session mods") {
+            io.github.rwx.p2p.transfer.ModTransferEngine.select(
+                it,
+                existingIds,
+                installedNames
+            )
+        } == true
+
+    fun restoreTransfer(snapshot: io.github.rwx.p2p.transfer.ModSelectionSnapshot): Boolean =
+        runEngineCommand("restore mod selection") {
+            io.github.rwx.p2p.transfer.ModTransferEngine.restoreSelection(it, snapshot)
+            true
+        } == true
+
+    fun removeTransferEntries(names: Set<String>, snapshot: io.github.rwx.p2p.transfer.ModSelectionSnapshot): Boolean =
+        runEngineCommand("release session mods") {
+            io.github.rwx.p2p.transfer.ModTransferEngine.removeInstalled(it, names, snapshot)
+            true
+        } == true
+
+    open suspend fun requestReloadTransfer(): Boolean {
         // Flag first, lock second: readers check the flag before touching gameLock, so the frame
         // loop keeps rendering (and the reload dialog stays clickable) for the whole reload.
         modReloadInProgress = true

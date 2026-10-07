@@ -7,6 +7,7 @@ import io.github.rwx.p2p.FeatureIds
 import io.github.rwx.p2p.FeatureMessage
 import io.github.rwx.p2p.P2PJson
 import io.github.rwx.p2p.WebRtcTunnelProxy
+import io.github.rwx.p2p.WebRtcTransferConnection
 import org.webrtc.*
 import java.io.IOException
 import java.net.*
@@ -49,6 +50,9 @@ class AndroidWebRtcTunnelProxy(
     private var currentMapPath: String? = null
     private var currentRequiredFeatures: List<String> = emptyList()
     private val peerFeatures = ConcurrentHashMap<String, Set<String>>()
+    private var featureReceiver: ((FeatureMessage) -> Unit)? = null
+    private val modTransfers = AndroidTransferTransport({ ensureFactory(); factory!! }, ::createRtcConfig,
+        { work -> executor.execute { work() } })
 
     companion object {
         private const val GAME_DATA_CHANNEL_LABEL = "rwx-game"
@@ -95,7 +99,19 @@ class AndroidWebRtcTunnelProxy(
         return port
     }
 
+    override fun startTransferHost(roomId: String, localClientId: String, iceServers: List<String>,
+        sendSignal: (WebRtcTunnelProxy.Signal) -> Unit, accept: (WebRtcTransferConnection) -> Unit) =
+        modTransfers.startHost(roomId, localClientId, iceServers, sendSignal, accept)
+
+    override fun openTransfer(roomId: String, sessionId: String, localClientId: String, hostClientId: String,
+        iceServers: List<String>, sendSignal: (WebRtcTunnelProxy.Signal) -> Unit): WebRtcTransferConnection =
+        modTransfers.open(roomId, sessionId, localClientId, hostClientId, iceServers, sendSignal)
+
+    override fun handleTransferSignal(signal: WebRtcTunnelProxy.Signal) = modTransfers.handle(signal)
+    override fun stopTransfers() = modTransfers.stop()
+
     override fun stop() {
+        stopTransfers()
         clientRunning.set(false)
         runCatching { clientServerSocket?.close() }
         clientServerSocket = null
@@ -119,6 +135,20 @@ class AndroidWebRtcTunnelProxy(
                 mapPath = currentMapPath,
                 requiredFeatures = currentRequiredFeatures,
             )
+        }
+    }
+
+    override fun setFeatureReceiver(receiver: (FeatureMessage) -> Unit) { featureReceiver = receiver }
+
+    override fun broadcastFeatureMessage(message: FeatureMessage, excludeClientId: String?) {
+        sessions.values.forEach { session ->
+            if (session.remotePeerId != excludeClientId && (message.toPeerId == null || message.toPeerId == session.remotePeerId)) {
+                val channel = session.featureDataChannel ?: return@forEach
+                if (channel.state() != DataChannel.State.OPEN) return@forEach
+                val encoded = P2PJson.encodeToString(message.copy(roomId = session.roomId,
+                    fromPeerId = session.localPeerId, toPeerId = session.remotePeerId)) + "\n"
+                channel.send(DataChannel.Buffer(ByteBuffer.wrap(encoded.toByteArray(Charsets.UTF_8)), true))
+            }
         }
     }
 
@@ -172,7 +202,7 @@ class AndroidWebRtcTunnelProxy(
         val session = try {
             createSession(roomId, sessionId, localPeerId, remotePeerId)
         } catch (error: Exception) {
-            GameEngine.log("Android WebRTC session creation failed: ${error.message}")
+            logger.warn(error) { "Android WebRTC session creation failed: ${error.message}" }
             runCatching { socket.close() }
             return
         }
@@ -216,7 +246,7 @@ class AndroidWebRtcTunnelProxy(
         try {
             session.openFuture.get(config.openTimeoutMs, TimeUnit.MILLISECONDS)
         } catch (error: Exception) {
-            GameEngine.log("Android WebRTC tunnel failed: ${error.message}")
+            logger.warn(error) { "Android WebRTC tunnel failed: ${error.message}" }
             closeSession(session)
         }
     }
@@ -228,7 +258,7 @@ class AndroidWebRtcTunnelProxy(
         val session = try {
             createSession(signal.roomId!!, sessionId, localPeerId, remotePeerId)
         } catch (error: Exception) {
-            GameEngine.log("Android WebRTC host session creation failed: ${error.message}")
+            logger.warn(error) { "Android WebRTC host session creation failed: ${error.message}" }
             return
         }
         sessions[sessionId] = session
@@ -307,7 +337,7 @@ class AndroidWebRtcTunnelProxy(
             override fun onSignalingChange(state: PeerConnection.SignalingState?) = Unit
 
             override fun onIceConnectionChange(state: PeerConnection.IceConnectionState?) {
-                GameEngine.log("Android WebRTC ICE connection state session=$sessionId state=$state")
+                logger.info { "Android WebRTC ICE connection state session=$sessionId state=$state" }
                 if (state == PeerConnection.IceConnectionState.FAILED ||
                     state == PeerConnection.IceConnectionState.CLOSED
                 ) {
@@ -318,12 +348,12 @@ class AndroidWebRtcTunnelProxy(
             override fun onIceConnectionReceivingChange(receiving: Boolean) = Unit
 
             override fun onIceGatheringChange(state: PeerConnection.IceGatheringState?) {
-                GameEngine.log("Android WebRTC ICE gathering state session=$sessionId state=$state")
+                logger.info { "Android WebRTC ICE gathering state session=$sessionId state=$state" }
             }
 
             override fun onIceCandidate(candidate: IceCandidate?) {
                 if (candidate == null) return
-                GameEngine.log("Android WebRTC ICE candidate session=$sessionId mid=${candidate.sdpMid} index=${candidate.sdpMLineIndex} sdp=${candidate.sdp}")
+                logger.info { "Android WebRTC ICE candidate session=$sessionId mid=${candidate.sdpMid} index=${candidate.sdpMLineIndex} sdp=${candidate.sdp}" }
                 signalSender?.invoke(
                     WebRtcTunnelProxy.Signal(
                         roomId = roomId,
@@ -347,10 +377,10 @@ class AndroidWebRtcTunnelProxy(
             override fun onDataChannel(dataChannel: DataChannel?) {
                 val channel = dataChannel ?: return
                 val session = sessions[sessionId] ?: return
-                if (channel.label() == FEATURE_DATA_CHANNEL_LABEL) {
-                    session.featureDataChannel = channel
-                } else {
-                    session.dataChannel = channel
+                when (channel.label()) {
+                    FEATURE_DATA_CHANNEL_LABEL -> session.featureDataChannel = channel
+                    GAME_DATA_CHANNEL_LABEL -> session.dataChannel = channel
+                    else -> { channel.close(); channel.dispose(); return }
                 }
                 registerDataChannel(session, channel)
             }
@@ -360,7 +390,7 @@ class AndroidWebRtcTunnelProxy(
             override fun onAddTrack(receiver: RtpReceiver?, mediaStreams: Array<out MediaStream>?) = Unit
 
             override fun onConnectionChange(newState: PeerConnection.PeerConnectionState?) {
-                GameEngine.log("Android WebRTC peer connection state session=$sessionId state=$newState")
+                logger.info { "Android WebRTC peer connection state session=$sessionId state=$newState" }
                 if (newState == PeerConnection.PeerConnectionState.FAILED ||
                     newState == PeerConnection.PeerConnectionState.CLOSED
                 ) {
@@ -376,13 +406,14 @@ class AndroidWebRtcTunnelProxy(
             registerFeatureDataChannel(session, dataChannel)
             return
         }
+        if (dataChannel.label() != GAME_DATA_CHANNEL_LABEL) { dataChannel.close(); dataChannel.dispose(); return }
         dataChannel.registerObserver(object : DataChannel.Observer {
             override fun onBufferedAmountChange(previousAmount: Long) = Unit
 
             override fun onStateChange() {
                 if (session.closed.get()) return
                 val state = runCatching { dataChannel.state() }.getOrNull() ?: return
-                GameEngine.log("Android WebRTC DataChannel state session=${session.sessionId} state=$state")
+                logger.info { "Android WebRTC DataChannel state session=${session.sessionId} state=$state" }
                 if (state == DataChannel.State.OPEN) {
                     if (session.socket == null && hostGamePort > 0) {
                         try {
@@ -427,7 +458,7 @@ class AndroidWebRtcTunnelProxy(
             override fun onStateChange() {
                 if (session.closed.get()) return
                 val state = runCatching { dataChannel.state() }.getOrNull() ?: return
-                GameEngine.log("Android WebRTC RWX feature DataChannel state session=${session.sessionId} state=$state")
+                logger.info { "Android WebRTC RWX feature DataChannel state session=${session.sessionId} state=$state" }
                 if (state == DataChannel.State.OPEN && session.localPeerId != hostPeerId) {
                     sendFeatureMessage(session, "hello")
                 }
@@ -451,7 +482,7 @@ class AndroidWebRtcTunnelProxy(
                     runCatching {
                         handleFeatureMessage(session, P2PJson.decodeFromString<FeatureMessage>(line))
                     }.onFailure { error ->
-                        GameEngine.log("Android WebRTC RWX feature message decode failed: ${error.message}")
+                        logger.warn(error) { "Android WebRTC RWX feature message decode failed: ${error.message}" }
                     }
                 }
             }
@@ -484,7 +515,7 @@ class AndroidWebRtcTunnelProxy(
         runCatching {
             dataChannel.send(DataChannel.Buffer(ByteBuffer.wrap(encoded.toByteArray(Charsets.UTF_8)), true))
         }.onFailure { error ->
-            GameEngine.log("Android WebRTC RWX feature message send failed: ${error.message}")
+            logger.warn(error) { "Android WebRTC RWX feature message send failed: ${error.message}" }
         }
     }
 
@@ -495,16 +526,18 @@ class AndroidWebRtcTunnelProxy(
         if (message.toPeerId != null && message.toPeerId != session.localPeerId) {
             return
         }
+        if (message.fromPeerId != session.remotePeerId) return
+        featureReceiver?.invoke(message)
         when (message.type) {
             "hello" -> {
                 message.fromPeerId?.let { peerFeatures[it] = message.features.toSet() }
-                GameEngine.log(
+                logger.info {
                     "Android WebRTC RWX feature hello from=${message.fromPeerId} features=${
                         message.features.joinToString(
                             ","
                         )
                     }"
-                )
+                }
                 sendFeatureMessage(session, "welcome")
                 if (session.localPeerId == hostPeerId && (currentMapPath != null || currentRequiredFeatures.isNotEmpty())) {
                     sendFeatureMessage(
@@ -518,13 +551,13 @@ class AndroidWebRtcTunnelProxy(
 
             "welcome" -> {
                 message.fromPeerId?.let { peerFeatures[it] = message.features.toSet() }
-                GameEngine.log(
+                logger.info {
                     "Android WebRTC RWX feature welcome from=${message.fromPeerId} features=${
                         message.features.joinToString(
                             ","
                         )
                     }"
-                )
+                }
             }
 
             "mapFeatures" -> {
@@ -532,7 +565,7 @@ class AndroidWebRtcTunnelProxy(
             }
 
             else -> {
-                GameEngine.log("Android WebRTC RWX feature message type=${message.type} from=${message.fromPeerId}")
+                logger.info { "Android WebRTC RWX feature message type=${message.type} from=${message.fromPeerId}" }
             }
         }
     }
@@ -541,16 +574,16 @@ class AndroidWebRtcTunnelProxy(
         val supportedFeatures = FeatureIds.currentClientFeatures().toSet()
         val missing = message.requiredFeatures.distinct().filterNot { supportedFeatures.contains(it) }
         if (missing.isEmpty()) {
-            GameEngine.log(
+            logger.info {
                 "Android WebRTC RWX map features ok map=${message.mapPath} required=${
                     message.requiredFeatures.joinToString(
                         ","
                     )
                 }"
-            )
+            }
         } else {
             val text = "RWX map requires unsupported features: ${missing.joinToString(",")}"
-            GameEngine.log(text)
+            logger.info { text }
             NetworkEngine.reportDesync(text)
         }
     }
@@ -577,7 +610,7 @@ class AndroidWebRtcTunnelProxy(
     }
 
     private fun sendSessionDescription(session: ClientSession, type: String, description: SessionDescription) {
-        GameEngine.log("Android WebRTC sending $type session=${session.sessionId} from=${session.localPeerId} to=${session.remotePeerId}")
+        logger.info { "Android WebRTC sending $type session=${session.sessionId} from=${session.localPeerId} to=${session.remotePeerId}" }
         signalSender?.invoke(
             WebRtcTunnelProxy.Signal(
                 roomId = session.roomId,
@@ -627,9 +660,9 @@ class AndroidWebRtcTunnelProxy(
         }
     }
 
-    private fun createRtcConfig(): PeerConnection.RTCConfiguration =
+    private fun createRtcConfig(servers: List<String> = iceServerUrls): PeerConnection.RTCConfiguration =
         PeerConnection.RTCConfiguration(
-            normalizeIceServers(iceServerUrls).map(::createIceServer)
+            normalizeIceServers(servers).map(::createIceServer)
         )
 
     private fun createIceServer(value: String): PeerConnection.IceServer {

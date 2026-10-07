@@ -4,6 +4,7 @@ import io.github.rwx.PlatformBridge
 import io.github.rwx.i18n.I18n
 import io.github.rwx.logger
 import io.github.rwx.mod.ModRepository
+import io.github.rwx.p2p.transfer.TransferOperation
 import io.github.rwx.session.GameSession
 import io.github.rwx.ui.host.DialogSceneHost
 import io.github.rwx.ui.host.LoadingDialogSceneHost
@@ -36,32 +37,42 @@ internal class ModsController(
         sceneHost.updateMods(modRepository.listMods(), statusText)
     }
 
+    fun consumeNotice(noticeRevision: Long) {
+        sceneHost.consumeNotice(noticeRevision)
+    }
+
     fun applyChangesAndRefresh() {
+        if (TransferOperation.active) return
         modRepository.applyChanges()
         refresh()
     }
 
     fun reloadAvailableAndRefresh() {
+        if (TransferOperation.active) return
         modRepository.reloadAvailableMods()
         refresh()
     }
 
     fun disableAllAndRefresh() {
+        if (TransferOperation.active) return
         modRepository.disableAll()
         refresh()
     }
 
     fun toggleEnabledAndRefresh(modId: String) {
+        if (TransferOperation.active) return
         modRepository.toggleEnabled(modId)
         refresh()
     }
 
     fun deleteAndRefresh(modId: String) {
+        if (TransferOperation.active) return
         val deleted = modRepository.delete(modId)
         refresh(if (deleted) "" else I18n.mods.delete.failed())
     }
 
     fun showImportDialog() {
+        if (TransferOperation.active) return
         dialogSceneHost.show(modImportDialog(getKoin().get<PlatformBridge>().filePickerHost) { path ->
             val result = modRepository.importMod(path)
             refresh(result.message)
@@ -82,6 +93,7 @@ internal class ModsController(
     }
 
     fun reloadWithDialog() {
+        if (TransferOperation.active) return
         if (reloadLoading) {
             return
         }
@@ -91,7 +103,7 @@ internal class ModsController(
         val job = launchOnIO("mods-reload") {
             val result = try {
                 modRepository.applyChanges()
-                val handledByBackend = gameSession.requestReloadMods()
+                val handledByBackend = gameSession.requestReloadTransfer()
                 if (handledByBackend) {
                     waitForLoadingText("Mods reloaded", timeoutMillis = 60_000L)
                 } else {

@@ -1,6 +1,6 @@
 package io.github.rwx.ui.host
 
-import com.corrodinggames.rts.gameFramework.GameEngine
+import io.github.rwx.logger
 import io.github.rwx.i18n.I18n
 import io.github.rwx.ui.model.*
 import kotlinx.coroutines.*
@@ -50,7 +50,7 @@ class LevelSelectSceneHost(
                 throw cancelled
             } catch (error: Exception) {
                 if (!closed && revision == mapLoadRevision) {
-                    GameEngine.log("Failed to load maps for ${effectiveMode.name}: ${error.message}")
+                    logger.warn(error) { "Failed to load maps for ${effectiveMode.name}: ${error.message}" }
                     synchronized(maps) { maps.clear() }
                     loadError = I18n.levelselect.loadError()
                 }

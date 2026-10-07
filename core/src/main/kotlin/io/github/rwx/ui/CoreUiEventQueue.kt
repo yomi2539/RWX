@@ -1,6 +1,6 @@
 package io.github.rwx.ui
 
-import com.corrodinggames.rts.gameFramework.GameEngine
+import io.github.rwx.logger
 import com.corrodinggames.rts.gameFramework.network.PasswordHandler
 import io.github.rwx.map.PortalTransferMessage
 import io.github.rwx.map.TransferredUnit
@@ -122,18 +122,18 @@ object CoreUiEventQueue {
 
     private fun enqueue(event: CoreUiEvent) {
         if (debugSlickMenu) {
-            GameEngine.log(
+            logger.debug {
                 "RWX_DEBUG_SLICK_MENU CoreUiEventQueue.enqueue event=$event" +
                         " sizeBefore=${pending.size}" +
                         " thread=${Thread.currentThread().name}"
-            )
+            }
         }
         pending.add(event)
         overlayRequestHandler?.let { handler ->
             runCatching {
                 handler(event)
             }.onFailure { error ->
-                GameEngine.log("Core UI overlay request failed", error)
+                logger.warn(error) { "Core UI overlay request failed" }
             }
         }
     }
@@ -371,11 +371,11 @@ object CoreUiEventQueue {
                 else -> Unit
             }
             if (debugSlickMenu) {
-                GameEngine.log(
+                logger.debug {
                     "RWX_DEBUG_SLICK_MENU CoreUiEventQueue.drain event=$event" +
                             " sizeAfter=${pending.size}" +
                             " thread=${Thread.currentThread().name}"
-                )
+                }
             }
             handler(event)
         }

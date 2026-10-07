@@ -27,10 +27,8 @@ object P2PDiagnosticsMain {
             val rooms = waitForRooms(lobby, timeoutMs)
             println("P2P_DIAG rooms=${rooms.size}")
             rooms.forEachIndexed { index, room ->
-                println("P2P_DIAG room[$index] id=${room.roomId} host=${room.hostPeerId} by=${room.createdBy} state=${room.gameState} map=${room.mapPath}")
+                println("P2P_DIAG room[$index] id=${room.roomId} host=${room.hostClientId} by=${room.createdBy} state=${room.gameState} map=${room.mapPath}")
                 println("P2P_DIAG room[$index] webrtc=${room.webrtcSignaling} ice=${room.webrtcIceServers.joinToString(",")}")
-                println("P2P_DIAG room[$index] direct=${room.libp2pDirectAddresses.joinToString(",")}")
-                println("P2P_DIAG room[$index] mapped=${room.libp2pMappedAddresses.joinToString(",")}")
             }
             if (rooms.isEmpty()) exitProcess(1)
         } finally {
@@ -47,7 +45,7 @@ object P2PDiagnosticsMain {
                 println("P2P_DIAG no rooms discovered")
                 exitProcess(1)
             }
-            println("P2P_DIAG joining room id=${room.roomId} host=${room.hostPeerId}")
+            println("P2P_DIAG joining room id=${room.roomId} host=${room.hostClientId}")
             val address = lobby.prepareJoin(room.roomId!!)
             println("P2P_DIAG local proxy=$address")
             val host = address.substringBefore(':')
@@ -115,7 +113,7 @@ object P2PDiagnosticsMain {
         val now = System.currentTimeMillis()
         return P2PRoomAdvertisement().apply {
             roomId = "diag-${now}"
-            hostPeerId = "QmDiagLobbyServiceTest"
+            hostClientId = "QmDiagLobbyServiceTest"
             createdBy = "diagnostics"
             gameVersionCode = 1
             gameVersionString = "diagnostics"

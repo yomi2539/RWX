@@ -21,5 +21,11 @@ class ModsSceneHost(
 
     fun dispatch(action: ModsAction) = onAction(action)
 
+    fun consumeNotice(noticeRevision: Long) {
+        if (uiState.noticeRevision == noticeRevision) {
+            uiState = uiState.copy(noticeText = "")
+        }
+    }
+
     fun snapshot(): ModsUiState = uiState
 }

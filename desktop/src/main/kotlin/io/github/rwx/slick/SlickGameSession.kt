@@ -399,7 +399,7 @@ class SlickGameSession(
         return loadingStatusTracker.mergeWith(super.loadingStatus())
     }
 
-    override suspend fun requestReloadMods(): Boolean {
+    override suspend fun requestReloadTransfer(): Boolean {
         val activeCanvas = SlickCanvasHost.gameCanvas()
         val exposedCanvasForReload = activeCanvas != null && !activeCanvas.isShowing
         val activeGame = activeGame() ?: return false

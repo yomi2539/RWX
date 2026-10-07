@@ -40,7 +40,7 @@ fun AppLoadingDialog(state: LoadingDialogUiState, enableAnimations: Boolean = tr
     var escapeDown by remember(state.revision) { mutableStateOf(false) }
     val appear = remember(state.revision) { MutableTransitionState(false).apply { targetState = true } }
     fun cancel() {
-        if (cancelSent || state.cancelRequested) return
+        if (cancelSent || state.cancelRequested || !state.cancellable) return
         cancelSent = true
         onCancel()
     }
@@ -82,7 +82,8 @@ fun AppLoadingDialog(state: LoadingDialogUiState, enableAnimations: Boolean = tr
                         LinearProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth().testTag("loading-progress"), color = palette.primary)
                         Text("${(progress * 100).roundToInt()}%", modifier = Modifier.align(Alignment.End).testTag("loading-percent"))
                     }
-                    OutlinedButton(onClick = ::cancel, enabled = !cancelSent && !state.cancelRequested,
+                    OutlinedButton(
+                        onClick = ::cancel, enabled = state.cancellable && !cancelSent && !state.cancelRequested,
                         modifier = Modifier.align(Alignment.End).testTag("loading-cancel")) { Text(I18n.common.cancel()) }
                 }
             }

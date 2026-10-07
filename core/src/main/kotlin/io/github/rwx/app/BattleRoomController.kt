@@ -22,6 +22,7 @@ internal class BattleRoomController(
     private val sceneHost: BattleRoomSceneHost,
     initialMode: LevelSelectMode,
     private val showUnavailableDialog: (String) -> Unit,
+    private val onRoomClosed: () -> Unit = {},
     private val previewForMap: (String, LevelSelectMode) -> String? = { path, mode ->
         levelSelectViewModelFactory.create(mode).mapEntry(path).previewAssetPath
     },
@@ -124,6 +125,7 @@ internal class BattleRoomController(
         previewMapPath = null
         cachedPreview = null
         sceneHost.beginRoom()
+        onRoomClosed()
         gameSession.leaveBattleRoom()
         return returnScreen
     }

@@ -12,6 +12,7 @@ data class LoadingDialogUiState(
     val message: String,
     val progress: Float? = null,
     val cancelRequested: Boolean = false,
+    val cancellable: Boolean = true,
 )
 
 /** Operation identity is independent of renderer visibility and password-prompt suspension. */
@@ -51,9 +52,15 @@ class LoadingDialogStateStore(private val onChanged: () -> Unit = {}) {
         return true
     }
 
+    fun disableCancellation(handle: LoadingDialogHandle) {
+        val current = entry?.takeIf { it.state.revision == handle.id } ?: return
+        current.state = current.state.copy(cancellable = false)
+        onChanged()
+    }
+
     fun cancel(revision: Long): Boolean {
         val current = entry ?: return false
-        if (current.state.revision != revision || current.suspension != null || current.state.cancelRequested) return false
+        if (current.state.revision != revision || current.suspension != null || current.state.cancelRequested || !current.state.cancellable) return false
         current.state = current.state.copy(cancelRequested = true)
         try {
             onChanged()

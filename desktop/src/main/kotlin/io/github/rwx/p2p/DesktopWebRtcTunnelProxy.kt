@@ -46,6 +46,9 @@ class DesktopWebRtcTunnelProxy(
     private var currentMapPath: String? = null
     private var currentRequiredFeatures: List<String> = emptyList()
     private val peerFeatures = ConcurrentHashMap<String, Set<String>>()
+    private var featureReceiver: ((FeatureMessage) -> Unit)? = null
+    private val modTransfers = DesktopTransferTransport({ ensureFactory(); factory!! }, ::createRtcConfig,
+        { work -> executor.execute { work() } })
 
     companion object {
         private const val GAME_DATA_CHANNEL_LABEL = "rwx-game"
@@ -93,7 +96,19 @@ class DesktopWebRtcTunnelProxy(
         return port
     }
 
+    override fun startTransferHost(roomId: String, localClientId: String, iceServers: List<String>,
+        sendSignal: (WebRtcTunnelProxy.Signal) -> Unit, accept: (WebRtcTransferConnection) -> Unit) =
+        modTransfers.startHost(roomId, localClientId, iceServers, sendSignal, accept)
+
+    override fun openTransfer(roomId: String, sessionId: String, localClientId: String, hostClientId: String,
+        iceServers: List<String>, sendSignal: (WebRtcTunnelProxy.Signal) -> Unit): WebRtcTransferConnection =
+        modTransfers.open(roomId, sessionId, localClientId, hostClientId, iceServers, sendSignal)
+
+    override fun handleTransferSignal(signal: WebRtcTunnelProxy.Signal) = modTransfers.handle(signal)
+    override fun stopTransfers() = modTransfers.stop()
+
     override fun stop() {
+        stopTransfers()
         clientRunning.set(false)
         runCatching { clientServerSocket?.close() }
         clientServerSocket = null
@@ -117,6 +132,20 @@ class DesktopWebRtcTunnelProxy(
                 mapPath = currentMapPath,
                 requiredFeatures = currentRequiredFeatures,
             )
+        }
+    }
+
+    override fun setFeatureReceiver(receiver: (FeatureMessage) -> Unit) { featureReceiver = receiver }
+
+    override fun broadcastFeatureMessage(message: FeatureMessage, excludeClientId: String?) {
+        sessions.values.forEach { session ->
+            if (session.remotePeerId != excludeClientId && (message.toPeerId == null || message.toPeerId == session.remotePeerId)) {
+                val channel = session.featureDataChannel ?: return@forEach
+                if (channel.state != RTCDataChannelState.OPEN) return@forEach
+                val encoded = P2PJson.encodeToString(message.copy(roomId = session.roomId,
+                    fromPeerId = session.localPeerId, toPeerId = session.remotePeerId)) + "\n"
+                runCatching { channel.send(RTCDataChannelBuffer(ByteBuffer.wrap(encoded.toByteArray(Charsets.UTF_8)), true)) }
+            }
         }
     }
 
@@ -205,7 +234,7 @@ class DesktopWebRtcTunnelProxy(
         try {
             session.openFuture.get(config.openTimeoutMs, TimeUnit.MILLISECONDS)
         } catch (e: Exception) {
-            GameEngine.log("WebRTC tunnel failed: ${e.message}")
+            logger.info { "WebRTC tunnel failed: ${e.message}" }
             closeSession(session)
         }
     }
@@ -264,7 +293,7 @@ class DesktopWebRtcTunnelProxy(
     private fun addRemoteIce(session: ClientSession, signal: WebRtcTunnelProxy.Signal) {
         val sdp = signal.candidateSdp ?: return
         val candidate = RTCIceCandidate(signal.candidateSdpMid, signal.candidateSdpMLineIndex, sdp)
-        if (session.peerConnection.getRemoteDescription() == null) {
+        if (session.peerConnection.remoteDescription == null) {
             session.pendingCandidates += candidate
         } else {
             session.peerConnection.addIceCandidate(candidate)
@@ -288,7 +317,7 @@ class DesktopWebRtcTunnelProxy(
     ): ClientSession {
         val peerConnection = factory!!.createPeerConnection(createRtcConfig(), object : PeerConnectionObserver {
             override fun onIceCandidate(candidate: RTCIceCandidate) {
-                GameEngine.log("WebRTC ICE candidate session=$sessionId mid=${candidate.sdpMid} index=${candidate.sdpMLineIndex} server=${candidate.serverUrl} sdp=${candidate.sdp}")
+                logger.info { "WebRTC ICE candidate session=$sessionId mid=${candidate.sdpMid} index=${candidate.sdpMLineIndex} server=${candidate.serverUrl} sdp=${candidate.sdp}" }
                 signalSender?.invoke(
                     WebRtcTunnelProxy.Signal(
                         roomId = roomId,
@@ -305,48 +334,49 @@ class DesktopWebRtcTunnelProxy(
 
             override fun onDataChannel(dataChannel: RTCDataChannel) {
                 val session = sessions[sessionId] ?: return
-                if (dataChannel.getLabel() == FEATURE_DATA_CHANNEL_LABEL) {
-                    session.featureDataChannel = dataChannel
-                } else {
-                    session.dataChannel = dataChannel
+                when (dataChannel.label) {
+                    FEATURE_DATA_CHANNEL_LABEL -> session.featureDataChannel = dataChannel
+                    GAME_DATA_CHANNEL_LABEL -> session.dataChannel = dataChannel
+                    else -> { dataChannel.close(); return }
                 }
                 registerDataChannel(session, dataChannel)
             }
 
             override fun onConnectionChange(state: RTCPeerConnectionState) {
-                GameEngine.log("WebRTC peer connection state session=$sessionId state=$state")
+                logger.info { "WebRTC peer connection state session=$sessionId state=$state" }
                 if (state == RTCPeerConnectionState.FAILED || state == RTCPeerConnectionState.CLOSED) {
                     sessions[sessionId]?.let { closeSession(it) }
                 }
             }
 
             override fun onIceConnectionChange(state: RTCIceConnectionState) {
-                GameEngine.log("WebRTC ICE connection state session=$sessionId state=$state")
+                logger.info { "WebRTC ICE connection state session=$sessionId state=$state" }
             }
 
             override fun onIceGatheringChange(state: RTCIceGatheringState) {
-                GameEngine.log("WebRTC ICE gathering state session=$sessionId state=$state")
+                logger.info { "WebRTC ICE gathering state session=$sessionId state=$state" }
             }
 
             override fun onIceCandidateError(event: RTCPeerConnectionIceErrorEvent) {
-                GameEngine.log("WebRTC ICE candidate error session=$sessionId url=${event.url} address=${event.address}:${event.port} code=${event.errorCode} text=${event.errorText}")
+                logger.info { "WebRTC ICE candidate error session=$sessionId url=${event.url} address=${event.address}:${event.port} code=${event.errorCode} text=${event.errorText}" }
             }
         })
         return ClientSession(roomId, sessionId, localPeerId, remotePeerId, peerConnection)
     }
 
     private fun registerDataChannel(session: ClientSession, dataChannel: RTCDataChannel) {
-        if (dataChannel.getLabel() == FEATURE_DATA_CHANNEL_LABEL) {
+        if (dataChannel.label == FEATURE_DATA_CHANNEL_LABEL) {
             registerFeatureDataChannel(session, dataChannel)
             return
         }
+        if (dataChannel.label != GAME_DATA_CHANNEL_LABEL) { dataChannel.close(); return }
         dataChannel.registerObserver(object : RTCDataChannelObserver {
             override fun onBufferedAmountChange(previousAmount: Long) {}
 
             override fun onStateChange() {
                 if (session.closed.get()) return
-                val state = runCatching { dataChannel.getState() }.getOrNull() ?: return
-                GameEngine.log("WebRTC DataChannel state session=${session.sessionId} state=$state")
+                val state = runCatching { dataChannel.state }.getOrNull() ?: return
+                logger.info { "WebRTC DataChannel state session=${session.sessionId} state=$state" }
                 if (state == RTCDataChannelState.OPEN) {
                     if (session.socket == null && hostGamePort > 0) {
                         try {
@@ -389,8 +419,8 @@ class DesktopWebRtcTunnelProxy(
 
             override fun onStateChange() {
                 if (session.closed.get()) return
-                val state = runCatching { dataChannel.getState() }.getOrNull() ?: return
-                GameEngine.log("WebRTC RWX feature DataChannel state session=${session.sessionId} state=$state")
+                val state = runCatching { dataChannel.state }.getOrNull() ?: return
+                logger.info { "WebRTC RWX feature DataChannel state session=${session.sessionId} state=$state" }
                 if (state == RTCDataChannelState.OPEN && session.localPeerId != hostPeerId) {
                     sendFeatureMessage(session, "hello")
                 }
@@ -413,7 +443,7 @@ class DesktopWebRtcTunnelProxy(
                     runCatching {
                         handleFeatureMessage(session, P2PJson.decodeFromString<FeatureMessage>(line))
                     }.onFailure { error ->
-                        GameEngine.log("WebRTC RWX feature message decode failed: ${error.message}")
+                        logger.info { "WebRTC RWX feature message decode failed: ${error.message}" }
                     }
                 }
             }
@@ -427,7 +457,7 @@ class DesktopWebRtcTunnelProxy(
         requiredFeatures: List<String> = emptyList(),
     ) {
         val dataChannel = session.featureDataChannel ?: return
-        if (runCatching { dataChannel.getState() }.getOrNull() != RTCDataChannelState.OPEN) {
+        if (runCatching { dataChannel.state }.getOrNull() != RTCDataChannelState.OPEN) {
             return
         }
         val gameEngine = GameEngine.getInstance()
@@ -446,7 +476,7 @@ class DesktopWebRtcTunnelProxy(
         runCatching {
             dataChannel.send(RTCDataChannelBuffer(ByteBuffer.wrap(encoded.toByteArray(Charsets.UTF_8)), true))
         }.onFailure { error ->
-            GameEngine.log("WebRTC RWX feature message send failed: ${error.message}")
+            logger.info { "WebRTC RWX feature message send failed: ${error.message}" }
         }
     }
 
@@ -457,16 +487,18 @@ class DesktopWebRtcTunnelProxy(
         if (message.toPeerId != null && message.toPeerId != session.localPeerId) {
             return
         }
+        if (message.fromPeerId != session.remotePeerId) return
+        featureReceiver?.invoke(message)
         when (message.type) {
             "hello" -> {
                 message.fromPeerId?.let { peerFeatures[it] = message.features.toSet() }
-                GameEngine.log(
+                logger.info {
                     "WebRTC RWX feature hello from=${message.fromPeerId} features=${
                         message.features.joinToString(
                             ","
                         )
                     }"
-                )
+                }
                 sendFeatureMessage(session, "welcome")
                 if (session.localPeerId == hostPeerId && (currentMapPath != null || currentRequiredFeatures.isNotEmpty())) {
                     sendFeatureMessage(
@@ -480,13 +512,13 @@ class DesktopWebRtcTunnelProxy(
 
             "welcome" -> {
                 message.fromPeerId?.let { peerFeatures[it] = message.features.toSet() }
-                GameEngine.log(
+                logger.info {
                     "WebRTC RWX feature welcome from=${message.fromPeerId} features=${
                         message.features.joinToString(
                             ","
                         )
                     }"
-                )
+                }
             }
 
             "mapFeatures" -> {
@@ -494,7 +526,7 @@ class DesktopWebRtcTunnelProxy(
             }
 
             else -> {
-                GameEngine.log("WebRTC RWX feature message type=${message.type} from=${message.fromPeerId}")
+                logger.info { "WebRTC RWX feature message type=${message.type} from=${message.fromPeerId}" }
             }
         }
     }
@@ -503,16 +535,16 @@ class DesktopWebRtcTunnelProxy(
         val supportedFeatures = FeatureIds.currentClientFeatures().toSet()
         val missing = message.requiredFeatures.distinct().filterNot { supportedFeatures.contains(it) }
         if (missing.isEmpty()) {
-            GameEngine.log(
+            logger.info {
                 "WebRTC RWX map features ok map=${message.mapPath} required=${
                     message.requiredFeatures.joinToString(
                         ","
                     )
                 }"
-            )
+            }
         } else {
             val text = "RWX map requires unsupported features: ${missing.joinToString(",")}"
-            GameEngine.log(text)
+            logger.info { text }
             NetworkEngine.reportDesync(text)
         }
     }
@@ -525,7 +557,7 @@ class DesktopWebRtcTunnelProxy(
             while (!session.closed.get()) {
                 val length = try {
                     socket.inputStream.read(buffer)
-                } catch (e: SocketTimeoutException) {
+                } catch (_: SocketTimeoutException) {
                     continue
                 }
                 if (length < 0) break
@@ -539,7 +571,7 @@ class DesktopWebRtcTunnelProxy(
     }
 
     private fun sendSessionDescription(session: ClientSession, type: String, description: RTCSessionDescription) {
-        GameEngine.log("WebRTC sending $type session=${session.sessionId} from=${session.localPeerId} to=${session.remotePeerId}")
+        logger.info { "WebRTC sending $type session=${session.sessionId} from=${session.localPeerId} to=${session.remotePeerId}" }
         signalSender?.invoke(
             WebRtcTunnelProxy.Signal(
                 roomId = session.roomId,
@@ -577,9 +609,9 @@ class DesktopWebRtcTunnelProxy(
         }
     }
 
-    private fun createRtcConfig(): RTCConfiguration {
+    private fun createRtcConfig(servers: List<String> = iceServerUrls): RTCConfiguration {
         return RTCConfiguration().apply {
-            normalizeIceServers(iceServerUrls).forEach { url ->
+            normalizeIceServers(servers).forEach { url ->
                 iceServers.add(createIceServer(url))
             }
         }

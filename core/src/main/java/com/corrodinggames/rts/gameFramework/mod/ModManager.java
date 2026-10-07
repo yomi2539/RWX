@@ -164,6 +164,7 @@ public class ModManager {
 
     /* JADX INFO: renamed from: a */
     public void loadAndApply() {
+        io.github.rwx.p2p.transfer.TransferRevision.changed();
         loadAllMods();
         loadModSelection();
         activateEnabledJvmMods();
@@ -508,6 +509,7 @@ public class ModManager {
 
     /* JADX INFO: renamed from: l */
     public void applyAndSaveMods() {
+        io.github.rwx.p2p.transfer.TransferRevision.changed();
         GameEngine gameEngine = GameEngine.getInstance();
         try {
             gameEngine.isSaving = true;

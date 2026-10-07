@@ -136,6 +136,8 @@ fun installApp(
     val battleRoomSceneHost = bootstrap.battleRoomSceneHost
     val dialogSceneHost = bootstrap.dialogSceneHost
 
+    lateinit var p2pPreparation: P2PJoinPreparationController
+
     var lastExternalGameFrame: GameFrame? = null
     val startupTargetScreen = if (options.initialScreen == AppScreen.Loading) {
         AppScreen.MainMenu
@@ -175,6 +177,7 @@ fun installApp(
         sceneHost = battleRoomSceneHost,
         initialMode = options.levelSelectMode ?: LevelSelectMode.Skirmish,
         showUnavailableDialog = dialogController::showUnavailable,
+        onRoomClosed = { p2pPreparation.onRoomClosed() },
     )
 
     fun mainMenuConditions() = MainMenuConditions(
@@ -244,12 +247,21 @@ fun installApp(
         onConnected = { snapshot ->
             if (battleRoomController.updateConnectedRoom(snapshot)) navigator.navigateTo(AppScreen.BattleRoom)
         },
-        onFailed = dialogController::showUnavailable,
+        onFailed = { message ->
+            if (!p2pPreparation.recordJoinError(message)) dialogController.showUnavailable(message)
+        },
     )
+    p2pPreparation = P2PJoinPreparationController(
+        gameSession,
+        { platformBridge?.storage ?: error("Platform storage is unavailable") }, battleRoomJoinController,
+        loadingDialogSceneHost, dialogSceneHost, dialogController::showUnavailable
+    )
+    battleRoomJoinController.onSettled = p2pPreparation::onGameJoinFinished
     val multiplayerConnectionController = MultiplayerConnectionController(
         gameSession = gameSession,
         lobbyController = multiplayerLobbyController,
         battleRoomJoinController = battleRoomJoinController,
+        p2pPreparation = p2pPreparation,
         dialogSceneHost = dialogSceneHost,
         multiplayerSceneHost = multiplayerSceneHost,
         selectHostMap = battleRoomController::selectedOrDefaultMap,
@@ -444,6 +456,7 @@ fun installApp(
         navigator = navigator,
         uiController = uiController,
         onClose = {
+            p2pPreparation.close()
             frameLoop?.close()
             scheduler.stop()
             CoreUiEventQueue.setOverlayRequestHandler(null)
@@ -512,6 +525,7 @@ fun installApp(
         sessionActions = sessionActions,
         updateController = updateController,
         battleRoomJoinController = battleRoomJoinController,
+        p2pPreparation = p2pPreparation,
         pendingStartController = pendingStartController,
         externalGameController = externalGameController,
         modsController = modsController,

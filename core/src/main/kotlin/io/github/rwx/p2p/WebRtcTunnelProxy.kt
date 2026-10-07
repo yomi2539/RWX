@@ -27,6 +27,7 @@ interface WebRtcTunnelProxy {
         var candidateSdpMid: String? = null,
         var candidateSdpMLineIndex: Int = 0,
         var candidateSdp: String? = null,
+        var purpose: String = "game",
     ) {
         fun isValid(): Boolean =
             magic == "rwx-p2p-webrtc" &&
@@ -54,9 +55,30 @@ interface WebRtcTunnelProxy {
         sendSignal: (Signal) -> Unit,
     ): Int
 
+    fun startTransferHost(
+        roomId: String,
+        localClientId: String,
+        iceServers: List<String>,
+        sendSignal: (Signal) -> Unit,
+        accept: (WebRtcTransferConnection) -> Unit,
+    )
+
+    fun openTransfer(
+        roomId: String,
+        sessionId: String,
+        localClientId: String,
+        hostClientId: String,
+        iceServers: List<String>,
+        sendSignal: (Signal) -> Unit,
+    ): WebRtcTransferConnection
+
+    fun handleTransferSignal(signal: Signal)
+    fun stopTransfers()
     fun stop()
 
     fun broadcastMapFeatures(mapPath: String?, requiredFeatures: List<String>)
+    fun broadcastFeatureMessage(message: FeatureMessage, excludeClientId: String? = null)
+    fun setFeatureReceiver(receiver: (FeatureMessage) -> Unit)
 
     fun getConnectedPeerIds(): Set<String>
 
@@ -110,9 +132,19 @@ private class UnsupportedWebRtcTunnelProxy(
         throw unsupported()
     }
 
+    override fun startTransferHost(roomId: String, localClientId: String, iceServers: List<String>,
+        sendSignal: (WebRtcTunnelProxy.Signal) -> Unit, accept: (WebRtcTransferConnection) -> Unit) = throw unsupported()
+
+    override fun openTransfer(roomId: String, sessionId: String, localClientId: String, hostClientId: String,
+        iceServers: List<String>, sendSignal: (WebRtcTunnelProxy.Signal) -> Unit): WebRtcTransferConnection = throw unsupported()
+
+    override fun handleTransferSignal(signal: WebRtcTunnelProxy.Signal) = Unit
+    override fun stopTransfers() = Unit
     override fun stop() = Unit
 
     override fun broadcastMapFeatures(mapPath: String?, requiredFeatures: List<String>) = Unit
+    override fun broadcastFeatureMessage(message: FeatureMessage, excludeClientId: String?) = Unit
+    override fun setFeatureReceiver(receiver: (FeatureMessage) -> Unit) = Unit
 
     override fun getConnectedPeerIds(): Set<String> = emptySet()
 

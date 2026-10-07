@@ -3294,6 +3294,9 @@ public class CustomUnitConfigParser {
 
     /* JADX INFO: renamed from: a */
     public static boolean isPathWithinMod(String str, String str2, String str3, ModInfo modInfo) throws IOException {
+        if (io.github.rwx.p2p.transfer.ManagedTransferResources.isManaged(modInfo)) {
+            return io.github.rwx.p2p.transfer.ManagedTransferResources.allows(modInfo, str3);
+        }
         if (str2 == null || !str2.contains("..") || GameEngine.isAndroidPlatform()) {
             return true;
         }

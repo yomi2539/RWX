@@ -126,6 +126,8 @@ fun AppDialog(state: DialogUiState, enableAnimations: Boolean = true, onAction: 
                                 onValueChange = { inputText = it; dispatch(DialogUiAction.EditInput(it, input.valueRevision)) },
                                 placeholder = { Text(input.hint) },
                                 singleLine = true,
+                                visualTransformation = if (input.password) androidx.compose.ui.text.input.PasswordVisualTransformation()
+                                else androidx.compose.ui.text.input.VisualTransformation.None,
                                 enabled = !submitted && !busy,
                                 trailingIcon = if (input.trailingIcon != null || input.canChooseInput) {{
                                     val icon = input.trailingIcon ?: Icon.Import

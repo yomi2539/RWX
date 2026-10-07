@@ -304,7 +304,8 @@ public class ZipHelper {
         }
         try {
             try {
-                return new AssetInputStream(this.zipFile.getInputStream(zipEntryF), this.zipPath + "/" + str);
+                return new AssetInputStream(io.github.rwx.p2p.transfer.ManagedTransferResources.limit(
+                        this.zipPath, zipEntryF.getSize(), this.zipFile.getInputStream(zipEntryF)), this.zipPath + "/" + str);
             } catch (FileNotFoundException e) {
                 e.printStackTrace();
                 return null;

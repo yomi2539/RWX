@@ -23,6 +23,7 @@ internal class BattleRoomJoinController(
     private val observation = AtomicReference<JoinObservation?>(null)
     private var monitorJob: Job? = null
     private var loadingHandle: LoadingDialogHandle? = null
+    var onSettled: (Boolean) -> Unit = {}
 
     val isPending: Boolean
         get() = pendingJoin != null
@@ -63,6 +64,7 @@ internal class BattleRoomJoinController(
                     clearPending()
                     hideLoading()
                     gameSession.cancelBattleRoomJoin()
+                    onSettled(false)
                 }
             }
         }.onFailure { error ->
@@ -70,6 +72,7 @@ internal class BattleRoomJoinController(
             hideLoading()
             logger.warn(error) { "Battle room join failed" }
             onFailed("$failurePrefix: ${error.message ?: error.javaClass.simpleName}")
+            onSettled(false)
         }
     }
 
@@ -92,6 +95,7 @@ internal class BattleRoomJoinController(
                 clearPending()
                 hideLoading()
                 onConnected(latestProbe?.snapshot)
+                onSettled(true)
             }
 
             BattleRoomJoinPollResult.Failed -> {
@@ -109,6 +113,7 @@ internal class BattleRoomJoinController(
         clearPending()
         gameSession.cancelBattleRoomJoin()
         hideLoading()
+        onSettled(false)
     }
 
     private suspend fun monitor(
@@ -154,6 +159,7 @@ internal class BattleRoomJoinController(
         gameSession.cancelBattleRoomJoin()
         hideLoading()
         onFailed(message)
+        onSettled(false)
     }
 
     private fun hideLoading() {

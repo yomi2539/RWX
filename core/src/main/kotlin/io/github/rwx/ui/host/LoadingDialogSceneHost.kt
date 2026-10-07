@@ -20,6 +20,7 @@ class LoadingDialogSceneHost(
     fun updateProgress(message: String, progress: Float?, handle: LoadingDialogHandle? = null): Boolean = store.updateProgress(message, progress, handle)
     fun hide() { store.hide() }
     fun hide(handle: LoadingDialogHandle): Boolean = store.hide(handle)
+    fun disableCancellation(handle: LoadingDialogHandle) = store.disableCancellation(handle)
     fun cancel(revision: Long): Boolean = store.cancel(revision)
     fun suspendCurrent(): LoadingDialogSuspension? = store.suspendCurrent()
     fun resume(token: LoadingDialogSuspension): Boolean = store.resume(token)

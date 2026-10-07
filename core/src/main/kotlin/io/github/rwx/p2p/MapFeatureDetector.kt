@@ -1,7 +1,7 @@
 package io.github.rwx.p2p
 
 import com.corrodinggames.rts.game.map.TileMap
-import com.corrodinggames.rts.gameFramework.GameEngine
+import io.github.rwx.logger
 import com.corrodinggames.rts.gameFramework.mission.AreaControlMode
 import org.w3c.dom.Element
 import org.xml.sax.InputSource
@@ -75,7 +75,7 @@ object MapFeatureDetector {
                 detectFromHead(readHeadUtf8(input, LIGHTWEIGHT_READ_LIMIT_BYTES))
             } ?: emptyList()
         }.getOrElse { error ->
-            GameEngine.log("RWX map feature detection failed for $path: ${error.message}")
+            logger.warn(error) { "RWX map feature detection failed for $path: ${error.message}" }
             emptyList()
         }
     }
@@ -102,7 +102,7 @@ object MapFeatureDetector {
                 features.distinct()
             } ?: emptyList()
         }.getOrElse { error ->
-            GameEngine.log("RWX map feature detection failed for $path: ${error.message}")
+            logger.warn(error) { "RWX map feature detection failed for $path: ${error.message}" }
             emptyList()
         }
     }
