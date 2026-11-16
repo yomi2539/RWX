@@ -1,17 +1,23 @@
 package io.github.rwx.app
 
-import io.github.rwx.mod.registry.UiRegistry
 import io.github.rwx.geometry.Viewport
+import io.github.rwx.mod.registry.UiRegistry
 import io.github.rwx.ui.AppScreen
-import io.github.rwx.ui.AppScreenLayout
 import io.github.rwx.ui.InGameOverlayState
 
 internal class ScreenPresenter(
     private val bootstrap: AppBootstrap,
     private val viewport: () -> Viewport,
 ) {
-    var battleBackgroundVisible: Boolean = false
+    var presentation = ScreenPresentation(
+        gameSurface = GameSurface.Hidden,
+        uiOverlay = UiOverlay.None,
+        settingsActive = false,
+        menuBackgroundVisible = false,
+        pausedBackground = false,
+    )
         private set
+
     private var inGameOverlay: InGameOverlayState? = null
 
     fun updateInGameOverlay(state: InGameOverlayState?, screen: AppScreen) {
@@ -19,61 +25,54 @@ internal class ScreenPresenter(
         if (screen == AppScreen.InGame) apply(screen)
     }
 
-    fun shouldShowBackgroundBattle(screen: AppScreen): Boolean =
-        supportsBackgroundBattle(screen) &&
-                bootstrap.settingsModel.showBackgroundBattleDemo.value &&
-                bootstrap.menuBackgroundSession.isMenuBackgroundActive() &&
-                !bootstrap.gameSession.canResume()
-
     fun apply(screen: AppScreen) {
-        val isBackgroundBattlePreparing = ensureBackgroundBattle(screen)
-        val gameSession = bootstrap.gameSession
-        val visibility = AppScreenLayout.visibilityFor(screen)
-        val gameOverlay = inGameOverlay.takeIf { screen == AppScreen.InGame }
-        val isBackgroundBattleVisible = shouldShowBackgroundBattle(screen)
-        val isExternalModWindowOverlayVisible = screen == AppScreen.ModWindow && !gameSession.usesFrameCommandRendering
-        val isExternalModHudOverlayVisible = gameOverlay?.let {
-            it.visible && !gameSession.usesFrameCommandRendering
-        } ?: shouldShowExternalModHudOverlay(
-            hudVisible = visibility.hud,
-            usesFrameCommandRendering = gameSession.usesFrameCommandRendering,
-            hasActiveHudLayers = UiRegistry.hasActiveHudLayers(),
-        )
-        val isResumeBackgroundVisible = shouldShowResumeMenuBackground(screen, gameSession.canResume())
-        val isExternalRwBackgroundVisible = shouldShowExternalRwBackgroundSurface(
-            isBackgroundBattleVisible = isBackgroundBattleVisible,
-            isResumeBackgroundVisible = isResumeBackgroundVisible,
-            usesFrameCommandRendering = gameSession.usesFrameCommandRendering,
-            usesNativeSurfaceForResumeBackground = gameSession.usesNativeSurfaceForResumeBackground,
-        ) || (isBackgroundBattlePreparing && !gameSession.usesFrameCommandRendering)
-        val isBattleBackgroundVisible = isBackgroundBattleVisible ||
-                isResumeBackgroundVisible
-
-        battleBackgroundVisible = isBattleBackgroundVisible
-        bootstrap.mainMenuSceneHost.setBattleBackgroundVisible(isBattleBackgroundVisible)
-
-        bootstrap.settingsSceneHost.setActive(visibility.settings)
-        gameSession.setGameVisible(
-            screen == AppScreen.InGame || isExternalRwBackgroundVisible,
-            viewport(),
-            uiOverlay = isExternalRwBackgroundVisible ||
-                    isExternalModWindowOverlayVisible ||
-                    isExternalModHudOverlayVisible,
-            pausedBackground = shouldPauseRwGameForScreen(screen, isResumeBackgroundVisible) || gameOverlay?.pausesGame == true,
-        )
+        val canResume = bootstrap.gameSession.canResume()
+        val background = if (bootstrap.settingsModel.showBackgroundBattleDemo.value &&
+            supportsBackgroundBattle(screen) && !canResume
+        ) {
+            if (!bootstrap.gameSession.isMenuBackgroundActive()) {
+                bootstrap.gameSession.prepareMenuBackgroundAsync(viewport())
+            }
+            backgroundState()
+        } else {
+            BackgroundBattleState.Inactive
+        }
+        publish(present(screen, background, canResume))
     }
 
-    private fun ensureBackgroundBattle(screen: AppScreen): Boolean {
-        if (!bootstrap.settingsModel.showBackgroundBattleDemo.value) return false
-        if (!supportsBackgroundBattle(screen)) return false
-        if (bootstrap.gameSession.canResume() || bootstrap.menuBackgroundSession.isMenuBackgroundActive()) return false
-        bootstrap.menuBackgroundSession.prepareMenuBackgroundAsync(viewport())
-        return true
+    /** Engine preparation can finish without a screen transition or a UI event. */
+    fun refresh(screen: AppScreen, canResume: Boolean) {
+        val next = present(screen, backgroundState(), canResume)
+        if (next != presentation) publish(next)
+    }
+
+    private fun backgroundState(): BackgroundBattleState = when {
+        bootstrap.gameSession.isMenuBackgroundActive() -> BackgroundBattleState.Active
+        bootstrap.gameSession.isPreparingMap() -> BackgroundBattleState.Preparing
+        else -> BackgroundBattleState.Inactive
+    }
+
+    private fun present(
+        screen: AppScreen,
+        background: BackgroundBattleState,
+        canResume: Boolean,
+    ): ScreenPresentation = ScreenPresentationPolicy.present(
+        screen = screen,
+        showBackgroundBattle = bootstrap.settingsModel.showBackgroundBattleDemo.value,
+        backgroundBattle = background,
+        canResume = canResume,
+        inGameOverlay = inGameOverlay.takeIf { screen == AppScreen.InGame },
+        hasActiveHudLayers = UiRegistry.hasActiveHudLayers(),
+    )
+
+    private fun publish(next: ScreenPresentation) {
+        presentation = next
+        bootstrap.settingsSceneHost.setActive(next.settingsActive)
+        bootstrap.gameSession.setGameVisible(
+            next.gameSurface != GameSurface.Hidden,
+            viewport(),
+            uiOverlay = next.uiOverlay != UiOverlay.None,
+            pausedBackground = next.pausedBackground,
+        )
     }
 }
-
-internal fun shouldShowExternalModHudOverlay(
-    hudVisible: Boolean,
-    usesFrameCommandRendering: Boolean,
-    hasActiveHudLayers: Boolean,
-): Boolean = hudVisible && !usesFrameCommandRendering && hasActiveHudLayers

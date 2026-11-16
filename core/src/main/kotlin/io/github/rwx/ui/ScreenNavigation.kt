@@ -35,12 +35,6 @@ data class ScreenVisibility(
     val battleRoom: Boolean = false,
 )
 
-/**
- * Maps each [AppScreen] to the layers it shows. The game frame stays available behind menu screens
- * when the backend provides one; the HUD and menu overlay swap in and out. A host turns this into
- * Kool scene visibility — this object owns no Kool types. The mod window and the mod HUD are
- * Compose-only: [ScreenVisibility.hud] says whether HUD layers are drawn on a screen.
- */
 object AppScreenLayout {
     fun visibilityFor(screen: AppScreen): ScreenVisibility = when (screen) {
         AppScreen.MainMenu -> ScreenVisibility(
@@ -194,11 +188,6 @@ object AppScreenLayout {
         )
     }
 }
-
-/** Which live input a given [AppScreen] accepts. Plain data so the policy is testable. */
-data class ScreenInput(
-    val worldInteraction: Boolean,
-)
 
 
 class ScreenNavigator(

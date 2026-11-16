@@ -1,10 +1,10 @@
 package io.github.rwx.app
 
 import com.corrodinggames.rts.gameFramework.local.Locale
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.i18n.I18n
 import io.github.rwx.logger
 import io.github.rwx.mod.registry.UiRegistry
-import io.github.rwx.geometry.Viewport
 import io.github.rwx.session.GameSession
 import io.github.rwx.ui.AppScreen
 import io.github.rwx.ui.CoreUiEvent
@@ -25,10 +25,10 @@ internal class InGameDialogController(
 ) {
     fun showDialogOverGame(dialog: Dialog) {
         val screen = currentScreen()
-        val shouldOverlayGameCanvas = screen == AppScreen.InGame && !gameSession.usesFrameCommandRendering
+        val shouldOverlayGameCanvas = screen == AppScreen.InGame
 
         fun restoreGameCanvas() {
-            if (currentScreen() == AppScreen.InGame && !gameSession.usesFrameCommandRendering) {
+            if (currentScreen() == AppScreen.InGame) {
                 gameSession.setGameVisible(
                     true,
                     viewport(),
@@ -320,15 +320,14 @@ internal class InGameDialogController(
     fun requestInGameOverlay(enqueue: () -> Unit) {
 
         enqueue()
-        if (currentScreen() == AppScreen.InGame && !gameSession.usesFrameCommandRendering) {
-
+        if (currentScreen() == AppScreen.InGame) {
             gameSession.setGameVisible(true, viewport(), uiOverlay = true, pausedBackground = true)
         }
     }
 
     fun requestOverlayForQueuedEvent(event: CoreUiEvent) {
         if (!requiresGameOverlay(event)) return
-        if (currentScreen() != AppScreen.InGame || gameSession.usesFrameCommandRendering) return
+        if (currentScreen() != AppScreen.InGame) return
 
         gameSession.setGameVisible(true, viewport(), uiOverlay = true, pausedBackground = true)
     }

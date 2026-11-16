@@ -1,21 +1,6 @@
 package io.github.rwx.ui
 
-import io.github.rwx.ui.model.LoadingDialogUiState
-import io.github.rwx.ui.model.LoadingUiState
-import io.github.rwx.ui.model.DialogUiState
-import io.github.rwx.ui.model.BattleRoomModel
-import io.github.rwx.ui.model.LevelSelectUiState
-import io.github.rwx.ui.model.MainMenuConditions
-import io.github.rwx.ui.model.MainMenuItem
-import io.github.rwx.ui.model.MultiplayerRoomListModel
-import io.github.rwx.ui.model.PauseMenuItem
-import io.github.rwx.ui.model.SettingsPage
-import io.github.rwx.ui.model.SettingsPageState
-import io.github.rwx.ui.model.ModsUiState
-import io.github.rwx.ui.model.ModHudUiState
-import io.github.rwx.ui.model.ModWindowUiState
-import io.github.rwx.ui.model.ResourceBrowserModel
-import io.github.rwx.ui.model.ReplaySelectUiState
+import io.github.rwx.ui.model.*
 
 /** Immutable presentation state shared by the legacy frontend and the Compose host. */
 data class AppUiState(
@@ -26,7 +11,7 @@ data class AppUiState(
     val colorSchemeId: ColorSchemeId = ColorSchemeRegistry.defaultSchemeId,
     val enableAnimations: Boolean = true,
     val overlayOpacity: Float = DEFAULT_OVERLAY_OPACITY,
-    val battleBackgroundVisible: Boolean = false,
+    val menuBackgroundVisible: Boolean = false,
     val legacyOverlayVisible: Boolean = false,
     val settings: SettingsPageState? = null,
     val settingsPages: List<SettingsPage> = emptyList(),
@@ -73,9 +58,7 @@ data class AppUiState(
                 dialog != null || loadingDialog != null
             AppScreen.Settings -> settings != null &&
                 (settings.page != SettingsPage.KeyBindings || settings.keyBindings != null)
-            else -> false
         }
 }
 
-/** Presentation only; contains no window, renderer, or game engine references. */
 data class InGameOverlayState(val visible: Boolean, val pausesGame: Boolean)

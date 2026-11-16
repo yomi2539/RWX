@@ -9,13 +9,13 @@ import androidx.compose.ui.awt.ComposePanel
 import com.corrodinggames.rts.gameFramework.SettingsEngine
 import io.github.rwx.app.AppSession
 import io.github.rwx.geometry.Viewport
+import io.github.rwx.skia.SkiaOverlayPanelHost
+import io.github.rwx.skia.acceptsDirectSkiaInput
+import io.github.rwx.skia.createSkiaGamePanel
 import io.github.rwx.slick.SlickAwtGLCanvas
 import io.github.rwx.slick.SlickCanvasHost
 import io.github.rwx.slick.SlickFrameSnapshot
 import io.github.rwx.slick.SlickSnapshotPanel
-import io.github.rwx.skia.SkiaOverlayPanelHost
-import io.github.rwx.skia.acceptsDirectSkiaInput
-import io.github.rwx.skia.createSkiaGamePanel
 import io.github.rwx.ui.AppScreen
 import io.github.rwx.ui.AppUiState
 import io.github.rwx.ui.DesktopComposeOverlay
@@ -183,7 +183,7 @@ class SwingAppHost private constructor(
         composeTexturePanel.isVisible = showUi
         composeTexturePanel.nativePresentation = showGame && showUi
         snapshotPanel.isVisible = !showGame && true && (state == null ||
-            state.battleBackgroundVisible || state.screen == AppScreen.Paused || state.screen == AppScreen.InGame)
+                state.menuBackgroundVisible || state.screen == AppScreen.Paused || state.screen == AppScreen.InGame)
         if (changed) {
             content.revalidate()
             content.repaint()

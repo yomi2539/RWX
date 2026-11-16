@@ -10,25 +10,6 @@ internal fun supportsBackgroundBattle(screen: AppScreen): Boolean =
             screen != InGame &&
             screen != ModWindow
 
-internal fun shouldShowResumeMenuBackground(screen: AppScreen, canResume: Boolean): Boolean =
-    supportsBackgroundBattle(screen) && canResume
-
-internal fun shouldPauseRwGameForScreen(
-    screen: AppScreen,
-    isResumeBackgroundVisible: Boolean,
-): Boolean = screen == Paused || screen == ModWindow || isResumeBackgroundVisible
-
-internal fun shouldShowExternalRwBackgroundSurface(
-    isBackgroundBattleVisible: Boolean,
-    isResumeBackgroundVisible: Boolean,
-    usesFrameCommandRendering: Boolean,
-    usesNativeSurfaceForResumeBackground: Boolean = false,
-): Boolean =
-    !usesFrameCommandRendering &&
-            (isBackgroundBattleVisible ||
-                    (isResumeBackgroundVisible && usesNativeSurfaceForResumeBackground))
-
-
 internal fun shouldStartLiveBattleRoomInPlace(
     hasLaunchConfig: Boolean,
     isHost: Boolean,
@@ -37,47 +18,31 @@ internal fun shouldStartLiveBattleRoomInPlace(
 ): Boolean =
     !hasLaunchConfig && isHost && (isNetworkMultiplayer || isBattleRoomLive)
 
-internal fun shouldReturnToMainMenuAfterExternalGameClosed(
-    isRwGameVisible: Boolean,
-    usesFrameCommandRendering: Boolean,
+internal fun shouldReturnToMainMenuAfterGameClosed(
+    isGameVisible: Boolean,
     isStartingMap: Boolean,
-    externalGameWasReady: Boolean,
+    gameWasReady: Boolean,
     canResume: Boolean,
     mapLoadFailed: Boolean = false,
 ): Boolean =
-    isRwGameVisible &&
-            !usesFrameCommandRendering &&
+    isGameVisible &&
             !isStartingMap &&
-            (externalGameWasReady || mapLoadFailed) &&
+            (gameWasReady || mapLoadFailed) &&
             !canResume
-
-internal fun shouldDiscardExistingGameForStart(
-    startNew: Boolean,
-    hasLaunchConfig: Boolean,
-    usesFrameCommandRendering: Boolean,
-    canResume: Boolean,
-    canStartNewSessionInPlace: Boolean,
-): Boolean =
-    startNew &&
-            !canStartNewSessionInPlace &&
-            (!hasLaunchConfig || usesFrameCommandRendering || canResume)
 
 internal enum class BattleRoomGameStartedAction {
     Ignore,
-    PrepareFrameCommandGame,
-    ShowExternalGame,
+    ShowGame,
 }
 
 internal fun battleRoomGameStartedAction(
     currentScreen: AppScreen,
-    usesFrameCommandRendering: Boolean,
     inProcessNetworkGameStarted: Boolean,
 ): BattleRoomGameStartedAction =
     when {
         currentScreen == InGame -> BattleRoomGameStartedAction.Ignore
         !inProcessNetworkGameStarted -> BattleRoomGameStartedAction.Ignore
-        !usesFrameCommandRendering -> BattleRoomGameStartedAction.ShowExternalGame
-        else -> BattleRoomGameStartedAction.PrepareFrameCommandGame
+        else -> BattleRoomGameStartedAction.ShowGame
     }
 
 internal fun mapStartFailureReturnScreen(requestedReturnScreen: AppScreen?): AppScreen =
@@ -99,25 +64,18 @@ internal fun mapStartFailureReturnScreen(requestedReturnScreen: AppScreen?): App
     }
 
 internal enum class BackNavigationAction {
-    Pause,
     ShowExitDialog,
     LevelSelect,
     BattleRoom,
     MainMenu,
-    InGame,
     CloseModWindow,
 }
 
 internal fun backActionForScreen(
     screen: AppScreen,
-    usesFrameCommandRendering: Boolean,
 ): BackNavigationAction =
     when (screen) {
-        AppScreen.InGame -> if (usesFrameCommandRendering) {
-            BackNavigationAction.Pause
-        } else {
-            BackNavigationAction.ShowExitDialog
-        }
+        AppScreen.InGame -> BackNavigationAction.ShowExitDialog
 
         AppScreen.Paused -> BackNavigationAction.ShowExitDialog
         AppScreen.LevelSelect -> BackNavigationAction.LevelSelect

@@ -3,28 +3,27 @@ package io.github.rwx
 import android.app.Activity
 import android.os.Handler
 import android.os.Looper
-import androidx.activity.ComponentActivity
-import androidx.compose.ui.platform.ComposeView
-import androidx.lifecycle.DefaultLifecycleObserver
-import androidx.lifecycle.LifecycleOwner
 import android.view.MotionEvent
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.activity.ComponentActivity
+import androidx.compose.ui.platform.ComposeView
+import androidx.core.view.isVisible
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import com.corrodinggames.rts.game.GameLogic
 import com.corrodinggames.rts.game.map.TileMap
 import com.corrodinggames.rts.gameFramework.GameEngine
 import io.github.rwx.app.launchOnIO
 import io.github.rwx.geometry.Point
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.input.MultiTouchPointerState
 import io.github.rwx.platform.CoreGameView
-import io.github.rwx.geometry.Viewport
 import io.github.rwx.session.GameSession
-import io.github.rwx.session.GameSessionRendererProfile
 import io.github.rwx.ui.BattleRoomUiBridge
 import io.github.rwx.ui.InGameMenuController
 import kotlin.math.roundToInt
-import androidx.core.view.isVisible
 
 internal class AndroidGameSession(
     override var renderBackend: AndroidRenderBackend,
@@ -58,14 +57,6 @@ internal class AndroidGameSession(
     private var pausedForResumeBackground = false
     private var resumeBackgroundFrameReady = false
 
-    init {
-        configureRendererProfile(
-            GameSessionRendererProfile(
-                usesFrameCommandRendering = false,
-                usesNativeSurfaceForResumeBackground = true,
-            )
-        )
-    }
 
     fun attach(activity: ComponentActivity, host: FrameLayout, composeView: ComposeView) {
         checkMainThread()

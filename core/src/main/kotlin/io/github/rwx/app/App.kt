@@ -1,20 +1,11 @@
 package io.github.rwx.app
 
-import io.github.rwx.p2p.P2PLobbyService
-
-import io.github.rwx.ui.model.ReplayEntry
-
-import io.github.rwx.logger
 import io.github.rwx.geometry.Viewport
+import io.github.rwx.logger
+import io.github.rwx.p2p.P2PLobbyService
 import io.github.rwx.ui.*
-import io.github.rwx.ui.model.BattleRoomAction
-import io.github.rwx.ui.model.LevelSelectAction
-import io.github.rwx.ui.model.LevelSelectMode
-import io.github.rwx.ui.model.MainMenuConditions
-import io.github.rwx.ui.model.PauseMenuConditions
-import io.github.rwx.ui.model.ResourceBrowserType
+import io.github.rwx.ui.model.*
 import kotlinx.coroutines.*
-import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.StateFlow
 import kotlin.coroutines.CoroutineContext
 
@@ -52,10 +43,7 @@ class AppSession internal constructor(
     }
     fun dispatch(action: AppAction) = uiController.dispatch(action)
     val uiState: StateFlow<AppUiState> get() = uiController.state
-    fun isFinishLoading(): Boolean = navigator.current != AppScreen.Loading
     fun navigateBack() = onBack()
-    fun quit() = onQuit()
-    fun mainMenuConditions(): MainMenuConditions = uiState.value.mainMenuConditions
     fun setComposeUiEnabled(enabled: Boolean) = uiController.setComposeEnabled(enabled)
 
 }
@@ -71,7 +59,6 @@ fun installApp(
     val platformBridge = bootstrap.platformBridge
     val appMetadata = bootstrap.appMetadata
     val gameSession = bootstrap.gameSession
-    val menuBackgroundSession = bootstrap.menuBackgroundSession
     val modRepository = bootstrap.modRepository
     val resourceBrowserRepository = bootstrap.resourceBrowserRepository
     val updateRepository = bootstrap.updateRepository
@@ -80,7 +67,6 @@ fun installApp(
     val settingsModel = bootstrap.settingsModel
     val loadingSceneHost = bootstrap.loadingSceneHost
     val mainMenuSceneHost = bootstrap.mainMenuSceneHost
-    val pauseSceneHost = bootstrap.pauseSceneHost
     val levelSelectSceneHost = bootstrap.levelSelectSceneHost
     val levelSelectViewModelFactory = bootstrap.levelSelectViewModelFactory
     val replaySelectSceneHost = bootstrap.replaySelectSceneHost
@@ -111,7 +97,6 @@ fun installApp(
 
     val startupPreparationController = StartupPreparationController(
         gameSession = gameSession,
-        menuBackgroundSession = menuBackgroundSession,
         loadingSceneHost = loadingSceneHost,
         navigateTo = { screen -> navigator.navigateTo(screen) },
         isBackgroundBattleDemoEnabled = { settingsModel.showBackgroundBattleDemo.value },
@@ -245,12 +230,6 @@ fun installApp(
         showUnavailableDialog = dialogController::showUnavailable,
     )
 
-    val externalGameController = ExternalGameController(
-        gameSession = gameSession,
-        refreshMainMenu = ::refreshMainMenu,
-        navigateTo = { screen -> navigator.navigateTo(screen) },
-    )
-
     gameSession.setInGameMenuCallbacks(object : InGameMenuCallbacks {
         override fun requestSettings() {
             inGameDialogController.requestInGameOverlay { CoreUiEventQueue.requestInGameSettings() }
@@ -374,17 +353,7 @@ fun installApp(
         hideDialog = dialogSceneHost::hide,
     )
     val onBack: () -> Unit = {
-        when (backActionForScreen(navigator.current, gameSession.usesFrameCommandRendering)) {
-            BackNavigationAction.Pause -> {
-                pauseSceneHost.updateItems(
-                    PauseMenuConditions(
-                        canSave = true,
-                        isMultiplayer = gameSession.isNetworkMultiplayerActive(),
-                    )
-                )
-                navigator.navigateTo(AppScreen.Paused)
-            }
-
+        when (backActionForScreen(navigator.current)) {
             BackNavigationAction.ShowExitDialog -> {
                 inGameDialogController.showExitGameDialog(sessionActions::exitRwGameToMainMenu)
             }
@@ -396,7 +365,6 @@ fun installApp(
 
             BackNavigationAction.LevelSelect -> actions.levelSelect(LevelSelectAction.Back)
             BackNavigationAction.BattleRoom -> actions.battleRoom(BattleRoomAction.Back)
-            BackNavigationAction.InGame -> navigator.navigateTo(AppScreen.InGame)
             BackNavigationAction.CloseModWindow -> sessionActions.closeInGameModWindow()
         }
     }
@@ -404,7 +372,7 @@ fun installApp(
         bootstrap = bootstrap,
         currentScreen = { navigator.current },
         mainMenuConditions = ::mainMenuConditions,
-        battleBackgroundVisible = { screenPresenter.battleBackgroundVisible },
+        menuBackgroundVisible = { screenPresenter.presentation.menuBackgroundVisible },
         onBack = onBack,
         closeModWindow = sessionActions::closeInGameModWindow,
         refreshInGameOverlay = { screenPresenter.updateInGameOverlay(it, navigator.current) },
@@ -485,7 +453,6 @@ fun installApp(
         battleRoomJoinController = battleRoomJoinController,
         p2pPreparation = p2pPreparation,
         pendingStartController = pendingStartController,
-        externalGameController = externalGameController,
         modsController = modsController,
         gameReadyController = gameReadyController,
         onBattleRoomClosed = closed@{ reason, message ->
@@ -501,7 +468,6 @@ fun installApp(
     ).install()
 
     StartupFinalizer(
-        bootstrap = bootstrap,
         currentScreen = { navigator.current },
         multiplayerLobbyController = multiplayerLobbyController,
         resourceBrowserController = resourceBrowserController,

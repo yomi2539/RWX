@@ -2,6 +2,7 @@ package io.github.rwx.app
 
 import com.corrodinggames.rts.gameFramework.GameEngine
 import io.github.rwx.geometry.Viewport
+import io.github.rwx.p2p.P2PLobbyService
 import io.github.rwx.session.GameSession
 import io.github.rwx.ui.AppScreen
 
@@ -17,7 +18,7 @@ internal class FrameDriver(
     private val battleRoomJoinController: BattleRoomJoinController,
     private val p2pPreparation: P2PJoinPreparationController,
     private val pendingStartController: PendingStartController,
-    private val externalGameController: ExternalGameController,
+    private val gameLifecycleController: GameLifecycleController,
     private val modsController: ModsController,
     private val frameRenderController: FrameRenderController,
     private val gameReadyController: GameReadyController,
@@ -43,16 +44,17 @@ internal class FrameDriver(
         if (currentScreen() == AppScreen.InGame) {
             mapController.applyPendingPortalTransfers()
         }
-        externalGameController.drive(
+        gameLifecycleController.drive(
             screen = currentScreen(),
-            isStartingMap = pendingStartController.isPending,
+            isStartingMap = pendingStartController.isPending ||
+                    battleRoomJoinController.isPending ||
+                    P2PLobbyService.getInstance().isLinkedMapTransition(),
         )
-        val isExternalBattleRoomJoinPending = battleRoomJoinController.isPending &&
-                !gameSession.usesFrameCommandRendering
+        val isExternalBattleRoomJoinPending = battleRoomJoinController.isPending
         val canResumeForFrame = !isExternalBattleRoomJoinPending && gameSession.canResume()
         frameRenderController.render(
             screen = currentScreen(),
-            isExternalBattleRoomJoinPending = isExternalBattleRoomJoinPending,
+            isBattleRoomJoinPending = isExternalBattleRoomJoinPending,
             canResumeForFrame = canResumeForFrame,
             canvasViewport = canvasViewport(),
             deltaSeconds = deltaSeconds,
@@ -73,7 +75,6 @@ internal class FrameDriver(
         val shouldPoll = shouldPollConnectedBattleRoomNetwork(
             isRenderLoopFrame = isRenderLoopFrame,
             screen = currentScreen(),
-            usesFrameCommandRendering = gameSession.usesFrameCommandRendering,
             nowMillis = nowMillis,
             nextPollMillis = nextBattleRoomNetworkPollMillis,
         )
@@ -103,11 +104,9 @@ private const val BATTLE_ROOM_NETWORK_POLL_INTERVAL_MILLIS = 500L
 internal fun shouldPollConnectedBattleRoomNetwork(
     isRenderLoopFrame: Boolean,
     screen: AppScreen,
-    usesFrameCommandRendering: Boolean,
     nowMillis: Long,
     nextPollMillis: Long,
 ): Boolean =
     isRenderLoopFrame &&
             screen == AppScreen.BattleRoom &&
-            !usesFrameCommandRendering &&
             nowMillis >= nextPollMillis

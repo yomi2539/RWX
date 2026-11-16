@@ -2,68 +2,28 @@ package io.github.rwx.ui
 
 import android.os.Handler
 import android.os.Looper
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.ExitTransition
-import androidx.compose.animation.expandIn
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.*
 import androidx.compose.animation.core.MutableTransitionState
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.remember
+import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveableStateHolder
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.unit.dp
 import io.github.rwx.app.AppAction
 import io.github.rwx.app.AppSession
 import io.github.rwx.ui.component.AppDialog
 import io.github.rwx.ui.component.AppLoadingDialog
-import io.github.rwx.ui.model.BattleRoomAction
-import io.github.rwx.ui.model.DialogUiAction
-import io.github.rwx.ui.model.LevelSelectAction
-import io.github.rwx.ui.model.MainMenuAction
-import io.github.rwx.ui.model.ModsAction
-import io.github.rwx.ui.model.MultiplayerAction
-import io.github.rwx.ui.model.MultiplayerLobbyKind
-import io.github.rwx.ui.model.PauseMenuAction
-import io.github.rwx.ui.model.ReplaySelectAction
-import io.github.rwx.ui.model.ResourceBrowserAction
-import io.github.rwx.ui.model.SettingsUiAction
-import io.github.rwx.ui.model.ModWindowAction
+import io.github.rwx.ui.model.*
 import io.github.rwx.ui.platform.PlatformComposeHost
-import io.github.rwx.ui.screen.BattleRoomScreen
-import io.github.rwx.ui.screen.LevelSelectScreen
-import io.github.rwx.ui.screen.LoadingScreen
-import io.github.rwx.ui.screen.MainMenuScreen
-import io.github.rwx.ui.screen.ModHudOverlay
-import io.github.rwx.ui.screen.ModWindowScreen
-import io.github.rwx.ui.screen.ModsScreen
-import io.github.rwx.ui.screen.MultiplayerScreen
-import io.github.rwx.ui.screen.PauseMenuScreen
-import io.github.rwx.ui.screen.ReplaySelectScreen
-import io.github.rwx.ui.screen.ResourceBrowserScreen
-import io.github.rwx.ui.screen.SettingsScreen
+import io.github.rwx.ui.screen.*
 import io.github.rwx.ui.theme.Spacing
 import io.github.rwx.ui.theme.UiTheme
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.SupervisorJob
-import kotlinx.coroutines.cancel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.distinctUntilChanged
-import kotlinx.coroutines.flow.dropWhile
-import kotlinx.coroutines.flow.map
-import kotlinx.coroutines.launch
+import kotlinx.coroutines.*
+import kotlinx.coroutines.flow.*
 
 
 class AndroidComposeOverlay(
@@ -257,7 +217,7 @@ internal fun AndroidOverlayContent(
                                 conditions = state.mainMenuConditions,
                                 items = state.mainMenuItems,
                                 colorSchemeId = state.colorSchemeId,
-                                battleBackgroundVisible = state.battleBackgroundVisible,
+                                menuBackgroundVisible = state.menuBackgroundVisible,
                                 enableAnimations = state.enableAnimations,
                                 onMenuAction = { if (state.canInteractWithScreen) onMenuAction(it) },
                             )

@@ -2,13 +2,13 @@ package io.github.rwx.app
 
 import com.corrodinggames.rts.gameFramework.GameEngine
 import io.github.rwx.PlatformStorage
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.i18n.I18n
 import io.github.rwx.logger
 import io.github.rwx.map.MapLinkResolver
 import io.github.rwx.p2p.FeatureIds
 import io.github.rwx.p2p.MapFeatureDetector
 import io.github.rwx.p2p.P2PLobbyService
-import io.github.rwx.geometry.Viewport
 import io.github.rwx.session.BattleRoomLaunchConfig
 import io.github.rwx.session.BattleRoomSnapshot
 import io.github.rwx.session.GameSession
@@ -63,9 +63,6 @@ internal class BattleRoomLaunchController(
             }
             runCatching {
                 check(gameSession.startBattleRoom()) { "Game session rejected start request" }
-                if (gameSession.usesFrameCommandRendering) {
-                    BattleRoomUiBridge.setupGame()
-                }
                 enterStartedBattleRoomGame()
             }.onFailure { error ->
                 logger.warn(error) { "Unable to start RW battle room game" }
@@ -87,7 +84,6 @@ internal class BattleRoomLaunchController(
             GameEngine.getInstance()?.networkEngine?.hasActiveStartedGameConnection() == true
         when (battleRoomGameStartedAction(
             currentScreen = currentScreen(),
-            usesFrameCommandRendering = gameSession.usesFrameCommandRendering,
             inProcessNetworkGameStarted = networkGameStarted,
         )) {
             BattleRoomGameStartedAction.Ignore -> {
@@ -109,22 +105,9 @@ internal class BattleRoomLaunchController(
                 }
             }
 
-            BattleRoomGameStartedAction.ShowExternalGame -> {
+            BattleRoomGameStartedAction.ShowGame -> {
                 BattleRoomUiBridge.startGamePending = false
                 enterStartedBattleRoomGame()
-            }
-
-            BattleRoomGameStartedAction.PrepareFrameCommandGame -> {
-                BattleRoomUiBridge.startGamePending = false
-                runCatching {
-                    BattleRoomUiBridge.setupGame()
-                    enterStartedBattleRoomGame()
-                }.onFailure { error ->
-                    logger.warn(error) { "Unable to load started RW battle room game" }
-                    showUnavailableDialog(
-                        I18n.battleroom.unableToStartGame(error.message ?: error.javaClass.simpleName)
-                    )
-                }
             }
         }
     }

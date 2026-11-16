@@ -10,11 +10,7 @@ import io.github.rwx.session.BattleRoomSnapshot
 import io.github.rwx.session.GameSession
 import io.github.rwx.ui.AppScreen
 import io.github.rwx.ui.host.BattleRoomSceneHost
-import io.github.rwx.ui.model.BattleRoomAction
-import io.github.rwx.ui.model.BattleRoomChatLine
-import io.github.rwx.ui.model.LevelSelectMode
-import io.github.rwx.ui.model.LevelSelectViewModelFactory
-import io.github.rwx.ui.model.MapEntry
+import io.github.rwx.ui.model.*
 
 internal class BattleRoomController(
     private val gameSession: GameSession,
@@ -23,9 +19,6 @@ internal class BattleRoomController(
     initialMode: LevelSelectMode,
     private val showUnavailableDialog: (String) -> Unit,
     private val onRoomClosed: () -> Unit = {},
-    private val previewForMap: (String, LevelSelectMode) -> String? = { path, mode ->
-        levelSelectViewModelFactory.create(mode).mapEntry(path).previewAssetPath
-    },
 ) {
     var selectedMode: LevelSelectMode = initialMode
     var selectedMap: MapEntry? = null
@@ -208,7 +201,9 @@ internal class BattleRoomController(
         // lookups, but keep retrying a missing preview on the existing network refresh cadence.
         if (previewMapPath != path || cachedPreview == null) {
             previewMapPath = path
-            cachedPreview = runCatching { previewForMap(path, selectedMode) }.getOrNull()
+            cachedPreview = runCatching {
+                levelSelectViewModelFactory.create(selectedMode).mapEntry(path).previewAssetPath
+            }.getOrNull()
         }
         return cachedPreview
     }

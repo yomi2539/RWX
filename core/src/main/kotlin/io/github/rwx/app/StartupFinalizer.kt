@@ -4,7 +4,6 @@ import io.github.rwx.logger
 import io.github.rwx.ui.AppScreen
 
 internal class StartupFinalizer(
-    private val bootstrap: AppBootstrap,
     private val currentScreen: () -> AppScreen,
     private val multiplayerLobbyController: MultiplayerLobbyController,
     private val resourceBrowserController: ResourceBrowserController,

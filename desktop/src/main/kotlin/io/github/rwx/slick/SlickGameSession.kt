@@ -5,9 +5,9 @@ import com.corrodinggames.rts.gameFramework.PlatformCallbacks
 import com.corrodinggames.rts.gameFramework.graphics.GraphicsEngine
 import io.github.rwx.DesktopRenderBackend
 import io.github.rwx.PlatformStorage
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.logger
 import io.github.rwx.platform.CoreGameView
-import io.github.rwx.geometry.Viewport
 import io.github.rwx.render.RenderBackend
 import io.github.rwx.session.*
 import io.github.rwx.ui.CoreUiEventQueue
@@ -63,13 +63,6 @@ class SlickGameSession(
     init {
         SlickCanvasHost.setResizeController(::resizeFromCanvasHost)
         SlickCanvasHost.setRendererShutdown(::stopRendererAndWait)
-        configureRendererProfile(
-            GameSessionRendererProfile(
-                usesFrameCommandRendering = false,
-                canStartNewSessionInPlace = true,
-                usesNativeSurfaceForResumeBackground = true,
-            )
-        )
         if (registerShutdownHook) {
             Runtime.getRuntime().addShutdownHook(
                 Thread({
@@ -385,6 +378,8 @@ class SlickGameSession(
             gameHeight.coerceAtLeast(240),
         )
     }
+
+    override fun prepareForNewSession() = Unit
 
     override fun discardRunningGame() {
         super.discardRunningGame()
@@ -785,4 +780,3 @@ private const val SLICK_ENGINE_INITIALIZATION_TIMEOUT_MILLIS = 60_000L
 private const val SLICK_ENGINE_START_POLL_MILLIS = 50L
 private fun deadlineAfterMillis(timeoutMillis: Long): Long =
     System.nanoTime() + TimeUnit.MILLISECONDS.toNanos(timeoutMillis)
-

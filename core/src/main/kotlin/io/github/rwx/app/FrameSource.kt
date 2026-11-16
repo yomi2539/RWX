@@ -1,44 +1,27 @@
 package io.github.rwx.app
 
-import io.github.rwx.session.GameSession
-import io.github.rwx.ui.AppScreen
-
-
-sealed interface FrameSource {
-
-    data object RwGame : FrameSource
+internal sealed interface FrameSource {
+    data object Game : FrameSource
     data object BackgroundBattle : FrameSource
     data object ResumeBackground : FrameSource
-    data object RwGameLoading : FrameSource
+    data object Loading : FrameSource
     data object Empty : FrameSource
 
     companion object {
         fun from(
-            screen: AppScreen,
-            isExternalJoinPending: Boolean,
-            shouldShowBackgroundBattle: Boolean,
+            presentation: ScreenPresentation,
+            isJoinPending: Boolean,
             isStartupMenuBackgroundLoading: Boolean,
-            isRwGameLoading: Boolean,
-            canResumeForFrame: Boolean,
-            gameSession: GameSession,
+            isEngineLoading: Boolean,
         ): FrameSource = when {
-            isExternalJoinPending ->
-                Empty
-
-            screen == AppScreen.InGame ->
-                RwGame
-
-            shouldShowBackgroundBattle ->
-                BackgroundBattle
-
-            shouldShowResumeMenuBackground(screen, canResumeForFrame) ->
-                ResumeBackground
-
-            isStartupMenuBackgroundLoading ||
-                    isRwGameLoading ->
-                RwGameLoading
-
-            else -> Empty
+            isJoinPending -> Empty
+            isStartupMenuBackgroundLoading || isEngineLoading -> Loading
+            else -> when (presentation.gameSurface) {
+                GameSurface.InGame -> Game
+                GameSurface.MenuBackground, GameSurface.PreparingMenuBackground -> BackgroundBattle
+                GameSurface.ResumeBackground -> ResumeBackground
+                GameSurface.Hidden -> Empty
+            }
         }
     }
 }

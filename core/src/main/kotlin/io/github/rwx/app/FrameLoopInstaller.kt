@@ -27,7 +27,6 @@ internal class FrameLoopInstaller(
     private val battleRoomJoinController: BattleRoomJoinController,
     private val p2pPreparation: P2PJoinPreparationController,
     private val pendingStartController: PendingStartController,
-    private val externalGameController: ExternalGameController,
     private val modsController: ModsController,
     private val gameReadyController: GameReadyController,
     private val onBattleRoomClosed: (reason: String?, message: String?) -> Unit,
@@ -57,7 +56,7 @@ internal class FrameLoopInstaller(
         )
         val frameRenderController = FrameRenderController(
             gameSession = gameSession,
-            shouldShowBackgroundBattle = screenPresenter::shouldShowBackgroundBattle,
+            screenPresenter = screenPresenter,
             startupPreparationController = startupPreparationController,
             presenter = presenter,
         )
@@ -73,7 +72,7 @@ internal class FrameLoopInstaller(
             battleRoomJoinController = battleRoomJoinController,
             p2pPreparation = p2pPreparation,
             pendingStartController = pendingStartController,
-            externalGameController = externalGameController,
+            gameLifecycleController = GameLifecycleController(gameSession, sessionActions::exitRwGameToMainMenu),
             modsController = modsController,
             frameRenderController = frameRenderController,
             gameReadyController = gameReadyController,

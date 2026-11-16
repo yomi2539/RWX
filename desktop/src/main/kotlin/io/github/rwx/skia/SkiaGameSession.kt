@@ -6,16 +6,15 @@ import io.github.rwx.PlatformStorage
 import io.github.rwx.app.launchOnIO
 import io.github.rwx.bench.BenchFrameProbe
 import io.github.rwx.geometry.Rect
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.input.MultiTouchPointerState
 import io.github.rwx.logger
 import io.github.rwx.platform.CoreGameView
 import io.github.rwx.render.RenderBackend
 import io.github.rwx.render.SkiaGraphicsEngine
 import io.github.rwx.render.canvas.Paint
-import io.github.rwx.geometry.Viewport
-import io.github.rwx.session.GameSession
-import io.github.rwx.session.GameSessionRendererProfile
 import io.github.rwx.session.BattleRoomLaunchConfig
+import io.github.rwx.session.GameSession
 import io.github.rwx.session.MapSnapshot
 import io.github.rwx.session.hasActiveStartedGameConnection
 import io.github.rwx.ui.BattleRoomUiBridge
@@ -64,13 +63,6 @@ class SkiaGameSession(
     private val frameProbe by lazy { BenchFrameProbe() }
 
     init {
-        configureRendererProfile(
-            GameSessionRendererProfile(
-                usesFrameCommandRendering = false,
-                canStartNewSessionInPlace = true,
-                usesNativeSurfaceForResumeBackground = false,
-            )
-        )
         if (registerShutdownHook) {
             Runtime.getRuntime().addShutdownHook(
                 Thread({ runCatching { close() } }, "skia-session-shutdown")
@@ -177,6 +169,8 @@ class SkiaGameSession(
     }
 
     override fun canResume(): Boolean = !closed.get() && super.canResume()
+
+    override fun prepareForNewSession() = Unit
 
     override fun isMapLoaded(mapPath: String?): Boolean = !closed.get() && super.isMapLoaded(mapPath)
 

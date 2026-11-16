@@ -1,28 +1,24 @@
 package io.github.rwx.ui.screen
 
-import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.hoverable
+import androidx.compose.foundation.*
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.interaction.collectIsHoveredAsState
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Text
-import androidx.compose.runtime.*
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.testTag
+import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,7 +26,10 @@ import io.github.rwx.ui.ColorSchemeId
 import io.github.rwx.ui.ColorSchemeRegistry
 import io.github.rwx.ui.Palette
 import io.github.rwx.ui.Scheme
-import io.github.rwx.ui.component.*
+import io.github.rwx.ui.component.GradientText
+import io.github.rwx.ui.component.Icon
+import io.github.rwx.ui.component.TextIconButton
+import io.github.rwx.ui.component.pressScale
 import io.github.rwx.ui.model.MainMenuAction
 import io.github.rwx.ui.model.MainMenuConditions
 import io.github.rwx.ui.model.MainMenuItem
@@ -42,7 +41,7 @@ fun MainMenuScreen(
     conditions: MainMenuConditions,
     items: List<MainMenuItem> = io.github.rwx.ui.model.MainMenuViewModel.items(conditions),
     colorSchemeId: ColorSchemeId = ColorSchemeRegistry.defaultSchemeId,
-    battleBackgroundVisible: Boolean = false,
+    menuBackgroundVisible: Boolean = false,
     enableAnimations: Boolean = true,
     onMenuAction: (MainMenuAction) -> Unit = {},
 ) {
@@ -54,7 +53,7 @@ fun MainMenuScreen(
                 items = items,
                 scheme = scheme,
                 metrics = mainMenuLayoutMetrics(maxWidth, maxHeight),
-                battleBackgroundVisible = battleBackgroundVisible,
+                menuBackgroundVisible = menuBackgroundVisible,
                 enableAnimations = enableAnimations,
                 onAction = onMenuAction,
             )
@@ -84,7 +83,7 @@ private fun MainMenuLauncher(
     items: List<MainMenuItem>,
     scheme: Scheme<Palette<Color>>,
     metrics: MainMenuLayoutMetrics,
-    battleBackgroundVisible: Boolean,
+    menuBackgroundVisible: Boolean,
     enableAnimations: Boolean,
     onAction: (MainMenuAction) -> Unit,
 ) {
@@ -98,7 +97,7 @@ private fun MainMenuLauncher(
         modifier = Modifier
             .fillMaxSize()
             .background(
-                if (battleBackgroundVisible) {
+                if (menuBackgroundVisible) {
                     Color.Transparent
                 } else {
                     scheme.palette.panelOverlayLight.copy(alpha = MAIN_MENU_SURFACE_ALPHA * LocalOverlayOpacity.current)

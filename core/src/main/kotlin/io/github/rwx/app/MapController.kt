@@ -3,13 +3,13 @@ package io.github.rwx.app
 import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.network.GameModeType
 import io.github.rwx.PlatformStorage
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.i18n.I18n
 import io.github.rwx.map.MapLinkResolver
 import io.github.rwx.map.MapMetadata
 import io.github.rwx.map.PortalTransferMessage
 import io.github.rwx.mod.registry.UiRegistry
 import io.github.rwx.p2p.P2PLobbyService
-import io.github.rwx.geometry.Viewport
 import io.github.rwx.session.BattleRoomSnapshot
 import io.github.rwx.session.GameSession
 import io.github.rwx.session.MapSnapshot
@@ -302,33 +302,23 @@ internal class MapController(
         } else {
             null
         }
-        if (gameSession.usesFrameCommandRendering) {
-            when {
-                snapshot != null -> gameSession.prepareMapSnapshotAsync(snapshot, viewport())
-                battleRoomConfig != null -> gameSession.prepareBattleRoomAsync(battleRoomConfig, viewport())
-                else -> gameSession.prepareMapAsync(targetMapPath, viewport())
-            }
-        } else {
-            when {
-                snapshot != null -> gameSession.requestMapSnapshot(snapshot)
-                battleRoomConfig != null -> {
-                    check(gameSession.prepareLocalBattleRoom(battleRoomConfig)) {
-                        "Game session rejected local battle room map switch"
-                    }
+        when {
+            snapshot != null -> gameSession.requestMapSnapshot(snapshot)
+            battleRoomConfig != null -> {
+                check(gameSession.prepareLocalBattleRoom(battleRoomConfig)) {
+                    "Game session rejected local battle room map switch"
                 }
-
-                else -> gameSession.requestMap(targetMapPath)
             }
+
+            else -> gameSession.requestMap(targetMapPath)
         }
         setPendingStart(targetMapPath, AppScreen.InGame)
         navigateToInGame()
-        if (!gameSession.usesFrameCommandRendering) {
-            gameSession.setGameVisible(
-                true,
-                viewport(),
-                uiOverlay = UiRegistry.hasActiveHudLayers(),
-            )
-        }
+        gameSession.setGameVisible(
+            true,
+            viewport(),
+            uiOverlay = UiRegistry.hasActiveHudLayers(),
+        )
     }
 
     private fun shouldSimulateMapLocally(mapPath: String): Boolean {

@@ -1,10 +1,6 @@
 package io.github.rwx.ui.host
 
-import io.github.rwx.ui.model.MainMenuAction
-import io.github.rwx.ui.model.MainMenuConditions
-import io.github.rwx.ui.model.MainMenuItem
-import io.github.rwx.ui.model.MainMenuViewModel
-import io.github.rwx.ui.model.SettingsModel
+import io.github.rwx.ui.model.*
 
 class MainMenuSceneHost(
     private val model: SettingsModel = SettingsModel(),
@@ -12,8 +8,6 @@ class MainMenuSceneHost(
 ) {
     var items: List<MainMenuItem> = emptyList()
         private set
-
-    private var battleBackgroundVisible: Boolean = false
 
     fun updateItems(conditions: MainMenuConditions) {
         val next = MainMenuViewModel.items(conditions)
@@ -30,15 +24,4 @@ class MainMenuSceneHost(
         onAction(action)
     }
 
-    fun setBattleBackgroundVisible(visible: Boolean) {
-        battleBackgroundVisible = visible
-    }
-
-    fun isBattleBackgroundVisible(): Boolean = battleBackgroundVisible
-
-    companion object {
-        const val MAIN_MENU_SCENE_NAME: String = "main-menu"
-        const val MENU_TITLE: String = "RWX"
-        const val MENU_SUBTITLE: String = "Rusted Warfare Extension"
-    }
 }

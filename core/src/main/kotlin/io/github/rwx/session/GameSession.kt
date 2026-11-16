@@ -2,6 +2,7 @@ package io.github.rwx.session
 
 import com.corrodinggames.rts.game.PlayerTeam
 import com.corrodinggames.rts.game.map.TileMap
+import com.corrodinggames.rts.game.units.BaseUnit
 import com.corrodinggames.rts.gameFramework.*
 import com.corrodinggames.rts.gameFramework.graphics.GraphicsEngine
 import com.corrodinggames.rts.gameFramework.network.*
@@ -11,23 +12,25 @@ import io.github.rwx.applyBattleRoomPlayerConfig
 import io.github.rwx.battleRoomPlayerDisplayName
 import io.github.rwx.battleRoomPlayerPingLabel
 import io.github.rwx.geometry.Point
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.logger
 import io.github.rwx.map.MapMetadata
-import io.github.rwx.map.TransferredUnit
 import io.github.rwx.map.PortalUnitTypeIds
-import io.github.rwx.map.multiplayer.*
-import com.corrodinggames.rts.game.units.BaseUnit
-import java.net.Socket
-import java.net.InetSocketAddress
-import java.util.concurrent.CompletableFuture
+import io.github.rwx.map.TransferredUnit
+import io.github.rwx.map.multiplayer.MapSessionPlayer
+import io.github.rwx.map.multiplayer.MapSessionSpec
+import io.github.rwx.map.multiplayer.MapSessionView
+import io.github.rwx.map.multiplayer.MapWorldId
 import io.github.rwx.net.CoreUiNetworkCallbacks
 import io.github.rwx.platform.CoreGameView
 import io.github.rwx.render.RenderBackend
-import io.github.rwx.geometry.Viewport
 import io.github.rwx.ui.BattleRoomUiBridge
 import io.github.rwx.ui.InGameMenuCallbacks
 import io.github.rwx.ui.InGameMenuController
 import io.github.rwx.ui.model.BattleRoomPlayer
+import java.net.InetSocketAddress
+import java.net.Socket
+import java.util.concurrent.CompletableFuture
 import java.util.concurrent.atomic.AtomicBoolean
 import java.util.concurrent.atomic.AtomicReference
 
@@ -351,14 +354,6 @@ abstract class GameSession {
     protected abstract val renderBackend: RenderBackend
     protected open val defaultPreloadViewport: Viewport = Viewport(1280, 720)
 
-    @Volatile
-    private var rendererProfile: GameSessionRendererProfile = GameSessionRendererProfile()
-    open val usesFrameCommandRendering: Boolean
-        get() = rendererProfile.usesFrameCommandRendering
-    open val canStartNewSessionInPlace: Boolean
-        get() = rendererProfile.canStartNewSessionInPlace
-    open val usesNativeSurfaceForResumeBackground: Boolean
-        get() = rendererProfile.usesNativeSurfaceForResumeBackground
     open val inputCoordinateScale: Float = 1f
 
     @Volatile
@@ -470,10 +465,6 @@ abstract class GameSession {
         runEngineCommand(label, command)
     }
 
-    open fun configureRendererProfile(profile: GameSessionRendererProfile) {
-        rendererProfile = profile
-    }
-
     open fun updateFrame(
         viewport: Viewport,
         deltaSeconds: Float,
@@ -481,7 +472,6 @@ abstract class GameSession {
     ) {
     }
 
-    /** Keep the UI above the native game surface when [uiOverlay] is requested. */
     open fun setGameVisible(
         visible: Boolean,
         viewport: Viewport,
@@ -1326,6 +1316,9 @@ abstract class GameSession {
             )
         }
     }
+
+    /** Prepare a replacement world; platforms with an in-place loader keep their renderer alive. */
+    open fun prepareForNewSession() = discardRunningGame()
 
     open fun discardRunningGame() {
         stopLinkedRoom?.invoke()

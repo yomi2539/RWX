@@ -1,8 +1,8 @@
 package io.github.rwx.app
 
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.i18n.I18n
 import io.github.rwx.logger
-import io.github.rwx.geometry.Viewport
 import io.github.rwx.session.BattleRoomLaunchConfig
 import io.github.rwx.session.GameSession
 import io.github.rwx.ui.AppScreen
@@ -28,37 +28,21 @@ internal class GameLaunchController(
             pendingStartController.clear()
             return
         }
-        val shouldDiscardExistingGame = shouldDiscardExistingGameForStart(
-            startNew = startNew,
-            hasLaunchConfig = launchConfig != null,
-            usesFrameCommandRendering = gameSession.usesFrameCommandRendering,
-            canResume = gameSession.canResume(),
-            canStartNewSessionInPlace = gameSession.canStartNewSessionInPlace,
-        )
-        if (shouldDiscardExistingGame) {
-            gameSession.discardRunningGame()
+        if (startNew && (launchConfig == null || gameSession.canResume())) {
+            gameSession.prepareForNewSession()
         }
         if (!startNew && gameSession.isMapLoaded(mapPath)) {
             pendingStartController.clear()
         } else {
             pendingStartController.set(mapPath, mapStartFailureReturnScreen(currentScreen()))
-            if (!gameSession.usesFrameCommandRendering) {
-                if (launchConfig != null) {
-                    check(gameSession.prepareLocalBattleRoom(launchConfig)) {
-                        "Game session rejected local battle room launch"
-                    }
-                } else {
-                    gameSession.requestMap(mapPath)
+            if (launchConfig != null) {
+                check(gameSession.prepareLocalBattleRoom(launchConfig)) {
+                    "Game session rejected local battle room launch"
                 }
-                logger.info { "Queued Slick game launch: $mapPath (startNew=$startNew)" }
-            } else if (launchConfig != null) {
-                gameSession.prepareBattleRoomAsync(launchConfig, viewport())
             } else {
-                gameSession.prepareMapAsync(mapPath, viewport())
+                gameSession.requestMap(mapPath)
             }
-            if (gameSession.usesFrameCommandRendering) {
-                logger.info { "Entering RW game screen while map prepares: $mapPath (startNew=$startNew)" }
-            }
+            logger.info { "Queued game launch: $mapPath (startNew=$startNew)" }
         }
         navigateTo(AppScreen.InGame)
     }
@@ -95,10 +79,10 @@ internal class GameLaunchController(
             }
             return
         }
-        discardRunningGameBeforeStandaloneLaunch()
+        gameSession.prepareForNewSession()
         pendingStartController.set(replay.replayName, mapStartFailureReturnScreen(currentScreen()))
         gameSession.prepareReplayAsync(replay.replayName, viewport())
-        logger.info { "Entering RW replay while it prepares: ${replay.replayName}" }
+        logger.info { "Entering replay while it prepares: ${replay.replayName}" }
         navigateTo(AppScreen.InGame)
     }
 
@@ -111,16 +95,11 @@ internal class GameLaunchController(
             }
             return
         }
-        discardRunningGameBeforeStandaloneLaunch()
+        gameSession.prepareForNewSession()
         pendingStartController.set(requestedSaveName, mapStartFailureReturnScreen(currentScreen()))
         gameSession.prepareSavedGameAsync(requestedSaveName, viewport())
-        logger.info { "Entering RW saved game while it prepares: $requestedSaveName" }
+        logger.info { "Entering saved game while it prepares: $requestedSaveName" }
         navigateTo(AppScreen.InGame)
     }
 
-    private fun discardRunningGameBeforeStandaloneLaunch() {
-        if (!gameSession.canStartNewSessionInPlace) {
-            gameSession.discardRunningGame()
-        }
-    }
 }

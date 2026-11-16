@@ -10,15 +10,14 @@ import com.corrodinggames.rts.gameFramework.utility.AssetInputStream
 import io.github.rwx.DesktopInputHandler
 import io.github.rwx.DesktopRenderBackend
 import io.github.rwx.PlatformStorage
+import io.github.rwx.geometry.Viewport
 import io.github.rwx.input.MultiTouchPointerState
 import io.github.rwx.logger
 import io.github.rwx.platform.CoreGameView
-import io.github.rwx.render.SkiaGraphicsEngine
 import io.github.rwx.render.RenderBackend
-import io.github.rwx.geometry.Viewport
-import io.github.rwx.session.GameSession
-import io.github.rwx.session.GameSessionRendererProfile
+import io.github.rwx.render.SkiaGraphicsEngine
 import io.github.rwx.session.BattleRoomLaunchConfig
+import io.github.rwx.session.GameSession
 import io.github.rwx.session.MapSnapshot
 import io.github.rwx.session.hasActiveStartedGameConnection
 import io.github.rwx.ui.BattleRoomUiBridge
@@ -42,11 +41,9 @@ class HeadlessGameSession(
         Thread({ close() }, "headless-session-shutdown").also { Runtime.getRuntime().addShutdownHook(it) }
     } else null
 
-    init {
-        configureRendererProfile(GameSessionRendererProfile(canStartNewSessionInPlace = true))
-    }
-
     val tick: Int get() = synchronized(gameLock) { gameEngine?.currentTick ?: 0 }
+
+    override fun prepareForNewSession() = Unit
 
     fun step(deltaSeconds: Float = 1f / 60f) = updateFrame(defaultPreloadViewport, deltaSeconds)
 

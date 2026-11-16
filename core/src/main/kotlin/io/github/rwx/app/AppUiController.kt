@@ -15,7 +15,7 @@ internal class AppUiController(
     private val bootstrap: AppBootstrap,
     private val currentScreen: () -> AppScreen,
     private val mainMenuConditions: () -> MainMenuConditions,
-    private val battleBackgroundVisible: () -> Boolean,
+    private val menuBackgroundVisible: () -> Boolean,
     private val onBack: () -> Unit,
     private val closeModWindow: () -> Unit,
     /** Synchronizes the native owner for HUD, notifications, modals and legacy fallback. */
@@ -279,7 +279,7 @@ internal class AppUiController(
             colorSchemeId = bootstrap.settingsModel.selectedColorSchemeId.value,
             enableAnimations = bootstrap.settingsModel.enableAnimations.value,
             overlayOpacity = bootstrap.settingsModel.overlayOpacity.value,
-            battleBackgroundVisible = battleBackgroundVisible(),
+            menuBackgroundVisible = menuBackgroundVisible(),
             legacyOverlayVisible = legacyOverlayVisible,
             dialog = dialog,
             loadingDialog = loadingDialog,

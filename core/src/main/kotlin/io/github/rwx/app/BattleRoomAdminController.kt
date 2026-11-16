@@ -3,7 +3,6 @@ package io.github.rwx.app
 import com.corrodinggames.rts.gameFramework.network.GameRoomSettings
 import io.github.rwx.i18n.I18n
 import io.github.rwx.logger
-import io.github.rwx.session.BattleRoomTeamLayout
 import io.github.rwx.session.GameSession
 import io.github.rwx.session.resolveBattleRoomPlayerSnapshot
 import io.github.rwx.ui.host.DialogSceneHost
@@ -139,22 +138,6 @@ internal class BattleRoomAdminController(
         }.onFailure { error ->
             logger.warn(error) { "Send battle room chat failed" }
             showUnavailableDialog(I18n.battleroom.admin.chatFailed(error.message ?: error.javaClass.simpleName))
-        }
-    }
-
-    private fun applyTeamLayout(layout: BattleRoomTeamLayout) {
-        if (gameSession.currentBattleRoom() == null) {
-            showUnavailableDialog(I18n.battleroom.admin.setTeamsRequires())
-            return
-        }
-        runCatching {
-            check(gameSession.applyBattleRoomTeamLayout(layout)) {
-                "Game session rejected team layout request"
-            }
-            updateBattleRoomFromNetwork()
-        }.onFailure { error ->
-            logger.warn(error) { "Set team layout failed" }
-            showUnavailableDialog(I18n.battleroom.admin.setTeamsFailed(error.message ?: error.javaClass.simpleName))
         }
     }
 
