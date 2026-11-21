@@ -8,8 +8,8 @@ import io.github.rwx.app.GameFramePresenter
 import io.github.rwx.app.installApp
 import io.github.rwx.di.coreModule
 import io.github.rwx.di.desktopModule
-import io.github.rwx.i18n.LocaleSettings
 import io.github.rwx.headless.HeadlessDesktopRunner
+import io.github.rwx.i18n.LocaleSettings
 import io.github.rwx.render.canvas.GameFontMetrics
 import io.github.rwx.settings.GameSettingsRepository
 import io.github.rwx.skia.SkiaGameSession
@@ -42,7 +42,7 @@ object DesktopMain : KoinComponent {
             }
             kotlin.system.exitProcess(exitCode)
         }
-        configureLwjglMemoryStack()
+        //use GLX instead of EGL in Linux Wayland
         System.setProperty("org.lwjgl.opengl.contextAPI", "native")
         GameEngine.isMenuBackgroundDisabled = true
         GameEngine.isNonAndroidVersion = true

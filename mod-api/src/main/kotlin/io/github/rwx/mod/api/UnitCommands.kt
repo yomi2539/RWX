@@ -9,7 +9,7 @@ interface UnitCommands {
 data class UnitCommandRequest(
     val id: String = "",
     val teamId: Int,
-    val unitIds: List<UnitInstanceId>,
+    val unitIds: List<Long>,
     val type: UnitCommandType,
     val target: UnitCommandTarget? = null,
     val queued: Boolean = false,
@@ -45,7 +45,7 @@ enum class UnitCommandType {
 
 sealed interface UnitCommandTarget {
     data class Point(val position: WorldPosition) : UnitCommandTarget
-    data class Unit(val instanceId: UnitInstanceId) : UnitCommandTarget
+    data class Unit(val instanceId: Long) : UnitCommandTarget
 }
 
 data class UnitCommandResult(

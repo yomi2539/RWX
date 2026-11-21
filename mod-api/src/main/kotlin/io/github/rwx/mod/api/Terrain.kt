@@ -2,9 +2,9 @@ package io.github.rwx.mod.api
 
 data class TerrainShaderDefinition(
     val id: String,
-    val fragment: ResourcePath,
-    val sksl: ResourcePath,
-    val noise: ResourcePath,
+    val fragment: String,
+    val sksl: String,
+    val noise: String,
 )
 
 data class MapInfo(val widthTiles: Int, val heightTiles: Int, val tileWidth: Float, val tileHeight: Float)
@@ -17,8 +17,8 @@ data class TerrainTile(
 )
 
 data class TerrainOverlayBinding(
-    val rendererId: RendererId,
-    val variantId: RenderVariantId,
+    val rendererId: String,
+    val variantId: String,
 )
 
 fun interface TerrainOverlayRenderer {
@@ -33,5 +33,5 @@ data class TerrainOverlayContext(
     val width: Float,
     val height: Float,
     val gameTimeMillis: Long,
-    val variantId: RenderVariantId,
+    val variantId: String,
 )

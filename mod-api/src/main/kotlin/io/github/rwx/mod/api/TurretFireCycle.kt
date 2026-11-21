@@ -1,17 +1,8 @@
 package io.github.rwx.mod.api
 
-@JvmInline
-value class TurretFireCycleObserverId(val value: String) {
-    init {
-        require(value.matches(Regex("[a-z][a-z0-9_.-]*:[a-z0-9][a-z0-9_./-]*"))) {
-            "Invalid namespace-qualified turret fire cycle observer id: $value"
-        }
-    }
-}
-
 data class TurretFireCycleObserverBinding(
-    val observerId: TurretFireCycleObserverId,
-    val variantId: RenderVariantId,
+    val observerId: String,
+    val variantId: String,
 )
 
 /**
@@ -77,7 +68,7 @@ data class TurretFireCycleContext(
     val remainingTicks: Float,
     val previousRemainingTicks: Float?,
     val durationTicks: Float,
-    val variantId: RenderVariantId,
+    val variantId: String,
 )
 
 fun interface TurretFireCycleObserver {

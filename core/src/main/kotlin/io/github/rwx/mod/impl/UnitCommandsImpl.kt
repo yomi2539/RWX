@@ -33,10 +33,10 @@ private class EngineUnitCommandBackend(
         val units = ArrayList<OrderableUnit>(command.unitIds.size)
         command.unitIds.distinct().forEach { instanceId ->
             val unit = findUnit(instanceId) as? OrderableUnit
-                ?: return command.rejected("Orderable unit not found: ${instanceId.value}")
-            if (unit.isTransferUnavailable) return command.rejected("Unit is unavailable: ${instanceId.value}")
+                ?: return command.rejected("Orderable unit not found: ${instanceId}")
+            if (unit.isTransferUnavailable) return command.rejected("Unit is unavailable: ${instanceId}")
             if (unit.team?.teamId != command.teamId) {
-                return command.rejected("Unit ${instanceId.value} is not on team ${command.teamId}")
+                return command.rejected("Unit ${instanceId} is not on team ${command.teamId}")
             }
             units += unit
         }
@@ -46,7 +46,7 @@ private class EngineUnitCommandBackend(
         val targetUnit = unitTarget?.instanceId?.let(::findUnit)
         val buildType = command.buildUnitTypeId?.let(::findUnitType)
         if (unitTarget != null && targetUnit == null) {
-            return command.rejected("Target unit not found: ${unitTarget.instanceId.value}")
+            return command.rejected("Target unit not found: ${unitTarget.instanceId}")
         }
         when (command.type) {
             UnitCommandType.MOVE,
@@ -105,11 +105,11 @@ private class EngineUnitCommandBackend(
         return command.accepted()
     }
 
-    private fun findUnit(instanceId: UnitInstanceId): BaseUnit? {
+    private fun findUnit(instanceId: Long): BaseUnit? {
         val units = BaseUnit.bE.a()
         for (index in BaseUnit.bE.indices) {
             val unit = units[index] ?: continue
-            if (unit.objectId == instanceId.value) return unit
+            if (unit.objectId == instanceId) return unit
         }
         return null
     }

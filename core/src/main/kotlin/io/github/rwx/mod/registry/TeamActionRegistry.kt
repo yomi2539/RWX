@@ -15,8 +15,8 @@ object TeamActionRegistry : OwnedRegistry {
     private val lock = Any()
     private val actions = RegistrationTable<String, TeamActionHandler>("Team action", lock)
 
-    fun register(owner: ApiImpl, id: TeamActionId, handler: TeamActionHandler) {
-        actions.register(owner, id.value, handler)
+    fun register(owner: ApiImpl, id: String, handler: TeamActionHandler) {
+        actions.register(owner, id, handler)
     }
 
     override fun unregister(owner: ApiImpl) {
@@ -29,15 +29,15 @@ object TeamActionRegistry : OwnedRegistry {
     fun clear() = actions.clear()
 
     @JvmStatic
-    fun request(team: PlayerTeam?, id: TeamActionId, targetPosition: WorldPosition?): Boolean {
+    fun request(team: PlayerTeam?, id: String, targetPosition: WorldPosition?): Boolean {
         if (team == null) return false
         synchronized(lock) {
-            val owner = actions.owned(id.value)?.owner ?: return false
+            val owner = actions.owned(id)?.owner ?: return false
             CommandQueue.enqueue(owner) {
                 val command = GameEngine.getInstance().commandController.newCommandForTeam(team)
                 command.isSystemAction = true
                 command.systemActionType = SYSTEM_ACTION_TYPE
-                command.actionId = ActionId.intern(id.value)
+                command.actionId = ActionId.intern(id)
                 targetPosition?.let { position ->
                     command.targetPoint = PointF(position.x, position.y)
                     command.systemFloat = position.height
@@ -59,19 +59,17 @@ object TeamActionRegistry : OwnedRegistry {
 
 internal fun PlayerTeam.toTeamState(): TeamState = TeamStateImpl(this)
 
-internal fun teamFlagTag(id: TeamFlagId): String = id.unitTag.value
-
 private open class TeamStateImpl(protected val team: PlayerTeam) : TeamState {
     override val teamId: Int get() = team.teamId
 
-    override fun resource(id: ResourceId): Double = when (id.value) {
-        "credits" -> team.credits
+    override fun resource(id: String): Double = when (id) {
+        Cost.CREDITS_ID -> team.credits
         else -> 0.0
     }
 
-    override fun hasFlag(id: TeamFlagId): Boolean {
+    override fun hasFlag(id: String): Boolean {
         val tags = team.getTeamAnimationSet() ?: return false
-        return AnimationTag.a(AnimationTag.c(teamFlagTag(id)), tags)
+        return AnimationTag.a(AnimationTag.c(id), tags)
     }
 }
 
@@ -80,23 +78,23 @@ private class TeamActionContextImpl(
     override val targetPosition: WorldPosition?,
 ) : TeamStateImpl(team), TeamActionContext {
     override fun trySpend(cost: Cost): Boolean {
-        if (cost.resources.keys.any { it.value != "credits" }) return false
+        if (cost.resources.keys.any { it != Cost.CREDITS_ID }) return false
         val credits = cost.resources.entries.sumOf { it.value }
         if (team.credits < credits) return false
         team.credits -= credits
         return true
     }
 
-    override fun addResource(id: ResourceId, amount: Double) {
-        require(id.value == "credits") { "Runtime custom resources are not supported yet: ${id.value}" }
+    override fun addResource(id: String, amount: Double) {
+        require(id == Cost.CREDITS_ID) { "Runtime custom resources are not supported yet: $id" }
         team.credits += amount
     }
 
-    override fun grantFlag(id: TeamFlagId) {
-        team.b(AnimationTag.a(teamFlagTag(id)))
+    override fun grantFlag(id: String) {
+        team.b(AnimationTag.a(id))
     }
 
-    override fun revokeFlag(id: TeamFlagId) {
-        team.c(AnimationTag.a(teamFlagTag(id)))
+    override fun revokeFlag(id: String) {
+        team.c(AnimationTag.a(id))
     }
 }

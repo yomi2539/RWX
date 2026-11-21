@@ -5,7 +5,7 @@ import io.github.rwx.mod.api.*
 internal interface UnitConditionState {
     fun number(property: UnitNumberProperty): Float
     fun boolean(property: UnitBooleanProperty): Boolean
-    fun hasTag(tag: Tag): Boolean
+    fun hasTag(tag: String): Boolean
 }
 
 internal data class UnitConditionEvaluationContext(
@@ -100,6 +100,6 @@ internal object UnitEventMatcher {
         }
     }
 
-    private fun matchesTags(required: Set<Tag>, actual: Set<Tag>): Boolean =
+    private fun matchesTags(required: Set<String>, actual: Set<String>): Boolean =
         required.isEmpty() || required.any(actual::contains)
 }

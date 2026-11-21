@@ -23,13 +23,13 @@ import kotlin.math.sqrt
 
 object RenderRegistry : OwnedRegistry {
     private class RegisteredTexture(
-        val path: ResourcePath,
+        val path: String,
         val options: TextureOptions,
         var texture: Texture? = null,
     )
 
     private data class BoundUnitRenderer(
-        val definitionId: UnitId,
+        val definitionId: String,
         val binding: UnitRenderBinding,
     )
 
@@ -53,47 +53,47 @@ object RenderRegistry : OwnedRegistry {
     )
     private val failures = ModFailureLog("Mod renderer")
 
-    fun registerTexture(owner: ApiImpl, id: TextureId, path: ResourcePath, options: TextureOptions) {
-        textures.register(owner, id.value, RegisteredTexture(path, options))
+    fun registerTexture(owner: ApiImpl, id: String, path: String, options: TextureOptions) {
+        textures.register(owner, id, RegisteredTexture(path, options))
     }
 
-    fun registerProjectileRenderer(owner: ApiImpl, id: RendererId, renderer: ProjectileRenderer) {
-        projectileRenderers.register(owner, id.value, renderer)
+    fun registerProjectileRenderer(owner: ApiImpl, id: String, renderer: ProjectileRenderer) {
+        projectileRenderers.register(owner, id, renderer)
     }
 
-    fun registerPreFireRenderer(owner: ApiImpl, id: RendererId, renderer: PreFireRenderer) {
-        preFireRenderers.register(owner, id.value, renderer)
+    fun registerPreFireRenderer(owner: ApiImpl, id: String, renderer: PreFireRenderer) {
+        preFireRenderers.register(owner, id, renderer)
     }
 
-    fun registerPostFireRenderer(owner: ApiImpl, id: RendererId, renderer: PostFireRenderer) {
-        postFireRenderers.register(owner, id.value, renderer)
+    fun registerPostFireRenderer(owner: ApiImpl, id: String, renderer: PostFireRenderer) {
+        postFireRenderers.register(owner, id, renderer)
     }
 
-    fun registerEffectRenderer(owner: ApiImpl, id: RendererId, renderer: EffectRenderer) {
-        effectRenderers.register(owner, id.value, renderer)
+    fun registerEffectRenderer(owner: ApiImpl, id: String, renderer: EffectRenderer) {
+        effectRenderers.register(owner, id, renderer)
     }
 
-    fun registerUnitRenderer(owner: ApiImpl, id: RendererId, renderer: UnitRenderer) {
-        unitRenderers.register(owner, id.value, renderer)
+    fun registerUnitRenderer(owner: ApiImpl, id: String, renderer: UnitRenderer) {
+        unitRenderers.register(owner, id, renderer)
     }
 
     fun activateUnitBindings(
         owner: ApiImpl,
-        nativeUnits: Map<UnitId, CustomUnitConfig>,
+        nativeUnits: Map<String, CustomUnitConfig>,
         definitions: List<UnitDefinition>,
     ): Int = synchronized(lock) {
         unitBindings.removeOwned(owner)
         var count = 0
         definitions.forEach { definition ->
             val binding = definition.extension.renderBinding ?: return@forEach
-            val renderer = checkNotNull(unitRenderers.owned(binding.rendererId.value)) {
-                "Unit renderer is not registered: ${binding.rendererId.value}"
+            val renderer = checkNotNull(unitRenderers.owned(binding.rendererId)) {
+                "Unit renderer is not registered: ${binding.rendererId}"
             }
             check(renderer.owner === owner) {
-                "Unit renderer ${binding.rendererId.value} belongs to another mod"
+                "Unit renderer ${binding.rendererId} belongs to another mod"
             }
             val nativeUnit = checkNotNull(nativeUnits[definition.id]) {
-                "Native unit is not active: ${definition.id.value}"
+                "Native unit is not active: ${definition.id}"
             }
             unitBindings.put(owner, nativeUnit, BoundUnitRenderer(definition.id, binding))
             count++
@@ -118,7 +118,7 @@ object RenderRegistry : OwnedRegistry {
         val (bound, renderer) = synchronized(lock) {
             val bound = unitBindings[unit.unitConfig] ?: return false
             if (layer == UnitRenderLayer.BODY && !bound.binding.replaceBody) return false
-            bound to (unitRenderers[bound.binding.rendererId.value] ?: return false)
+            bound to (unitRenderers[bound.binding.rendererId] ?: return false)
         }
         val unitOffset = unit.getRenderOffset()
         val centerX = unit.posX + unitOffset.x - gameEngine.viewpointXSnapped
@@ -131,10 +131,10 @@ object RenderRegistry : OwnedRegistry {
         var rendered = false
         canvas.save()
         try {
-            failures.runSafelyOncePerId("unit:${bound.binding.rendererId.value}") {
+            failures.runSafelyOncePerId("unit:${bound.binding.rendererId}") {
                 renderer.render(
                     UnitRenderContext(
-                        instanceId = UnitInstanceId(unit.objectId),
+                        instanceId = unit.objectId,
                         definitionId = bound.definitionId,
                         teamId = unit.team?.teamId ?: -1,
                         centerX = centerX,
@@ -183,7 +183,7 @@ object RenderRegistry : OwnedRegistry {
                             ageTicks = age.coerceIn(0f, turret.preFireDuration),
                             remainingTicks = (turret.preFireDuration - age).coerceAtLeast(0f),
                             durationTicks = turret.preFireDuration,
-                            variantId = RenderVariantId(variantId),
+                            variantId = variantId,
                         ),
                         activeCanvas,
                     )
@@ -237,7 +237,7 @@ object RenderRegistry : OwnedRegistry {
                             ageTicks = age.coerceIn(0f, turret.postFireDuration),
                             remainingTicks = (turret.postFireDuration - age).coerceAtLeast(0f),
                             durationTicks = turret.postFireDuration,
-                            variantId = RenderVariantId(variantId),
+                            variantId = variantId,
                         ),
                         activeCanvas,
                     )
@@ -277,7 +277,7 @@ object RenderRegistry : OwnedRegistry {
                         ageTicks = projectile.age.coerceAtLeast(0f),
                         remainingTicks = projectile.lifeTimer.coerceAtLeast(0f),
                         drawSize = projectileTemplate.drawSize,
-                        variantId = RenderVariantId(variantId),
+                        variantId = variantId,
                     ),
                     canvas,
                 )
@@ -335,7 +335,7 @@ object RenderRegistry : OwnedRegistry {
                         scaleX = scaleX,
                         scaleY = scaleY,
                         shadowPass = shadowPass,
-                        variantId = RenderVariantId(variantId),
+                        variantId = variantId,
                         sourceSpeedFraction = sourceSpeedFraction,
                     ),
                     canvas,
@@ -347,9 +347,9 @@ object RenderRegistry : OwnedRegistry {
         return true
     }
 
-    internal fun resolveTexture(id: TextureId): Pair<Texture, TextureOptions> {
-        val registration = textures.owned(id.value)
-            ?: error("Texture is not registered: ${id.value}")
+    internal fun resolveTexture(id: String): Pair<Texture, TextureOptions> {
+        val registration = textures.owned(id)
+            ?: error("Texture is not registered: ${id}")
         val entry = registration.value
         val texture = entry.texture ?: synchronized(entry) {
             entry.texture ?: registration.owner.loadRenderTexture(entry.path, entry.options)
@@ -386,7 +386,7 @@ object RenderRegistry : OwnedRegistry {
         }
 
         override fun drawTexture(
-            textureId: TextureId,
+            textureId: String,
             centerX: Float,
             centerY: Float,
             width: Float,
@@ -421,7 +421,7 @@ object RenderRegistry : OwnedRegistry {
         }
 
         override fun drawTextureRegion(
-            textureId: TextureId,
+            textureId: String,
             source: TextureRegion,
             centerX: Float,
             centerY: Float,

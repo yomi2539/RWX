@@ -15,14 +15,14 @@ import com.corrodinggames.rts.game.units.UnitCommandType as NativeUnitCommandTyp
 
 internal fun UnitDefinition.nativeActionIdsByNativeId(
     resolveNativeId: (displayName: String) -> String?,
-): Map<String, UnitActionId> =
+): Map<String, String> =
     iniSections.mapNotNull { section ->
         when {
             section.name.startsWith("action_") -> section.name.removePrefix("action_")
             section.name.startsWith("hiddenAction_") -> section.name.removePrefix("hiddenAction_")
             else -> null
         }?.let { displayName ->
-            resolveNativeId(displayName)?.let { nativeId -> nativeId to UnitActionId(displayName) }
+            resolveNativeId(displayName)?.let { nativeId -> nativeId to displayName }
         }
     }.toMap()
 
@@ -41,16 +41,16 @@ object UnitEventRuntime {
 
     internal fun activate(
         api: ApiImpl,
-        nativeUnits: Map<UnitId, CustomUnitConfig>,
+        nativeUnits: Map<String, CustomUnitConfig>,
         definitions: List<UnitDefinition>,
     ) {
         val definitionsById = definitions.associateBy { it.id }
         val prepared = nativeUnits.map { (unitId, nativeType) ->
             val definition = checkNotNull(definitionsById[unitId]) {
-                "Missing JVM unit declaration for activated native unit ${unitId.value}"
+                "Missing JVM unit declaration for activated native unit $unitId"
             }
             val effectTemplates = referencedEffects(definition).associateWith { effectId ->
-                nativeType.resolveEffect("CUSTOM:${effectId.nativeName}")
+                nativeType.resolveEffect("CUSTOM:$effectId")
             }
             nativeType to Registration(api, definition, nativeType, effectTemplates)
         }
@@ -281,7 +281,7 @@ object UnitEventRuntime {
             binding.listener?.handle(context)
         } catch (error: Throwable) {
             val message = "JVM mod ${registration.api.manifest.id}: unit event binding " +
-                    "${registration.definition.id.value}/${binding.id.value} failed"
+                    "${registration.definition.id}/${binding.id} failed"
             logger.error(error) { message }
             if (reportedFailures.add(key)) {
                 registration.api.reportUnitEventFailure("$message: ${error.message ?: error.javaClass.simpleName}")
@@ -296,7 +296,7 @@ object UnitEventRuntime {
             is UnitEventAction.SpawnEffect -> {
                 val subject = event.subject(action.subject) ?: return
                 val template = checkNotNull(registration.effectTemplates[action.effectId]) {
-                    "Missing native effect ${action.effectId.value}"
+                    "Missing native effect ${action.effectId}"
                 }
                 spawn(template, subject)
             }
@@ -325,7 +325,7 @@ object UnitEventRuntime {
         }
     }
 
-    private fun referencedEffects(definition: UnitDefinition): Set<EffectId> =
+    private fun referencedEffects(definition: UnitDefinition): Set<String> =
         definition.eventHandlers.flatMap { binding ->
             binding.actions.mapNotNull { action ->
                 when (action) {
@@ -349,11 +349,11 @@ object UnitEventRuntime {
         else -> related to null
     }
 
-    private fun BaseUnit.toRuntimeRef(explicitDefinitionId: UnitId? = null): UnitRuntimeRef {
+    private fun BaseUnit.toRuntimeRef(explicitDefinitionId: String? = null): UnitRuntimeRef {
         val definitionId =
             explicitDefinitionId ?: (this as? CustomUnit)?.let { registrations[it.unitConfig]?.definition?.id }
         return UnitRuntimeRef(
-            instanceId = UnitInstanceId(objectId),
+            instanceId = objectId,
             definitionId = definitionId,
             teamId = team?.teamId ?: -1,
         )
@@ -365,8 +365,8 @@ object UnitEventRuntime {
         UnitSubject.TARGET -> target
     }
 
-    private fun AnimationSet?.toApiTags(): Set<Tag> = this?.a
-        ?.mapNotNull { nativeTag -> runCatching { Tag(nativeTag.toString()) }.getOrNull() }
+    private fun AnimationSet?.toApiTags(): Set<String> = this?.a
+        ?.map { nativeTag -> nativeTag.toString() }
         ?.toSet()
         .orEmpty()
 
@@ -417,9 +417,9 @@ object UnitEventRuntime {
         val api: ApiImpl,
         val definition: UnitDefinition,
         val nativeType: CustomUnitConfig,
-        val effectTemplates: Map<EffectId, EffectTemplate>,
+        val effectTemplates: Map<String, EffectTemplate>,
     ) {
-        val actionIdsByNativeId: Map<String, UnitActionId> = definition.nativeActionIdsByNativeId { displayName ->
+        val actionIdsByNativeId: Map<String, String> = definition.nativeActionIdsByNativeId { displayName ->
             nativeType.findCustomActionDefByDisplayName(displayName)?.nativeActionId()
         }
     }
@@ -437,8 +437,8 @@ object UnitEventRuntime {
 
     private data class BindingKey(
         val modId: String,
-        val definitionId: UnitId,
-        val bindingId: UnitEventBindingId,
+        val definitionId: String,
+        val bindingId: String,
     )
 
     private class NativeUnitState(private val unit: BaseUnit) : UnitConditionState {
@@ -479,8 +479,8 @@ object UnitEventRuntime {
             UnitBooleanProperty.BUILD_COMPLETE -> unit.buildProgress >= 1f
         }
 
-        override fun hasTag(tag: Tag): Boolean =
-            unit.getTags()?.a?.any { it.toString() == tag.value.lowercase() } == true
+        override fun hasTag(tag: String): Boolean =
+            unit.getTags()?.a?.any { it.toString() == tag.lowercase() } == true
 
         private fun ratio(value: Float, maximum: Float): Float = if (maximum > 0f) value / maximum else 0f
     }

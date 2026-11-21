@@ -3,7 +3,10 @@ package io.github.rwx.mod.registry
 import androidx.compose.runtime.Composable
 import com.corrodinggames.rts.gameFramework.GameEngine
 import io.github.rwx.i18n.I18n
-import io.github.rwx.mod.api.*
+import io.github.rwx.mod.api.LocalizedText
+import io.github.rwx.mod.api.ModWindowContext
+import io.github.rwx.mod.api.WorldPosition
+import io.github.rwx.mod.api.WorldPositionSelection
 import io.github.rwx.mod.impl.ApiImpl
 import io.github.rwx.ui.CoreUiEventQueue
 import io.github.rwx.ui.model.ModHudLayerUiState
@@ -51,16 +54,16 @@ object UiRegistry : OwnedRegistry {
     }
 
     @Synchronized
-    fun registerHud(owner: ApiImpl, id: HudId, order: Int, content: @Composable () -> Unit) {
-        hudLayers.register(owner, id.value, ModHudLayerUiState(id.value, order, content))
+    fun registerHud(owner: ApiImpl, id: String, order: Int, content: @Composable () -> Unit) {
+        hudLayers.register(owner, id, ModHudLayerUiState(id, order, content))
         publishHud()
     }
 
     @Synchronized
-    fun unregisterHud(owner: ApiImpl, id: HudId) {
-        val registration = hudLayers.owned(id.value) ?: return
-        check(registration.owner === owner) { "Mod HUD is owned by another mod: ${id.value}" }
-        hudLayers.remove(id.value)
+    fun unregisterHud(owner: ApiImpl, id: String) {
+        val registration = hudLayers.owned(id) ?: return
+        check(registration.owner === owner) { "Mod HUD is owned by another mod: ${id}" }
+        hudLayers.remove(id)
         publishHud()
     }
 
@@ -114,17 +117,17 @@ object UiRegistry : OwnedRegistry {
     @Synchronized
     fun registerWindow(
         owner: ApiImpl,
-        id: ModWindowId,
+        id: String,
         title: LocalizedText,
         content: @Composable (context: ModWindowContext) -> Unit,
     ) {
-        windows.register(owner, id.value, RegisteredWindow(owner, title, content, WindowContext(owner)))
+        windows.register(owner, id, RegisteredWindow(owner, title, content, WindowContext(owner)))
     }
 
     @Synchronized
-    fun openWindow(id: ModWindowId) {
-        check(id.value in windows) { "Mod window is not registered: ${id.value}" }
-        activeWindowId = id.value
+    fun openWindow(id: String) {
+        check(id in windows) { "Mod window is not registered: ${id}" }
+        activeWindowId = id
         windowRevision++
         GameEngine.getInstance()?.gameUI?.isDraggingSelection = false
         CoreUiEventQueue.requestInGameModWindow()

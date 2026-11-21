@@ -1,3 +1,4 @@
+import io.github.rwx.build.AppVersionSupport
 import io.github.rwx.build.AssetListGenerationSupport
 
 plugins {
@@ -6,15 +7,7 @@ plugins {
 
 val assetListGeneration = AssetListGenerationSupport.register(project)
 
-val releaseVersionCode =
-     project.version.toString().split('.', '-', '+')
-        .take(3)
-        .map { it.toIntOrNull() ?: 0 }
-        .let { parts ->
-            (parts[0] * 10_000) +
-                    (parts[1] * 100) +
-                    parts[2]
-        }
+val releaseVersionCode = AppVersionSupport.versionCode(project.version.toString())
 
 fun signingValue(environmentName: String, propertyName: String) =
     providers.gradleProperty(propertyName).orElse(providers.environmentVariable(environmentName))

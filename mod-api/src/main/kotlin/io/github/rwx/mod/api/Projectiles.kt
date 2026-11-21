@@ -1,17 +1,8 @@
 package io.github.rwx.mod.api
 
-@JvmInline
-value class ProjectileObserverId(val value: String) {
-    init {
-        require(value.matches(Regex("[a-z][a-z0-9_.-]*:[a-z0-9][a-z0-9_./-]*"))) {
-            "Invalid namespace-qualified projectile observer id: $value"
-        }
-    }
-}
-
 data class ProjectileObserverBinding(
-    val observerId: ProjectileObserverId,
-    val variantId: RenderVariantId,
+    val observerId: String,
+    val variantId: String,
 )
 
 data class ProjectileInstanceId(
@@ -36,7 +27,7 @@ data class ProjectileLifecycleContext(
     val previousAgeTicks: Float?,
     val remainingTicks: Float,
     val previousRemainingTicks: Float?,
-    val variantId: RenderVariantId,
+    val variantId: String,
 )
 
 fun interface ProjectileObserver {

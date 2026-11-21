@@ -6,8 +6,8 @@ interface Map {
     fun info(): MapInfo?
     fun tileAt(x: Int, y: Int): TerrainTile?
     fun addOverlay(x: Int, y: Int, binding: TerrainOverlayBinding)
-    fun removeOverlay(x: Int, y: Int, rendererId: RendererId)
-    fun overlayAt(x: Int, y: Int, rendererId: RendererId): TerrainOverlayBinding?
+    fun removeOverlay(x: Int, y: Int, rendererId: String)
+    fun overlayAt(x: Int, y: Int, rendererId: String): TerrainOverlayBinding?
     fun overlaysAt(x: Int, y: Int): List<TerrainOverlayBinding>
     fun registerMap(definition: MapDefinition)
     fun registerTileset(definition: TilesetDefinition)
@@ -16,14 +16,14 @@ interface Map {
 data class MapDefinition(
     val id: String,
     val name: LocalizedText,
-    val file: ResourcePath,
-    val preview: ResourcePath? = null,
+    val file: String,
+    val preview: String? = null,
     val tags: Set<String> = emptySet()
 )
 
 data class TilesetDefinition(
     val id: String,
-    val image: ResourcePath,
+    val image: String,
     val properties: MutableMap<String, Any?> = mutableMapOf()
 )
 
@@ -50,7 +50,7 @@ interface Localization {
 }
 
 interface Audio {
-    fun registerSound(id: String, file: ResourcePath, properties: kotlin.collections.Map<String, Any?> = emptyMap())
-    fun registerMusic(id: String, file: ResourcePath, properties: Map<String, Any?> = emptyMap())
+    fun registerSound(id: String, file: String, properties: kotlin.collections.Map<String, Any?> = emptyMap())
+    fun registerMusic(id: String, file: String, properties: Map<String, Any?> = emptyMap())
     fun playSound(id: String, x: Float? = null, y: Float? = null, volume: Float = 1f)
 }

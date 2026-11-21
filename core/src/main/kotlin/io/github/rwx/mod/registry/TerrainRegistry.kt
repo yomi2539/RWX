@@ -6,7 +6,6 @@ import com.corrodinggames.rts.gameFramework.GameEngine
 import com.corrodinggames.rts.gameFramework.graphics.*
 import io.github.rwx.geometry.Rect
 import io.github.rwx.geometry.RectF
-import io.github.rwx.mod.api.RendererId
 import io.github.rwx.mod.api.TerrainOverlayBinding
 import io.github.rwx.mod.api.TerrainOverlayContext
 import io.github.rwx.mod.api.TerrainOverlayRenderer
@@ -14,7 +13,7 @@ import io.github.rwx.mod.api.TerrainShaderDefinition
 import io.github.rwx.mod.impl.ApiImpl
 import io.github.rwx.mod.registry.RenderRegistry.EngineRenderCanvas
 import io.github.rwx.render.canvas.Paint
-import java.util.IdentityHashMap
+import java.util.*
 import kotlin.math.ceil
 import kotlin.math.floor
 
@@ -36,15 +35,14 @@ object TerrainRegistry : OwnedRegistry {
     @Synchronized
     fun registerShader(owner: ApiImpl, definition: TerrainShaderDefinition) {
         check(registration == null) { "A terrain shader is already registered" }
-        require(definition.id.substringBefore(':') == owner.manifest.id)
         registration = Registration(owner, definition)
         TileMap.layerBufferManager.invalidateAllCells()
     }
 
     @Synchronized
-    fun registerOverlayRenderer(owner: ApiImpl, id: RendererId, renderer: TerrainOverlayRenderer) {
-        check(id.value !in overlayRenderers) { "Terrain overlay renderer is already registered: ${id.value}" }
-        overlayRenderers[id.value] = OverlayRendererEntry(owner, renderer)
+    fun registerOverlayRenderer(owner: ApiImpl, id: String, renderer: TerrainOverlayRenderer) {
+        check(id !in overlayRenderers) { "Terrain overlay renderer is already registered: $id" }
+        overlayRenderers[id] = OverlayRendererEntry(owner, renderer)
     }
 
     @Synchronized
@@ -91,7 +89,7 @@ object TerrainRegistry : OwnedRegistry {
         val key = key(x, y)
         val entries = overlays.getOrPut(map) { HashMap() }
         val slots = entries.getOrPut(key) { HashMap() }
-        val slotKey = binding.rendererId.value
+        val slotKey = binding.rendererId
         val previous = slots[slotKey]
         if (previous?.binding == binding) return
         slots[slotKey] = OverlayEntry(owner, binding)
@@ -99,13 +97,13 @@ object TerrainRegistry : OwnedRegistry {
     }
 
     @Synchronized
-    fun removeOverlay(owner: ApiImpl, map: TileMap, x: Int, y: Int, rendererId: RendererId) {
+    fun removeOverlay(owner: ApiImpl, map: TileMap, x: Int, y: Int, rendererId: String) {
         require(x in 0 until map.tileCountX && y in 0 until map.tileCountY)
         val key = key(x, y)
         val slots = overlays[map]?.get(key) ?: return
-        val entry = slots[rendererId.value] ?: return
+        val entry = slots[rendererId] ?: return
         check(entry.owner === owner)
-        slots.remove(rendererId.value)
+        slots.remove(rendererId)
         if (slots.isEmpty()) {
             overlays[map]?.remove(key)
             if (overlays[map]?.isEmpty() == true) overlays.remove(map)
@@ -114,9 +112,9 @@ object TerrainRegistry : OwnedRegistry {
     }
 
     @Synchronized
-    fun overlayAt(owner: ApiImpl, map: TileMap, x: Int, y: Int, rendererId: RendererId): TerrainOverlayBinding? {
+    fun overlayAt(owner: ApiImpl, map: TileMap, x: Int, y: Int, rendererId: String): TerrainOverlayBinding? {
         if (x !in 0 until map.tileCountX || y !in 0 until map.tileCountY) return null
-        return overlays[map]?.get(key(x, y))?.get(rendererId.value)?.binding
+        return overlays[map]?.get(key(x, y))?.get(rendererId)?.binding
     }
 
     @Synchronized
@@ -124,7 +122,7 @@ object TerrainRegistry : OwnedRegistry {
         if (x !in 0 until map.tileCountX || y !in 0 until map.tileCountY) return emptyList()
         val slots = overlays[map]?.get(key(x, y)) ?: return emptyList()
         if (slots.isEmpty()) return emptyList()
-        return slots.values.map { it.binding }.sortedBy { it.rendererId.value }
+        return slots.values.map { it.binding }.sortedBy { it.rendererId }
     }
 
     @JvmStatic
@@ -132,12 +130,12 @@ object TerrainRegistry : OwnedRegistry {
     fun drawOverlay(map: TileMap, x: Int, y: Int, graphics: GraphicsEngine, bounds: RectF) {
         val slots = overlays[map]?.get(key(x, y)) ?: return
         if (slots.isEmpty()) return
-        val snapshot = slots.values.map { it.binding }.sortedBy { it.rendererId.value }
+        val snapshot = slots.values.map { it.binding }.sortedBy { it.rendererId }
         val width = bounds.c - bounds.a
         val height = bounds.d - bounds.b
         val gameTimeMillis = GameEngine.getInstance().gameTimeMillis.toLong()
         for ((rendererId, variantId) in snapshot) {
-            val entry = overlayRenderers[rendererId.value] ?: continue
+            val entry = overlayRenderers[rendererId] ?: continue
             val ctx = TerrainOverlayContext(
                 x = x,
                 y = y,
@@ -150,7 +148,7 @@ object TerrainRegistry : OwnedRegistry {
             )
             val canvas = EngineRenderCanvas(graphics)
             try {
-                failures.runSafelyOncePerId("terrain-overlay:${rendererId.value}") {
+                failures.runSafelyOncePerId("terrain-overlay:${rendererId}") {
                     entry.renderer.render(ctx, canvas)
                 }
             } finally {

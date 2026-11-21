@@ -3,13 +3,13 @@ package io.github.rwx.mod.api
 import androidx.compose.runtime.Composable
 
 interface Graphics {
-    fun registerTexture(id: TextureId, file: ResourcePath, options: TextureOptions = TextureOptions())
-    fun registerProjectileRenderer(id: RendererId, renderer: ProjectileRenderer)
-    fun registerPreFireRenderer(id: RendererId, renderer: PreFireRenderer)
-    fun registerPostFireRenderer(id: RendererId, renderer: PostFireRenderer)
-    fun registerEffectRenderer(id: RendererId, renderer: EffectRenderer)
-    fun registerUnitRenderer(id: RendererId, renderer: UnitRenderer)
-    fun registerTerrainOverlayRenderer(id: RendererId, renderer: TerrainOverlayRenderer)
+    fun registerTexture(id: String, file: String, options: TextureOptions = TextureOptions())
+    fun registerProjectileRenderer(id: String, renderer: ProjectileRenderer)
+    fun registerPreFireRenderer(id: String, renderer: PreFireRenderer)
+    fun registerPostFireRenderer(id: String, renderer: PostFireRenderer)
+    fun registerEffectRenderer(id: String, renderer: EffectRenderer)
+    fun registerUnitRenderer(id: String, renderer: UnitRenderer)
+    fun registerTerrainOverlayRenderer(id: String, renderer: TerrainOverlayRenderer)
     fun registerTerrainShader(definition: TerrainShaderDefinition)
     fun registerAnimation(definition: AnimationDefinition)
     fun registerShader(definition: ShaderDefinition)
@@ -17,50 +17,29 @@ interface Graphics {
     fun addRenderPass(definition: RenderPassDefinition)
 }
 
-@JvmInline
-value class RendererId(val value: String) {
-    init {
-        require(value.isNotBlank() && value == value.trim()) { "Renderer id must be non-blank and trimmed" }
-    }
-}
-
-@JvmInline
-value class RenderVariantId(val value: String) {
-    init {
-        require(value.isNotBlank() && value == value.trim()) { "Render variant id must be non-blank and trimmed" }
-    }
-}
-
-@JvmInline
-value class TextureId(val value: String) {
-    init {
-        require(value.isNotBlank() && value == value.trim()) { "Texture id must be non-blank and trimmed" }
-    }
-}
-
 data class ProjectileRenderBinding(
-    val rendererId: RendererId,
-    val variantId: RenderVariantId,
+    val rendererId: String,
+    val variantId: String,
 )
 
 data class PreFireRenderBinding(
-    val rendererId: RendererId,
-    val variantId: RenderVariantId,
+    val rendererId: String,
+    val variantId: String,
 )
 
 data class PostFireRenderBinding(
-    val rendererId: RendererId,
-    val variantId: RenderVariantId,
+    val rendererId: String,
+    val variantId: String,
 )
 
 data class EffectRenderBinding(
-    val rendererId: RendererId,
-    val variantId: RenderVariantId,
+    val rendererId: String,
+    val variantId: String,
 )
 
 data class UnitRenderBinding(
-    val rendererId: RendererId,
-    val variantId: RenderVariantId,
+    val rendererId: String,
+    val variantId: String,
     val replaceBody: Boolean = false,
 )
 
@@ -92,7 +71,7 @@ data class ProjectileRenderContext(
     val ageTicks: Float,
     val remainingTicks: Float,
     val drawSize: Float,
-    val variantId: RenderVariantId,
+    val variantId: String,
 )
 
 data class PreFireRenderContext(
@@ -103,16 +82,9 @@ data class PreFireRenderContext(
     val ageTicks: Float,
     val remainingTicks: Float,
     val durationTicks: Float,
-    val variantId: RenderVariantId,
+    val variantId: String,
 )
 
-/**
- * One frame of a turret's recovery (post-fire) window.
- *
- * Mirrors [PreFireRenderContext], but [endX]/[endY] is the point the shot was actually taken
- * against, held fixed for the whole window. The turret is free to re-aim during recovery and
- * its target may die outright; recoil still plays out along the barrel that fired.
- */
 data class PostFireRenderContext(
     val startX: Float,
     val startY: Float,
@@ -121,7 +93,7 @@ data class PostFireRenderContext(
     val ageTicks: Float,
     val remainingTicks: Float,
     val durationTicks: Float,
-    val variantId: RenderVariantId,
+    val variantId: String,
 )
 
 data class EffectRenderContext(
@@ -134,24 +106,23 @@ data class EffectRenderContext(
     val scaleX: Float,
     val scaleY: Float,
     val shadowPass: Boolean,
-    val variantId: RenderVariantId,
+    val variantId: String,
     val sourceSpeedFraction: Float? = null,
 )
 
 data class UnitRenderContext(
-    val instanceId: UnitInstanceId,
-    val definitionId: UnitId,
+    val instanceId: Long,
+    val definitionId: String,
     val teamId: Int,
     val centerX: Float,
     val centerY: Float,
     val drawWidth: Float,
     val drawHeight: Float,
     val collisionRadius: Float,
-    /** Logical world-space heading; texture orientation offsets belong to the renderer. */
     val rotationDegrees: Float,
     val destroyed: Boolean,
     val layer: UnitRenderLayer,
-    val variantId: RenderVariantId,
+    val variantId: String,
 )
 
 enum class UnitRenderLayer {
@@ -167,7 +138,7 @@ interface RenderCanvas {
     fun scale(scaleX: Float, scaleY: Float, pivotX: Float, pivotY: Float)
 
     fun drawTexture(
-        textureId: TextureId,
+        textureId: String,
         centerX: Float,
         centerY: Float,
         width: Float,
@@ -178,7 +149,7 @@ interface RenderCanvas {
     )
 
     fun drawTextureRegion(
-        textureId: TextureId,
+        textureId: String,
         source: TextureRegion,
         centerX: Float,
         centerY: Float,
@@ -255,15 +226,15 @@ enum class TextureWrap {
 
 data class AnimationDefinition(
     val id: String,
-    val frames: List<ResourcePath>,
+    val frames: List<String>,
     val frameDurationTicks: Int,
     val loop: Boolean = true
 )
 
 data class ShaderDefinition(
     val id: String,
-    val vertex: ResourcePath? = null,
-    val fragment: ResourcePath,
+    val vertex: String? = null,
+    val fragment: String,
     val uniforms: List<ShaderUniformDefinition> = emptyList(),
     val targets: Set<ShaderTarget> = setOf(ShaderTarget.UNIT)
 )
@@ -313,8 +284,8 @@ interface Ui {
      * forwarded to the game. [content] is composed on the UI thread, so read game state through
      * snapshots or Compose state rather than touching the engine directly.
      */
-    fun registerHud(id: HudId, order: Int = 0, content: @Composable () -> Unit)
-    fun unregisterHud(id: HudId)
+    fun registerHud(id: String, order: Int = 0, content: @Composable () -> Unit)
+    fun unregisterHud(id: String)
     fun setNativeHudVisible(visible: Boolean)
 
     /**
@@ -323,12 +294,12 @@ interface Ui {
      * the content from scratch, [ModWindowContext.close] returns to the game.
      */
     fun registerWindow(
-        id: ModWindowId,
+        id: String,
         title: LocalizedText,
         content: @Composable (context: ModWindowContext) -> Unit,
     )
 
-    fun openWindow(id: ModWindowId)
+    fun openWindow(id: String)
     fun closeWindow()
     fun refreshWindow()
     fun showMessage(message: LocalizedText, durationTicks: Int = 180)
@@ -338,28 +309,10 @@ interface Ui {
     ): WorldPositionSelection
 }
 
-@JvmInline
-value class HudId(val value: String) {
-    init {
-        require(value.matches(Regex("[a-z][a-z0-9_.-]*:[a-z0-9][a-z0-9_./-]*"))) {
-            "Invalid namespace-qualified HUD id: $value"
-        }
-    }
-}
-
 interface WorldPositionSelection {
     val active: Boolean
 
     fun cancel()
-}
-
-@JvmInline
-value class ModWindowId(val value: String) {
-    init {
-        require(value.matches(Regex("[a-z][a-z0-9_.-]*:[a-z0-9][a-z0-9_./-]*"))) {
-            "Invalid namespace-qualified mod window id: $value"
-        }
-    }
 }
 
 interface ModWindowContext {
@@ -367,18 +320,4 @@ interface ModWindowContext {
     val locale: String
     fun refresh()
     fun close()
-}
-
-data class UiCommandButtonDefinition(
-    val id: String,
-    val text: LocalizedText,
-    val icon: ResourcePath? = null
-)
-
-enum class UiAnchor {
-    TOP_LEFT,
-    TOP_RIGHT,
-    BOTTOM_LEFT,
-    BOTTOM_RIGHT,
-    CENTER
 }

@@ -1,21 +1,7 @@
 package io.github.rwx.mod.api
 
-@JvmInline
-value class UnitEventBindingId(val value: String) {
-    init {
-        require(value.matches(EVENT_BINDING_ID_PATTERN)) { "Invalid unit event binding id: $value" }
-    }
-}
-
-@JvmInline
-value class UnitInstanceId(val value: Long) {
-    init {
-        require(value >= 0L) { "Unit instance id cannot be negative" }
-    }
-}
-
 data class UnitEventBinding(
-    val id: UnitEventBindingId,
+    val id: String,
     val event: UnitEvent,
     val condition: UnitCondition = UnitCondition.Always,
     val recursionLimit: Int = 1,
@@ -25,7 +11,7 @@ data class UnitEventBinding(
 
 sealed interface UnitEventAction {
     data class SpawnEffect(
-        val effectId: EffectId,
+        val effectId: String,
         val subject: UnitSubject = UnitSubject.SELF,
     ) : UnitEventAction
 }
@@ -34,7 +20,7 @@ sealed interface UnitEventAction {
 class UnitEventActionBuilder internal constructor() {
     private val actions = mutableListOf<UnitEventAction>()
 
-    fun spawnEffect(effectId: EffectId, at: UnitSubject = UnitSubject.SELF) {
+    fun spawnEffect(effectId: String, at: UnitSubject = UnitSubject.SELF) {
         actions += UnitEventAction.SpawnEffect(effectId, at)
     }
 
@@ -64,15 +50,15 @@ sealed interface UnitEvent {
         override val kind = UnitEventKind.QUEUED_UNIT_FINISHED
     }
 
-    data class QueueItemAdded(val actionTags: Set<Tag> = emptySet()) : UnitEvent {
+    data class QueueItemAdded(val actionTags: Set<String> = emptySet()) : UnitEvent {
         override val kind = UnitEventKind.QUEUE_ITEM_ADDED
     }
 
-    data class QueueItemCancelled(val actionTags: Set<Tag> = emptySet()) : UnitEvent {
+    data class QueueItemCancelled(val actionTags: Set<String> = emptySet()) : UnitEvent {
         override val kind = UnitEventKind.QUEUE_ITEM_CANCELLED
     }
 
-    data class ActionCompleted(val actionIds: Set<UnitActionId> = emptySet()) : UnitEvent {
+    data class ActionCompleted(val actionIds: Set<String> = emptySet()) : UnitEvent {
         override val kind = UnitEventKind.ACTION_COMPLETED
     }
 
@@ -101,8 +87,8 @@ sealed interface UnitEvent {
     }
 
     data class TookDamage(
-        val damageTags: Set<Tag> = emptySet(),
-        val projectileTags: Set<Tag> = emptySet(),
+        val damageTags: Set<String> = emptySet(),
+        val projectileTags: Set<String> = emptySet(),
     ) : UnitEvent {
         override val kind = UnitEventKind.TOOK_DAMAGE
     }
@@ -115,7 +101,7 @@ sealed interface UnitEvent {
         override val kind = UnitEventKind.LEFT_TRANSPORT
     }
 
-    data class MessageReceived(val tags: Set<Tag> = emptySet()) : UnitEvent {
+    data class MessageReceived(val tags: Set<String> = emptySet()) : UnitEvent {
         override val kind = UnitEventKind.MESSAGE_RECEIVED
     }
 
@@ -147,7 +133,6 @@ enum class UnitEventKind {
 }
 
 fun interface UnitEventHandler {
-    /** Called on the deterministic simulation thread in declaration order. */
     fun handle(context: UnitEventContext)
 }
 
@@ -162,8 +147,8 @@ data class UnitEventContext(
 )
 
 data class UnitRuntimeRef(
-    val instanceId: UnitInstanceId,
-    val definitionId: UnitId?,
+    val instanceId: Long,
+    val definitionId: String?,
     val teamId: Int,
 )
 
@@ -172,14 +157,14 @@ sealed interface UnitEventPayload {
 
     data class Damage(
         val amount: Float,
-        val damageTags: Set<Tag> = emptySet(),
-        val projectileTags: Set<Tag> = emptySet(),
+        val damageTags: Set<String> = emptySet(),
+        val projectileTags: Set<String> = emptySet(),
     ) : UnitEventPayload
 
-    data class Queue(val actionTags: Set<Tag> = emptySet()) : UnitEventPayload
+    data class Queue(val actionTags: Set<String> = emptySet()) : UnitEventPayload
 
     data class Action(
-        val actionId: UnitActionId,
+        val actionId: String,
         val targetPosition: WorldPosition? = null,
     ) : UnitEventPayload
 
@@ -189,7 +174,5 @@ sealed interface UnitEventPayload {
         val queued: Boolean = false,
     ) : UnitEventPayload
 
-    data class Message(val tags: Set<Tag> = emptySet()) : UnitEventPayload
+    data class Message(val tags: Set<String> = emptySet()) : UnitEventPayload
 }
-
-private val EVENT_BINDING_ID_PATTERN = Regex("[A-Za-z0-9][A-Za-z0-9_.:/#-]*")

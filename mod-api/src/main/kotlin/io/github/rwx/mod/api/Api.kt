@@ -21,46 +21,24 @@ interface Game {
     val headless: Boolean
 
     fun log(level: LogLevel, message: String, cause: Throwable? = null)
+    fun info(message: String) = log(LogLevel.INFO, message)
+    fun debug(message: String) = log(LogLevel.DEBUG, message)
+    fun warning(message: String, cause: Throwable? = null) = log(LogLevel.WARN, message, cause)
+    fun error(message: String, cause: Throwable? = null) = log(LogLevel.ERROR, message, cause)
     fun schedule(delayTicks: Long, task: ModTask): ScheduledTask
     fun repeat(intervalTicks: Long, task: ModTask): ScheduledTask
     fun localTeam(): TeamState?
     fun team(teamId: Int): TeamState?
-    fun registerTeamAction(id: TeamActionId, handler: TeamActionHandler)
-    fun requestTeamAction(id: TeamActionId, targetPosition: WorldPosition? = null): Boolean
-    fun registerProjectileObserver(id: ProjectileObserverId, observer: ProjectileObserver)
-    fun registerTurretFireCycleObserver(id: TurretFireCycleObserverId, observer: TurretFireCycleObserver)
+    fun registerTeamAction(id: String, handler: TeamActionHandler)
+    fun requestTeamAction(id: String, targetPosition: WorldPosition? = null): Boolean
+    fun registerProjectileObserver(id: String, observer: ProjectileObserver)
+    fun registerTurretFireCycleObserver(id: String, observer: TurretFireCycleObserver)
 }
-
-@JvmInline
-value class TeamActionId(val value: String) {
-    init {
-        require(value.matches(Regex("[a-z][a-z0-9_.-]*:[a-z0-9][a-z0-9_./-]*"))) {
-            "Invalid namespace-qualified team action id: $value"
-        }
-    }
-}
-
-@JvmInline
-value class TeamFlagId(val value: String) {
-    init {
-        require(value.matches(Regex("[a-z][a-z0-9_.-]*:[a-z0-9][a-z0-9_./-]*"))) {
-            "Invalid namespace-qualified team flag id: $value"
-        }
-    }
-}
-
-val TeamFlagId.unitTag: Tag
-    get() = Tag(
-        "mod_flag_" + value
-            .lowercase()
-            .replace(Regex("[^a-z0-9_]+"), "_")
-            .trim('_')
-    )
 
 interface TeamState {
     val teamId: Int
-    fun resource(id: ResourceId): Double
-    fun hasFlag(id: TeamFlagId): Boolean
+    fun resource(id: String): Double
+    fun hasFlag(id: String): Boolean
 }
 
 fun interface TeamActionHandler {
@@ -71,9 +49,9 @@ interface TeamActionContext : TeamState {
     val targetPosition: WorldPosition?
 
     fun trySpend(cost: Cost): Boolean
-    fun addResource(id: ResourceId, amount: Double)
-    fun grantFlag(id: TeamFlagId)
-    fun revokeFlag(id: TeamFlagId)
+    fun addResource(id: String, amount: Double)
+    fun grantFlag(id: String)
+    fun revokeFlag(id: String)
 }
 
 enum class LogLevel {
@@ -93,14 +71,17 @@ interface ScheduledTask {
     fun cancel()
 }
 
+/**
+ * Resolves mod resources. Mounted paths use `namespace:relative`; packaged paths are relative to
+ * the mod's `assets/` directory.
+ */
 interface Asset {
-    fun mount(namespace: String, root: ResourcePath)
-    fun open(path: ResourcePath): ResourceStream
-    fun exists(path: ResourcePath): Boolean
-    fun list(path: ResourcePath): List<ResourcePath>
+    /** Mounts a platform filesystem directory under [namespace]. */
+    fun mount(namespace: String, root: String)
+    fun open(path: String): ResourceStream
+    fun exists(path: String): Boolean
+    fun list(path: String): List<String>
 }
-
-data class ResourcePath(val value: String)
 
 interface ResourceStream : AutoCloseable {
     fun readBytes(): ByteArray

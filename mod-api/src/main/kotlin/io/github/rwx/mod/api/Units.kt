@@ -2,64 +2,12 @@ package io.github.rwx.mod.api
 
 import kotlin.collections.Map
 
-/**
- * Registers deterministic unit and weapon declarations during [io.github.rwx.mod.Mod.init].
- * Durations use simulation ticks and distances use RWX world units.
- */
 interface Units {
     fun registerUnit(definition: UnitDefinition)
 }
 
-@JvmInline
-value class UnitId(val value: String) {
-    init {
-        requireContentId(value, "Unit")
-    }
-}
-
-@JvmInline
-value class WeaponId(val value: String) {
-    init {
-        requireContentId(value, "Weapon")
-    }
-}
-
-@JvmInline
-value class UnitActionId(val value: String) {
-    init {
-        require(value.matches(ACTION_ID_PATTERN)) { "Invalid unit action id: $value" }
-    }
-}
-
-@JvmInline
-value class Tag(val value: String) {
-    init {
-        requireLocalId(value, "Tag")
-    }
-}
-
-@JvmInline
-value class EffectId(val value: String) {
-    init {
-        requireContentId(value, "Effect")
-    }
-}
-
-@JvmInline
-value class Ticks(val value: Int) {
-    init {
-        require(value >= 0) { "Ticks cannot be negative" }
-    }
-
-    companion object {
-        val ZERO = Ticks(0)
-    }
-}
-
-val Int.ticks: Ticks get() = Ticks(this)
-
 data class UnitDefinition(
-    val id: UnitId,
+    val id: String,
     val extension: UnitExtension = UnitExtension(),
     val eventHandlers: List<UnitEventBinding> = emptyList(),
     val iniSections: List<IniSpecSection> = emptyList(),
@@ -79,15 +27,15 @@ data class UnitExtension(
     var effects: Map<String, EffectExtension> = linkedMapOf(),
 ) {
     fun projectile(name: String, configure: ProjectileExtension.() -> kotlin.Unit) {
-        projectiles.asMutable().getOrPut(requireExtensionSectionName(name), ::ProjectileExtension).configure()
+        projectiles.asMutable().getOrPut(requireIniSectionName(name), ::ProjectileExtension).configure()
     }
 
     fun turret(name: String, configure: TurretExtension.() -> kotlin.Unit) {
-        turrets.asMutable().getOrPut(requireExtensionSectionName(name), ::TurretExtension).configure()
+        turrets.asMutable().getOrPut(requireIniSectionName(name), ::TurretExtension).configure()
     }
 
     fun effect(name: String, configure: EffectExtension.() -> kotlin.Unit) {
-        effects.asMutable().getOrPut(requireExtensionSectionName(name), ::EffectExtension).configure()
+        effects.asMutable().getOrPut(requireIniSectionName(name), ::EffectExtension).configure()
     }
 }
 
@@ -113,9 +61,9 @@ data class ProjectileExtension(
 @UnitDsl
 data class TurretExtension(
     /** Wind-up before the shot; zero disables the pre-fire window entirely. */
-    var preFireDuration: Ticks = Ticks.ZERO,
+    var preFireDuration: Int = 0,
     /** Recovery after the shot; zero disables the post-fire window entirely. */
-    var postFireDuration: Ticks = Ticks.ZERO,
+    var postFireDuration: Int = 0,
     var preFireRenderBinding: PreFireRenderBinding? = null,
     var postFireRenderBinding: PostFireRenderBinding? = null,
     var observerBinding: TurretFireCycleObserverBinding? = null,
@@ -126,22 +74,5 @@ data class EffectExtension(
     var renderBinding: EffectRenderBinding? = null,
 )
 
-private fun requireExtensionSectionName(name: String): String {
-    require(name.matches(Regex("[A-Za-z0-9_.-]+"))) { "Invalid native INI section name: $name" }
-    return name
-}
-
 private fun <V> Map<String, V>.asMutable(): MutableMap<String, V> =
     this as? MutableMap<String, V> ?: toMutableMap()
-
-private fun requireContentId(value: String, kind: String) {
-    require(value.matches(CONTENT_ID_PATTERN)) { "Invalid namespace-qualified $kind id: $value" }
-}
-
-private fun requireLocalId(value: String, kind: String) {
-    require(value.matches(LOCAL_ID_PATTERN)) { "Invalid $kind id: $value" }
-}
-
-private val CONTENT_ID_PATTERN = Regex("[a-z][a-z0-9_.-]*:[a-z0-9][a-z0-9_./-]*")
-private val LOCAL_ID_PATTERN = Regex("[A-Za-z0-9][A-Za-z0-9_.:/#-]*")
-private val ACTION_ID_PATTERN = Regex("[A-Za-z0-9][A-Za-z0-9_.-]*")

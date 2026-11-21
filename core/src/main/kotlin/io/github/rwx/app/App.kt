@@ -28,9 +28,7 @@ fun launchOnIO(name: String?=null,
 }
 
 class AppSession internal constructor(
-    val navigator: ScreenNavigator,
     private val uiController: AppUiController,
-    private val onQuit: () -> Unit,
     private val onBack: () -> Unit,
     private val onClose: () -> Unit = {},
 ) : AutoCloseable {
@@ -379,7 +377,6 @@ fun installApp(
     )
     var frameLoop: OwnedFrameLoop? = null
     val session = AppSession(
-        navigator = navigator,
         uiController = uiController,
         onClose = {
             p2pPreparation.close()
@@ -387,7 +384,6 @@ fun installApp(
             scheduler.stop()
             CoreUiEventQueue.setOverlayRequestHandler(null)
         },
-        onQuit = onQuit,
         onBack = onBack,
     )
     StartupController(

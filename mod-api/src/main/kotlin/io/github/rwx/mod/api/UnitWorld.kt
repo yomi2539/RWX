@@ -16,7 +16,7 @@ data class UnitRuntimeState(
     val ref: UnitRuntimeRef,
     val position: WorldPosition,
     val rotationDegrees: Float,
-    val typeId: String = ref.definitionId?.value.orEmpty(),
+    val typeId: String = ref.definitionId.orEmpty(),
     val health: Float = 0f,
     val maxHealth: Float = 0f,
     val shield: Float = 0f,
@@ -33,8 +33,8 @@ data class UnitRuntimeState(
     val isBuilding: Boolean = false,
     val isBuilder: Boolean = false,
     val isFactory: Boolean = false,
-    val currentTargetId: UnitInstanceId? = null,
-    val tags: Set<Tag> = emptySet(),
+    val currentTargetId: Long? = null,
+    val tags: Set<String> = emptySet(),
     val availableActions: List<UnitAvailableAction> = emptyList(),
     val properties: kotlin.collections.Map<String, Any?> = emptyMap(),
 )
@@ -57,7 +57,7 @@ data class UnitAvailableAction(
 
 data class UnitQuery(
     val teamId: Int? = null,
-    val definitionIds: Set<UnitId> = emptySet(),
+    val definitionIds: Set<String> = emptySet(),
     val includeDestroyed: Boolean = false,
     val center: WorldPosition? = null,
     val radius: Float? = null,
@@ -71,7 +71,7 @@ data class UnitQuery(
 }
 
 data class UnitSpawnRequest(
-    val unitId: UnitId,
+    val unitId: String,
     val teamId: Int,
     val position: WorldPosition,
     val rotationDegrees: Float = 0f,
@@ -106,12 +106,11 @@ data class UnitRuntimeUpdate(
     }
 }
 
-/** Deterministic simulation-thread access to unit snapshots and primitive mutations. */
 interface UnitWorld {
     /** Returns the current live state, or null when the unit is destroyed or no longer tracked. */
     fun state(ref: UnitRuntimeRef): UnitRuntimeState?
 
-    /** Returns matching units ordered by [UnitInstanceId]. */
+    /** Returns matching units ordered by [UnitRuntimeRef.instanceId]. */
     fun query(query: UnitQuery = UnitQuery()): List<UnitRuntimeState>
 
     /** Returns false when the referenced unit is no longer live. */

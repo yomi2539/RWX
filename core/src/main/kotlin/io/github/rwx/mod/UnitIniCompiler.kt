@@ -62,7 +62,7 @@ private class MutableUnitExtensionBindings {
 }
 
 internal object UnitIniCompiler {
-    fun compile(definition: UnitDefinition): UnitIniCompilation {
+    fun compile(definition: UnitDefinition, fileIndex: Int = 0): UnitIniCompilation {
         val document = IniDocumentWriter()
         val warnings = mutableListOf<String>()
         val extensionBindings = MutableUnitExtensionBindings()
@@ -71,7 +71,7 @@ internal object UnitIniCompiler {
             .firstOrNull { it.name == "core" }
             ?.values?.values?.containsKey("copyFrom") == true
         if (!isDerived) {
-            writeCore(document, definition)
+            writeCore(document)
             writeGraphics(document)
             writeMovement(document)
         }
@@ -79,25 +79,25 @@ internal object UnitIniCompiler {
         definition.iniSections.forEach { section ->
             applyIniSpec(document.section(section.name), section.values)
         }
+        val core = document.section("core")
+        core["name"] = definition.id
         collectSpecWarnings(definition, warnings)
         return UnitIniCompilation(
-            fileName = "${engineName(definition.id)}.ini",
+            fileName = "${fileIndex}_${safeFileName(definition.id)}.ini",
             content = document.render(),
             warnings = warnings,
             extensionBindings = extensionBindings.freeze(),
         )
     }
 
-    fun engineName(id: UnitId): String = id.nativeName
+    private fun safeFileName(id: String): String =
+        id.replace(INVALID_FILE_NAME_CHARACTER, "_").ifBlank { "unit" }
 
-    private fun writeCore(
-        document: IniDocumentWriter,
-        definition: UnitDefinition,
-    ) {
+    private val INVALID_FILE_NAME_CHARACTER = Regex("""[\\/:*?"<>|\p{Cc}]""")
+
+    private fun writeCore(document: IniDocumentWriter) {
         val core = document.section("core")
-        core["name"] = engineName(definition.id)
         core["class"] = "CustomUnitMetadata"
-        core["displayText"] = definition.id.value.substringAfter(':')
         core["price"] = "0"
         core["maxHp"] = "1"
         core["mass"] = "1"
@@ -150,7 +150,7 @@ internal object UnitIniCompiler {
         val sectionNames = definition.iniSections.mapTo(hashSetOf()) { it.name }
         definition.extension.projectiles.forEach { (name, extension) ->
             require("projectile_$name" in sectionNames) {
-                "Unit ${definition.id.value} extends missing native projectile section '$name'"
+                "Unit ${definition.id} extends missing native projectile section '$name'"
             }
             bindings.projectiles[name] = ProjectileExtensionBinding(
                 renderer = extension.renderBinding,
@@ -172,11 +172,11 @@ internal object UnitIniCompiler {
         }
         definition.extension.turrets.forEach { (name, extension) ->
             require("turret_$name" in sectionNames) {
-                "Unit ${definition.id.value} extends missing native turret section '$name'"
+                "Unit ${definition.id} extends missing native turret section '$name'"
             }
             bindings.turrets[name] = TurretExtensionBinding(
-                preFireDuration = extension.preFireDuration.value,
-                postFireDuration = extension.postFireDuration.value,
+                preFireDuration = extension.preFireDuration,
+                postFireDuration = extension.postFireDuration,
                 preFireRenderer = extension.preFireRenderBinding,
                 postFireRenderer = extension.postFireRenderBinding,
                 observer = extension.observerBinding,
@@ -184,11 +184,11 @@ internal object UnitIniCompiler {
         }
         definition.extension.effects.forEach { (name, extension) ->
             require("effect_$name" in sectionNames) {
-                "Unit ${definition.id.value} extends missing native effect section '$name'"
+                "Unit ${definition.id} extends missing native effect section '$name'"
             }
             bindings.effects[name] = EffectExtensionBinding(
                 requireNotNull(extension.renderBinding) {
-                    "Unit ${definition.id.value} effect extension '$name' must define renderBinding"
+                    "Unit ${definition.id} effect extension '$name' must define renderBinding"
                 },
             )
         }
@@ -209,17 +209,13 @@ internal object UnitIniCompiler {
         warnings += collected.distinct()
     }
 
-    private fun ResourcePath.toIniPath(): String = nativePath
-
     private fun Any?.toIniValue(): String = when (this) {
         null -> ""
         is Boolean, is Number -> toString()
-        is ResourcePath -> toIniPath()
         is Enum<*> -> name
         is Iterable<*> -> joinToString(",") { it.toIniValue() }
         else -> toString()
     }
-
 }
 
 private class IniDocumentWriter {

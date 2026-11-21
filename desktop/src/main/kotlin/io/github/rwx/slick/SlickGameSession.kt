@@ -194,7 +194,6 @@ class SlickGameSession(
             onLoadingStatus = ::handleLoadingStatus,
         )
     private fun configureLwjgl2Natives() {
-        System.setProperty("org.lwjgl.opengl.contextAPI", "native")
         val nativesDir = System.getProperty("rwx.slick.nativesDir")
             ?: System.getenv("RWX_SLICK_NATIVES_DIR")
             ?: return

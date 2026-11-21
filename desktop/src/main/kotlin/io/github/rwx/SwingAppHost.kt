@@ -277,7 +277,6 @@ class SwingAppHost private constructor(
             skiaGameContent: (@Composable (inputEnabled: Boolean) -> Unit)? = null,
         ): SwingAppHost {
             checkEdt() // Check before creating even the first Swing/Compose/native component.
-            System.setProperty("org.lwjgl.opengl.contextAPI", "native")
             val frame = JFrame(System.getProperty("rwx.windowTitle")
                 ?: System.getenv("RWX_WINDOW_TITLE") ?: "RWX Game").apply { isUndecorated = fullscreen }
             val canvas = SlickAwtGLCanvas(GLData().apply { alphaSize = 8; depthSize = 24; stencilSize = 8 }, 0)

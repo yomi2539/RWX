@@ -56,25 +56,15 @@ object NoopPlatformAudio : PlatformAudio {
 }
 
 data class AppMetadata(
-    val packageName: String = DEFAULT_PACKAGE_NAME,
-    val installerPackageName: String = DEFAULT_INSTALLER_PACKAGE_NAME,
+    val packageName: String = "com.corrodinggames.rts.gdx",
+    val installerPackageName: String = "java-gdx",
     val versionName: String = VERSION_NAME,
-    val versionCode: Int = VERSION_CODE,
+    val versionCode: Int = AppVersion.CODE,
     val compatibleCoreVersionCode: Int = COMPATIBLE_CORE_VERSION_CODE,
     val signature: String? = null,
 ) {
     companion object {
-        const val DEFAULT_PACKAGE_NAME = "com.corrodinggames.rts.gdx"
-        const val DEFAULT_INSTALLER_PACKAGE_NAME = "java-gdx"
-        const val VERSION_NAME = "1.1.4"
-        val VERSION_CODE = VERSION_NAME.split('.', '-', '+')
-            .take(3)
-            .map { it.toIntOrNull() ?: 0 }
-            .let { parts ->
-                (parts[0] * 10_000) +
-                        (parts[1] * 100) +
-                        parts[2]
-            }
+        const val VERSION_NAME = AppVersion.NAME
         const val COMPATIBLE_CORE_VERSION_CODE = 176
     }
 }

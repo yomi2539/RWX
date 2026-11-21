@@ -19,14 +19,8 @@ typealias UnitRef = String
 /** Projectile reference */
 typealias ProjectileRef = String
 
-/** File path to image */
-typealias ImageFile = String
-
 /** File path to image texture */
 typealias Texture = String
-
-/** File path to audio */
-typealias AudioFile = String
 
 /** Color in hex format (e.g., "#FF0000") */
 typealias Color = String
@@ -44,6 +38,3 @@ enum class MovementType {
 
 /** Time duration (e.g., "3s", "500ms") */
 typealias Duration = String
-
-/** Comma-separated tags */
-typealias TagList = String

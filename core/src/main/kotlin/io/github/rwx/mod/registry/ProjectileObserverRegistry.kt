@@ -3,7 +3,10 @@ package io.github.rwx.mod.registry
 import com.corrodinggames.rts.game.Projectile
 import com.corrodinggames.rts.game.ProjectileTemplate
 import com.corrodinggames.rts.game.units.custom.CustomProjectileTemplate
-import io.github.rwx.mod.api.*
+import io.github.rwx.mod.api.ProjectileInstanceId
+import io.github.rwx.mod.api.ProjectileLifecycleContext
+import io.github.rwx.mod.api.ProjectileLifecyclePhase
+import io.github.rwx.mod.api.ProjectileObserver
 import io.github.rwx.mod.impl.ApiImpl
 
 object ProjectileObserverRegistry : OwnedRegistry {
@@ -19,8 +22,8 @@ object ProjectileObserverRegistry : OwnedRegistry {
     private val active = linkedMapOf<Long, ActiveProjectile>()
     private val failures = ModFailureLog("Mod projectile observer")
 
-    fun register(owner: ApiImpl, id: ProjectileObserverId, observer: ProjectileObserver) {
-        observers.register(owner, id.value, observer)
+    fun register(owner: ApiImpl, id: String, observer: ProjectileObserver) {
+        observers.register(owner, id, observer)
     }
 
     @JvmStatic
@@ -100,7 +103,7 @@ object ProjectileObserverRegistry : OwnedRegistry {
                     previousAgeTicks = previousAge,
                     remainingTicks = projectile.lifeTimer.coerceAtLeast(0f),
                     previousRemainingTicks = previousRemaining,
-                    variantId = RenderVariantId(state.variantId),
+                    variantId = state.variantId,
                 )
             )
         }

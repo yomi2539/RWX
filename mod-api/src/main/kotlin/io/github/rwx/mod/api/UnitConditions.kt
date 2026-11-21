@@ -20,7 +20,7 @@ sealed interface UnitCondition {
         val expected: Boolean = true,
     ) : UnitCondition
 
-    data class HasTag(val subject: UnitSubject, val tag: Tag) : UnitCondition
+    data class HasTag(val subject: UnitSubject, val tag: String) : UnitCondition
     data class Compare(
         val left: UnitNumberExpression,
         val operator: UnitComparisonOperator,
@@ -103,7 +103,7 @@ class UnitSubjectExpression internal constructor(private val subject: UnitSubjec
     val isAttacking: UnitCondition get() = boolean(UnitBooleanProperty.ATTACKING)
     val isBuildComplete: UnitCondition get() = boolean(UnitBooleanProperty.BUILD_COMPLETE)
 
-    fun hasTag(tag: Tag): UnitCondition = UnitCondition.HasTag(subject, tag)
+    fun hasTag(tag: String): UnitCondition = UnitCondition.HasTag(subject, tag)
 
     private fun number(property: UnitNumberProperty) = UnitNumberExpression.Property(subject, property)
     private fun boolean(property: UnitBooleanProperty) = UnitCondition.BooleanProperty(subject, property)

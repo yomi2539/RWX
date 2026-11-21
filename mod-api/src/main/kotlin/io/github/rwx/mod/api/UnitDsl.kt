@@ -12,7 +12,7 @@ class UnitTemplate internal constructor(
 fun unitTemplate(configure: UnitBuilder.() -> kotlin.Unit): UnitTemplate = UnitTemplate(configure)
 
 fun Units.unit(
-    id: UnitId,
+    id: String,
     vararg templates: UnitTemplate,
     configure: UnitBuilder.() -> kotlin.Unit,
 ) {
@@ -23,9 +23,9 @@ fun Units.unit(
 }
 
 @UnitDsl
-class UnitBuilder internal constructor(private val id: UnitId) {
+class UnitBuilder internal constructor(private val id: String) {
     private val extension = UnitExtension()
-    private val eventHandlers = linkedMapOf<UnitEventBindingId, UnitEventBinding>()
+    private val eventHandlers = linkedMapOf<String, UnitEventBinding>()
     private val ini = UnitIniBuilder()
 
     fun extension(configure: UnitExtension.() -> kotlin.Unit) {
@@ -62,7 +62,7 @@ class UnitBuilder internal constructor(private val id: UnitId) {
     fun rawSection(name: String, values: kotlin.collections.Map<String, Any?>) = ini.rawSection(name, values)
 
     fun on(
-        id: UnitEventBindingId,
+        id: String,
         event: UnitEvent,
         condition: UnitCondition = UnitCondition.Always,
         recursionLimit: Int = 1,
@@ -79,7 +79,7 @@ class UnitBuilder internal constructor(private val id: UnitId) {
     }
 
     fun listen(
-        id: UnitEventBindingId,
+        id: String,
         event: UnitEvent,
         condition: UnitCondition = UnitCondition.Always,
         recursionLimit: Int = 1,
@@ -94,7 +94,7 @@ class UnitBuilder internal constructor(private val id: UnitId) {
         )
     }
 
-    fun removeEventHandler(id: UnitEventBindingId) {
+    fun removeEventHandler(id: String) {
         eventHandlers.remove(id)
     }
 

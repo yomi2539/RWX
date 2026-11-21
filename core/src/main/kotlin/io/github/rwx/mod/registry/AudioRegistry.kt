@@ -1,14 +1,13 @@
 package io.github.rwx.mod.registry
 
 import com.corrodinggames.rts.gameFramework.GameEngine
-import io.github.rwx.mod.api.ResourcePath
 import io.github.rwx.mod.impl.ApiImpl
 import kotlin.math.sqrt
 
 object AudioRegistry : OwnedRegistry {
     private class RegisteredSound(
         val backendId: String,
-        val path: ResourcePath,
+        val path: String,
         val minimumVolume: Float,
         var loaded: Boolean = false,
     )
@@ -19,8 +18,7 @@ object AudioRegistry : OwnedRegistry {
         describeKey = { it.substringAfter(KEY_SEPARATOR) },
     )
 
-    fun registerSound(owner: ApiImpl, id: String, file: ResourcePath, properties: Map<String, Any?>) {
-        require(id.isNotBlank() && id == id.trim()) { "Sound id must be non-blank and trimmed" }
+    fun registerSound(owner: ApiImpl, id: String, file: String, properties: Map<String, Any?>) {
         val backendId = "${owner.manifest.id}:$id"
         val minimumVolume = (properties["minimumVolume"] as? Number)?.toFloat() ?: 0f
         require(minimumVolume in 0f..1f) { "Sound minimumVolume must be between 0 and 1: $id" }
@@ -67,7 +65,7 @@ object AudioRegistry : OwnedRegistry {
         if (sound.loaded) return
         val audio = owner.platformBridge?.audio ?: return
         val data = owner.openPackagedResource(sound.path).use { it.readBytes() }
-        audio.registerSound(sound.backendId, data, sound.path.value)
+        audio.registerSound(sound.backendId, data, sound.path)
         sound.loaded = true
     }
 

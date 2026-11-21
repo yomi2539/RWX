@@ -1,3 +1,4 @@
+import io.github.rwx.build.AppVersionSupport
 import io.github.rwx.build.I18nGenerationExtension
 import io.github.rwx.build.I18nGenerationSupport
 
@@ -21,13 +22,14 @@ allprojects {
 }
 
 val generateI18nSources = I18nGenerationSupport.register(rootProject)
+val generateAppVersionSource = AppVersionSupport.register(rootProject)
 
 configure<I18nGenerationExtension> {
     inputFormat = "properties"
 }
 
 project(":core").tasks.matching { it.name.startsWith("compile") }.configureEach {
-    dependsOn(generateI18nSources)
+    dependsOn(generateI18nSources, generateAppVersionSource)
 }
 
 subprojects {

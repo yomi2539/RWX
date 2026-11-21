@@ -1,5 +1,6 @@
 package io.github.rwx.mod.impl
 
+import androidx.compose.runtime.Composable
 import com.corrodinggames.rts.game.PlayerTeam
 import com.corrodinggames.rts.game.units.UnitTypeEnum
 import com.corrodinggames.rts.game.units.custom.AnimationTag
@@ -12,7 +13,6 @@ import com.corrodinggames.rts.gameFramework.graphics.ShaderProgram
 import com.corrodinggames.rts.gameFramework.graphics.ShaderUniformValueType
 import com.corrodinggames.rts.gameFramework.graphics.Texture
 import com.corrodinggames.rts.gameFramework.mod.ModInfo
-import androidx.compose.runtime.Composable
 import io.github.rwx.PlatformBridge
 import io.github.rwx.logger
 import io.github.rwx.mod.*
@@ -42,10 +42,10 @@ class ApiImpl private constructor(
     private val unitApi = UnitApiImpl()
     private val unitWorldApi = UnitWorldImpl()
     private val commandApi = UnitCommandsImpl(this)
-    private val activeNativeUnits = linkedMapOf<UnitId, CustomUnitConfig>()
+    private val activeNativeUnits = linkedMapOf<String, CustomUnitConfig>()
     private val shaderDefinitions = linkedMapOf<String, ShaderDefinition>()
     private val shaderPrograms = linkedMapOf<String, ShaderProgram>()
-    private val unitExtensionBindings = linkedMapOf<UnitId, UnitExtensionBindings>()
+    private val unitExtensionBindings = linkedMapOf<String, UnitExtensionBindings>()
     private var engineModInfo: ModInfo? = null
 
     override val game: Game = GameImpl(this)
@@ -76,23 +76,22 @@ class ApiImpl private constructor(
         }
         val registeredTypes = UnitTypeEnum.ae.toSet()
         val activeByName = CustomUnitConfig.activeConfigs.associateBy { it.name }
-        val resolved = linkedMapOf<UnitId, CustomUnitConfig>()
+        val resolved = linkedMapOf<String, CustomUnitConfig>()
         val missing = mutableListOf<String>()
         var resolvedBuildLinks = 0
         var verifiedStartingUnits = 0
 
         unitApi.units().forEach { definition ->
-            val engineName = UnitIniCompiler.engineName(definition.id)
-            val nativeType = activeByName[engineName]
+            val nativeType = activeByName[definition.id]
             if (nativeType == null || nativeType !in registeredTypes) {
-                missing += "${definition.id.value} ($engineName)"
+                missing += definition.id
             } else {
                 check(nativeType.modInfo === ownerModInfo) {
-                    "JVM mod ${manifest.id}: native unit ${definition.id.value} is not owned by its engine mod"
+                    "JVM mod ${manifest.id}: native unit ${definition.id} is not owned by its engine mod"
                 }
                 val probe = nativeType.createCustomUnit(true)
                 check(probe.r() === nativeType) {
-                    "JVM mod ${manifest.id}: native unit factory returned the wrong type for ${definition.id.value}"
+                    "JVM mod ${manifest.id}: native unit factory returned the wrong type for ${definition.id}"
                 }
                 val nativeBuildTargets = (1..3)
                     .flatMap { techLevel -> nativeType.a(techLevel) }
@@ -110,7 +109,7 @@ class ApiImpl private constructor(
                     .toSet()
                 check(nativeBuildTargets.containsAll(expectedBuildTargets)) {
                     val unresolved = expectedBuildTargets - nativeBuildTargets
-                    "JVM mod ${manifest.id}: native build links unresolved for ${definition.id.value}: " +
+                    "JVM mod ${manifest.id}: native build links unresolved for ${definition.id}: " +
                             unresolved.joinToString()
                 }
                 val isPickableStartingUnit = definition.iniSections
@@ -120,7 +119,7 @@ class ApiImpl private constructor(
                     ?.get("isPickableStartingUnit") == true
                 if (isPickableStartingUnit) {
                     check(nativeType.isPickableStartingUnit && nativeType in CustomUnitConfig.configsById) {
-                        "JVM mod ${manifest.id}: ${definition.id.value} was not registered as a starting unit"
+                        "JVM mod ${manifest.id}: ${definition.id} was not registered as a starting unit"
                     }
                     verifiedStartingUnits++
                 }
@@ -152,9 +151,9 @@ class ApiImpl private constructor(
         var generatedCount = 0
         unitExtensionBindings.clear()
 
-        unitApi.units().forEach { definition ->
+        unitApi.units().forEachIndexed { index, definition ->
             runCatching {
-                val compilation = UnitIniCompiler.compile(definition)
+                val compilation = UnitIniCompiler.compile(definition, index)
                 generatedDirectory.mkdirs()
                 generatedDirectory.resolve(compilation.fileName).writeText(compilation.content)
                 unitExtensionBindings[definition.id] = compilation.extensionBindings
@@ -165,31 +164,31 @@ class ApiImpl private constructor(
                 generatedCount++
             }.onFailure { error ->
                 engineModInfo?.addError(
-                    "Failed to compile unit ${definition.id.value}: ${error.message ?: error.javaClass.simpleName}"
+                    "Failed to compile unit ${definition.id}: ${error.message ?: error.javaClass.simpleName}"
                 )
                 logger.error(error) {
-                    "JVM mod ${manifest.id}: failed to compile unit ${definition.id.value} to native RWX content"
+                    "JVM mod ${manifest.id}: failed to compile unit ${definition.id} to native RWX content"
                 }
             }
         }
         logger.info { "JVM mod ${manifest.id}: generated $generatedCount native unit definitions for engine mod loading" }
     }
 
-    private fun applyUnitExtensionBindings(nativeUnits: Map<UnitId, CustomUnitConfig>): Int {
+    private fun applyUnitExtensionBindings(nativeUnits: Map<String, CustomUnitConfig>): Int {
         var applied = 0
         unitExtensionBindings.forEach { (unitId, bindings) ->
             val nativeUnit = checkNotNull(nativeUnits[unitId]) {
-                "Missing native unit for extension bindings: ${unitId.value}"
+                "Missing native unit for extension bindings: $unitId"
             }
             val exposureWidth = bindings.unit.exposureWidth
             val exposureHeight = bindings.unit.exposureHeight
             require((exposureWidth == null) == (exposureHeight == null)) {
-                "exposureWidth and exposureHeight must be set together for ${unitId.value}"
+                "exposureWidth and exposureHeight must be set together for $unitId"
             }
             val avoidChance = bindings.unit.damageAvoidChance
             if (avoidChance != null || exposureWidth != null) {
                 require(avoidChance == null || avoidChance in 0f..1f) {
-                    "damageAvoidChance must be between 0 and 1 for ${unitId.value}"
+                    "damageAvoidChance must be between 0 and 1 for $unitId"
                 }
                 DamageRegistry.bindUnit(
                     owner = this,
@@ -198,7 +197,7 @@ class ApiImpl private constructor(
                         avoidChance = avoidChance ?: 0f,
                         exposure = if (exposureWidth != null && exposureHeight != null) {
                             require(exposureWidth >= 0f && exposureHeight >= 0f) {
-                                "exposureWidth and exposureHeight cannot be negative for ${unitId.value}"
+                                "exposureWidth and exposureHeight cannot be negative for $unitId"
                             }
                             DamageRegistry.UnitExposure(
                                 offsetX = bindings.unit.exposureOffsetX ?: 0f,
@@ -214,33 +213,33 @@ class ApiImpl private constructor(
             }
             bindings.projectiles.forEach { (name, binding) ->
                 val projectile = checkNotNull(nativeUnit.findProjectileTemplateByName(name)) {
-                    "Missing projectile $name for extension binding on ${unitId.value}"
+                    "Missing projectile $name for extension binding on $unitId"
                 }
-                projectile.renderExtensionId = binding.renderer?.rendererId?.value
-                projectile.renderExtensionVariant = binding.renderer?.variantId?.value
-                projectile.projectileObserverId = binding.observer?.observerId?.value
-                projectile.projectileObserverVariant = binding.observer?.variantId?.value
+                projectile.renderExtensionId = binding.renderer?.rendererId
+                projectile.renderExtensionVariant = binding.renderer?.variantId
+                projectile.projectileObserverId = binding.observer?.observerId
+                projectile.projectileObserverVariant = binding.observer?.variantId
                 bindProjectileDamage(projectile, binding, unitId)
                 applied++
             }
             bindings.turrets.forEach { (name, binding) ->
                 val turret = checkNotNull(nativeUnit.findProjectileConfigByName(name)) {
-                    "Missing turret $name for extension binding on ${unitId.value}"
+                    "Missing turret $name for extension binding on $unitId"
                 }
                 turret.preFireDuration = binding.preFireDuration.toFloat()
                 turret.postFireDuration = binding.postFireDuration.toFloat()
-                turret.preFireRendererId = binding.preFireRenderer?.rendererId?.value
-                turret.preFireRendererVariant = binding.preFireRenderer?.variantId?.value
-                turret.postFireRendererId = binding.postFireRenderer?.rendererId?.value
-                turret.postFireRendererVariant = binding.postFireRenderer?.variantId?.value
-                turret.turretFireCycleObserverId = binding.observer?.observerId?.value
-                turret.turretFireCycleObserverVariant = binding.observer?.variantId?.value
+                turret.preFireRendererId = binding.preFireRenderer?.rendererId
+                turret.preFireRendererVariant = binding.preFireRenderer?.variantId
+                turret.postFireRendererId = binding.postFireRenderer?.rendererId
+                turret.postFireRendererVariant = binding.postFireRenderer?.variantId
+                turret.turretFireCycleObserverId = binding.observer?.observerId
+                turret.turretFireCycleObserverVariant = binding.observer?.variantId
                 applied++
             }
             bindings.effects.forEach { (name, binding) ->
                 val effect = nativeUnit.resolveEffect("CUSTOM:$name")
-                effect.renderExtensionId = binding.renderer.rendererId.value
-                effect.renderExtensionVariant = binding.renderer.variantId.value
+                effect.renderExtensionId = binding.renderer.rendererId
+                effect.renderExtensionVariant = binding.renderer.variantId
                 applied++
             }
         }
@@ -257,7 +256,7 @@ class ApiImpl private constructor(
     private fun bindProjectileDamage(
         projectile: CustomProjectileTemplate,
         binding: ProjectileExtensionBinding,
-        unitId: UnitId,
+        unitId: String,
     ) {
         val damage = DamageRegistry.ProjectileDamage(
             directDamageAmount = binding.directDamageAmount,
@@ -277,11 +276,11 @@ class ApiImpl private constructor(
         )
         if (damage == EMPTY_PROJECTILE_DAMAGE) return
         require(!damage.rayDamage || projectile.I) {
-            "rayDamage requires an instant projectile for ${unitId.value}"
+            "rayDamage requires an instant projectile for $unitId"
         }
         runCatching { DamageRegistry.bindProjectile(this, projectile, damage) }
             .getOrElse { error ->
-                throw IllegalArgumentException("${error.message} for ${unitId.value}", error)
+                throw IllegalArgumentException("${error.message} for $unitId", error)
             }
         val areaAmount = binding.areaDamageAmount
         if (areaAmount != null && areaAmount != 0f && projectile.i > 0) {
@@ -330,18 +329,11 @@ class ApiImpl private constructor(
     }
 
     internal fun bindShader(unitId: String, shaderId: String?) {
-        require(unitId.isNotBlank() && unitId == unitId.trim()) { "Unit shader binding id must be non-blank and trimmed" }
-        shaderId?.let {
-            require(it.isNotBlank() && it == it.trim()) { "Shader binding id must be non-blank and trimmed" }
-        }
         shaderBindings[unitId] = shaderId
     }
 
     internal fun registerShader(definition: ShaderDefinition) {
-        require(definition.id.isNotBlank() && definition.id == definition.id.trim()) {
-            "Shader id must be non-blank and trimmed"
-        }
-        require(definition.fragment.value.isNotBlank()) { "Shader fragment path must be non-blank: ${definition.id}" }
+        require(definition.fragment.isNotBlank()) { "Shader fragment path must be non-blank: ${definition.id}" }
         require(definition.uniforms.map { it.name }.toSet().size == definition.uniforms.size) {
             "Shader uniforms must have unique names: ${definition.id}"
         }
@@ -355,15 +347,15 @@ class ApiImpl private constructor(
 
     internal fun selectedUnits(): List<UnitRuntimeState> = unitWorldApi.selectedUnits()
 
-    private fun applyUnitShaderBindings(nativeUnits: Map<UnitId, CustomUnitConfig>): Int {
+    private fun applyUnitShaderBindings(nativeUnits: Map<String, CustomUnitConfig>): Int {
         val requestedBindings = linkedMapOf<String, String?>()
         unitApi.units().forEach { definition ->
-            definition.extension.shaderId?.let { requestedBindings[definition.id.value] = it }
+            definition.extension.shaderId?.let { requestedBindings[definition.id] = it }
         }
         requestedBindings.putAll(shaderBindings)
         var applied = 0
         requestedBindings.forEach { (unitId, shaderId) ->
-            val nativeUnit = nativeUnits.entries.firstOrNull { it.key.value == unitId }?.value
+            val nativeUnit = nativeUnits.entries.firstOrNull { it.key == unitId }?.value
             if (nativeUnit == null) {
                 val message = "JVM mod ${manifest.id}: shader binding references unknown unit $unitId"
                 engineModInfo?.addError(message)
@@ -426,9 +418,8 @@ class ApiImpl private constructor(
             ShaderUniformType.MAT4 -> uniform.a(numericValues(value, 16), ShaderUniformValueType.MATRIX4)
             ShaderUniformType.TEXTURE -> {
                 val resource = when (value) {
-                    is ResourcePath -> value
-                    is String -> ResourcePath(value)
-                    else -> error("Texture uniform ${definition.name} must use ResourcePath or String")
+                    is String -> value
+                    else -> error("Texture uniform ${definition.name} must be a String")
                 }
                 val texture = openPackagedResource(resource).use { input ->
                     GameEngine.getInstance().renderGraphicsEngine.a(input, true)
@@ -458,25 +449,25 @@ class ApiImpl private constructor(
         textures.forEach { it.a(shader) }
     }
 
-    internal fun openPackagedResource(path: ResourcePath): InputStream {
-        assetStore.open(path.value)?.let { return it }
+    internal fun openPackagedResource(path: String): InputStream {
+        assetStore.open(path)?.let { return it }
         val file = resolvePackagedResourcePath(path)
-        require(file.isFile) { "Missing packaged resource: ${path.value}" }
+        require(file.isFile) { "Missing packaged resource: $path" }
         return file.inputStream()
     }
 
-    private fun resolvePackagedResourcePath(path: ResourcePath): File {
+    private fun resolvePackagedResourcePath(path: String): File {
         val root = workDir.canonicalFile
         val relative = normalizedPackagedPath(path)
         val file = root.resolve(relative).canonicalFile
         require(file.path == root.path || file.path.startsWith(root.path + File.separator)) {
-            "Resource escapes the mod directory: ${path.value}"
+            "Resource escapes the mod directory: $path"
         }
-        require(file.isFile || assetStore.exists(relative)) { "Missing packaged resource: ${path.value}" }
+        require(file.isFile || assetStore.exists(relative)) { "Missing packaged resource: $path" }
         return file
     }
 
-    internal fun loadRenderTexture(path: ResourcePath, options: TextureOptions): Texture {
+    internal fun loadRenderTexture(path: String, options: TextureOptions): Texture {
         val texture = openPackagedResource(path).use { input ->
             GameEngine.getInstance().renderGraphicsEngine.a(input, true)
         }
@@ -484,10 +475,10 @@ class ApiImpl private constructor(
         return texture
     }
 
-    private fun normalizedPackagedPath(path: ResourcePath): String =
-        AssetVaultFormat.normalizeAssetPath(path.value).also { normalized ->
+    private fun normalizedPackagedPath(path: String): String =
+        AssetVaultFormat.normalizeAssetPath(path).also { normalized ->
             require(normalized.startsWith("assets/")) {
-                "JVM mod packaged resources must be under assets/: ${path.value}"
+                "JVM mod packaged resources must be under assets/: $path"
             }
         }
 
@@ -556,19 +547,19 @@ private class GameImpl(private val api: Api) : Game {
 
     override fun team(teamId: Int): TeamState? = PlayerTeam.k(teamId)?.toTeamState()
 
-    override fun registerTeamAction(id: TeamActionId, handler: TeamActionHandler) {
+    override fun registerTeamAction(id: String, handler: TeamActionHandler) {
         TeamActionRegistry.register(api as ApiImpl, id, handler)
     }
 
-    override fun requestTeamAction(id: TeamActionId, targetPosition: WorldPosition?): Boolean =
+    override fun requestTeamAction(id: String, targetPosition: WorldPosition?): Boolean =
         TeamActionRegistry.request(GameEngine.getInstance().playerTeam, id, targetPosition)
 
-    override fun registerProjectileObserver(id: ProjectileObserverId, observer: ProjectileObserver) {
+    override fun registerProjectileObserver(id: String, observer: ProjectileObserver) {
         ProjectileObserverRegistry.register(api as ApiImpl, id, observer)
     }
 
     override fun registerTurretFireCycleObserver(
-        id: TurretFireCycleObserverId,
+        id: String,
         observer: TurretFireCycleObserver,
     ) {
         TurretFireCycleObserverRegistry.register(api as ApiImpl, id, observer)
@@ -581,49 +572,48 @@ private class AssetImpl(
 ) : Asset {
     private val mounts = linkedMapOf<String, File>()
 
-    override fun mount(namespace: String, root: ResourcePath) {
+    override fun mount(namespace: String, root: String) {
         require(namespace.isNotBlank()) { "Asset mount namespace must not be blank" }
-        mounts[namespace] = File(root.value.removePrefix("file:")).canonicalFile
+        mounts[namespace] = File(root).canonicalFile
     }
 
-    override fun open(path: ResourcePath): io.github.rwx.mod.api.ResourceStream {
+    override fun open(path: String): io.github.rwx.mod.api.ResourceStream {
         resolveMount(path)?.let { return ResourceStream(it.inputStream()) }
         val normalized = requireNotNull(normalizedPackagedAssetPathOrNull(path)) {
-            "JVM mod packaged resources must be under assets/: ${path.value}"
+            "JVM mod packaged resources must be under assets/: $path"
         }
         store.open(normalized)?.let { return ResourceStream(it) }
         return ResourceStream(resolveLocal(normalized).inputStream())
     }
 
-    override fun exists(path: ResourcePath): Boolean {
+    override fun exists(path: String): Boolean {
         resolveMount(path)?.let { return it.exists() }
         val normalized = normalizedPackagedAssetPathOrNull(path) ?: return false
         return store.exists(normalized) || resolveLocal(normalized).exists()
     }
 
-    override fun list(path: ResourcePath): List<ResourcePath> {
+    override fun list(path: String): List<String> {
         resolveMount(path)?.let { directory ->
-            return directory.listFiles()?.map { ResourcePath(it.path) } ?: emptyList()
+            return directory.listFiles()?.map { it.path } ?: emptyList()
         }
         val normalized = normalizedPackagedAssetPathOrNull(path) ?: return emptyList()
-        val packaged = store.list(normalized).map(::ResourcePath)
-        val local = resolveLocal(normalized).listFiles()?.map { ResourcePath(it.path) }.orEmpty()
-        return (packaged + local).distinctBy(ResourcePath::value)
+        val packaged = store.list(normalized)
+        val local = resolveLocal(normalized).listFiles()?.map { it.path }.orEmpty()
+        return (packaged + local).distinct()
     }
 
-    private fun resolveMount(path: ResourcePath): File? {
-        val value = path.value
-        val namespaceIndex = value.indexOf(':')
+    private fun resolveMount(path: String): File? {
+        val namespaceIndex = path.indexOf(':')
         if (namespaceIndex > 0) {
-            val namespace = value.substring(0, namespaceIndex)
-            val localPath = value.substring(namespaceIndex + 1)
+            val namespace = path.substring(0, namespaceIndex)
+            val localPath = path.substring(namespaceIndex + 1)
             mounts[namespace]?.let { return safeResolve(it, localPath) }
         }
         return null
     }
 
-    private fun normalizedPackagedAssetPathOrNull(path: ResourcePath): String? =
-        runCatching { AssetVaultFormat.normalizeAssetPath(path.value) }
+    private fun normalizedPackagedAssetPathOrNull(path: String): String? =
+        runCatching { AssetVaultFormat.normalizeAssetPath(path) }
             .getOrNull()
             ?.takeIf { it == "assets" || it.startsWith("assets/") }
 
@@ -658,25 +648,25 @@ private class Localization : io.github.rwx.mod.api.Localization {
 }
 
 private class RecordingGraphics(private val api: ApiImpl) : Graphics {
-    override fun registerTexture(id: TextureId, file: ResourcePath, options: TextureOptions) =
+    override fun registerTexture(id: String, file: String, options: TextureOptions) =
         RenderRegistry.registerTexture(api, id, file, options)
 
-    override fun registerProjectileRenderer(id: RendererId, renderer: ProjectileRenderer) =
+    override fun registerProjectileRenderer(id: String, renderer: ProjectileRenderer) =
         RenderRegistry.registerProjectileRenderer(api, id, renderer)
 
-    override fun registerPreFireRenderer(id: RendererId, renderer: PreFireRenderer) =
+    override fun registerPreFireRenderer(id: String, renderer: PreFireRenderer) =
         RenderRegistry.registerPreFireRenderer(api, id, renderer)
 
-    override fun registerPostFireRenderer(id: RendererId, renderer: PostFireRenderer) =
+    override fun registerPostFireRenderer(id: String, renderer: PostFireRenderer) =
         RenderRegistry.registerPostFireRenderer(api, id, renderer)
 
-    override fun registerEffectRenderer(id: RendererId, renderer: EffectRenderer) =
+    override fun registerEffectRenderer(id: String, renderer: EffectRenderer) =
         RenderRegistry.registerEffectRenderer(api, id, renderer)
 
-    override fun registerUnitRenderer(id: RendererId, renderer: UnitRenderer) =
+    override fun registerUnitRenderer(id: String, renderer: UnitRenderer) =
         RenderRegistry.registerUnitRenderer(api, id, renderer)
 
-    override fun registerTerrainOverlayRenderer(id: RendererId, renderer: TerrainOverlayRenderer) =
+    override fun registerTerrainOverlayRenderer(id: String, renderer: TerrainOverlayRenderer) =
         TerrainRegistry.registerOverlayRenderer(api, id, renderer)
 
     override fun registerTerrainShader(definition: TerrainShaderDefinition) =
@@ -710,12 +700,12 @@ private class MapApi(private val owner: ApiImpl) : ApiMap {
         TerrainRegistry.addOverlay(owner, map, x, y, binding)
     }
 
-    override fun removeOverlay(x: Int, y: Int, rendererId: RendererId) {
+    override fun removeOverlay(x: Int, y: Int, rendererId: String) {
         val map = GameEngine.getInstance()?.tileMap ?: return
         TerrainRegistry.removeOverlay(owner, map, x, y, rendererId)
     }
 
-    override fun overlayAt(x: Int, y: Int, rendererId: RendererId): TerrainOverlayBinding? {
+    override fun overlayAt(x: Int, y: Int, rendererId: String): TerrainOverlayBinding? {
         val map = GameEngine.getInstance()?.tileMap ?: return null
         if (x !in 0 until map.tileCountX || y !in 0 until map.tileCountY) return null
         return TerrainRegistry.overlayAt(owner, map, x, y, rendererId)
@@ -743,11 +733,11 @@ private class RecordingRule : Rule {
 }
 
 private class ModAudio(private val api: ApiImpl) : Audio {
-    override fun registerSound(id: String, file: ResourcePath, properties: Map<String, Any?>) {
+    override fun registerSound(id: String, file: String, properties: Map<String, Any?>) {
         AudioRegistry.registerSound(api, id, file, properties)
     }
 
-    override fun registerMusic(id: String, file: ResourcePath, properties: Map<String, Any?>) {}
+    override fun registerMusic(id: String, file: String, properties: Map<String, Any?>) {}
     override fun playSound(id: String, x: Float?, y: Float?, volume: Float) {
         AudioRegistry.playSound(api, id, x, y, volume)
     }
@@ -890,7 +880,7 @@ private class AiBehavior(
             for (unitId in action.unitIds) {
                 val state = unitWorld.state(
                     UnitRuntimeRef(unitId, definitionId = null, teamId = action.teamId)
-                ) ?: return "Unit not found: ${unitId.value}"
+                ) ?: return "Unit not found: $unitId"
                 if (state.typeId !in scope.unitTypeIds) {
                     return "Unit type not in control scope"
                 }
@@ -1112,11 +1102,11 @@ private class RecordingUi(private val api: ApiImpl) : Ui {
 
     override fun selectedUnits(): List<UnitRuntimeState> = api.selectedUnits()
 
-    override fun registerHud(id: HudId, order: Int, content: @Composable () -> Unit) {
+    override fun registerHud(id: String, order: Int, content: @Composable () -> Unit) {
         UiRegistry.registerHud(api, id, order, content)
     }
 
-    override fun unregisterHud(id: HudId) {
+    override fun unregisterHud(id: String) {
         UiRegistry.unregisterHud(api, id)
     }
 
@@ -1125,14 +1115,14 @@ private class RecordingUi(private val api: ApiImpl) : Ui {
     }
 
     override fun registerWindow(
-        id: ModWindowId,
+        id: String,
         title: LocalizedText,
         content: @Composable (ModWindowContext) -> Unit,
     ) {
         UiRegistry.registerWindow(api, id, title, content)
     }
 
-    override fun openWindow(id: ModWindowId) {
+    override fun openWindow(id: String) {
         UiRegistry.openWindow(id)
     }
 
@@ -1156,7 +1146,6 @@ private class RecordingUi(private val api: ApiImpl) : Ui {
 
 private fun Any?.toIniValue(): String = when (this) {
     null -> VariableScope.nullOrMissingString
-    is ResourcePath -> value
     is LocalizedText -> literal ?: key ?: VariableScope.nullOrMissingString
     is Cost -> toIniValue()
     is Boolean, is Number -> toString()
@@ -1165,5 +1154,5 @@ private fun Any?.toIniValue(): String = when (this) {
 }
 
 private fun Cost.toIniValue(): String = resources.entries.joinToString(",") { (key, value) ->
-    if (key.value == "credits") value.toInt().toString() else "${key.value}=$value"
+    if (key == Cost.CREDITS_ID) value.toInt().toString() else "${key}=$value"
 }

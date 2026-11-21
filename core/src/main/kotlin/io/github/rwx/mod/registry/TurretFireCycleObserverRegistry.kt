@@ -2,7 +2,10 @@ package io.github.rwx.mod.registry
 
 import com.corrodinggames.rts.game.units.custom.CustomUnit
 import com.corrodinggames.rts.game.units.custom.TurretConfig
-import io.github.rwx.mod.api.*
+import io.github.rwx.mod.api.TurretFireCycleContext
+import io.github.rwx.mod.api.TurretFireCycleInstanceId
+import io.github.rwx.mod.api.TurretFireCycleObserver
+import io.github.rwx.mod.api.TurretFireCyclePhase
 import io.github.rwx.mod.impl.ApiImpl
 
 /**
@@ -68,8 +71,8 @@ object TurretFireCycleObserverRegistry : OwnedRegistry {
     fun aimPointOf(sourceObjectId: Long, turretIndex: Int): AimPoint? =
         aimPoints[InstanceKey(sourceObjectId, turretIndex)]
 
-    fun register(owner: ApiImpl, id: TurretFireCycleObserverId, observer: TurretFireCycleObserver) {
-        observers.register(owner, id.value, observer)
+    fun register(owner: ApiImpl, id: String, observer: TurretFireCycleObserver) {
+        observers.register(owner, id, observer)
     }
 
     @JvmStatic
@@ -306,7 +309,7 @@ object TurretFireCycleObserverRegistry : OwnedRegistry {
                     remainingTicks = current.remaining,
                     previousRemainingTicks = previous?.remaining,
                     durationTicks = current.duration,
-                    variantId = RenderVariantId(current.variantId),
+                    variantId = current.variantId,
                 )
             )
         }

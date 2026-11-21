@@ -4,7 +4,7 @@ import io.github.rwx.mod.api.*
 
 internal class UnitApiImpl : Units {
     private val lock = Any()
-    private val unitDefinitions = linkedMapOf<UnitId, UnitDefinition>()
+    private val unitDefinitions = linkedMapOf<String, UnitDefinition>()
 
     override fun registerUnit(definition: UnitDefinition) {
         validate(definition)
@@ -17,12 +17,7 @@ internal class UnitApiImpl : Units {
     fun units(): List<UnitDefinition> = synchronized(lock) { unitDefinitions.values.toList() }
 
     private fun validate(definition: UnitDefinition) {
-        definition.extension.shaderId?.let { shaderId ->
-            require(shaderId.isNotBlank() && shaderId == shaderId.trim()) {
-                "Unit shaderId must be non-blank and trimmed: ${definition.id}"
-            }
-        }
-        val eventHandlerIds = hashSetOf<UnitEventBindingId>()
+        val eventHandlerIds = hashSetOf<String>()
         definition.eventHandlers.forEach { binding ->
             require(eventHandlerIds.add(binding.id)) {
                 "Duplicate event handler '${binding.id}' on unit ${definition.id}"
@@ -33,13 +28,8 @@ internal class UnitApiImpl : Units {
             require(binding.actions.size <= MAX_EVENT_ACTIONS) {
                 "Unit event handler cannot contain more than $MAX_EVENT_ACTIONS actions: ${definition.id}"
             }
-            binding.actions.forEach { action ->
-                when (action) {
-                    is UnitEventAction.SpawnEffect -> Unit
-                }
-            }
             require(binding.actions.isNotEmpty() || binding.listener != null) {
-                "Unit event handler must contain an action or listener: ${definition.id} (${binding.id.value})"
+                "Unit event handler must contain an action or listener: ${definition.id} (${binding.id})"
             }
             validate(binding.condition)
         }

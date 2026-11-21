@@ -1,5 +1,6 @@
 package io.github.rwx.mod.api.specs
 
+import io.github.rwx.mod.api.requireIniMutatorName
 
 /**
  * Properties for [projectile_NAME] section
@@ -411,9 +412,7 @@ data class ProjectileSpec(
     var mutators: MutableMap<String, ProjectileMutatorSpec>? = null,
 ) {
     fun mutator(name: String, configure: ProjectileMutatorSpec.() -> Unit) {
-        require(name.matches(Regex("[A-Za-z0-9.-]+"))) {
-            "Invalid projectile mutator name '$name': native mutator names cannot contain underscores"
-        }
+        requireIniMutatorName(name)
         val entries = mutators ?: linkedMapOf<String, ProjectileMutatorSpec>().also { mutators = it }
         entries.getOrPut(name, ::ProjectileMutatorSpec).configure()
     }

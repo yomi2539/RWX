@@ -35,13 +35,9 @@ class JvmModLoader @JvmOverloads constructor(
                 logger.error(e) { "Failed to load JVM mod from ${file.path}" }
             }
         }
-        pruneClassLoaderCache(candidates)
-        return resolveDependencies(currentBatch).filterIsInstance<JvmMod>()
-    }
-
-    private fun pruneClassLoaderCache(candidates: List<File>) {
         runCatching { platformBridge.cleanupModClassLoaderCache(candidates) }
             .onFailure { e -> logger.error(e) { "Failed to prune JVM mod classloader cache" } }
+        return resolveDependencies(currentBatch).filterIsInstance<JvmMod>()
     }
 
     private fun discoverModFile(jarFile: File): JvmMod? {
@@ -241,8 +237,7 @@ class JvmModLoader @JvmOverloads constructor(
                         name = table.getStringOrNull("name").orEmpty(),
                         author = table.getStringOrNull("author").orEmpty(),
                         version = table.getStringOrNull("version").orEmpty(),
-                        minGameVersionName = table.getStringOrNull("minGameVersion")
-                            ?: JvmModManifest.DEFAULT_MIN_GAME_VERSION_NAME,
+                        minGameVersionName = table.getStringOrNull("minGameVersion").orEmpty(),
                         description = table.getStringOrNull("description").orEmpty(),
                         thumbnail = table.getStringOrNull("thumbnail").orEmpty(),
                         dependencies = table.getArrayOrNull("dependencies")?.let { array ->

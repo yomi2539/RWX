@@ -62,7 +62,7 @@ enum class AiPlayerMode {
 
 data class AiControlScope(
     val teamIds: Set<Int> = emptySet(),
-    val unitIds: Set<UnitInstanceId> = emptySet(),
+    val unitIds: Set<Long> = emptySet(),
     val unitTypeIds: Set<String> = emptySet()
 )
 

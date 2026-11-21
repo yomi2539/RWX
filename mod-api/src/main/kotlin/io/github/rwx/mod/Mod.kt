@@ -25,18 +25,14 @@ interface ModManifest {
 data class JvmModManifest(
     override val id: String,
     override val name: String,
-    override val minGameVersionName: String = DEFAULT_MIN_GAME_VERSION_NAME,
+    override val minGameVersionName: String = "",
     override var description: String,
     val author: String = "",
     val version: String = "",
     val dependencies: List<String> = emptyList(),
     val priority: Int = 0,
     val thumbnail: String = ""
-) : ModManifest {
-    companion object {
-        const val DEFAULT_MIN_GAME_VERSION_NAME = "1.0.4"
-    }
-}
+) : ModManifest
 
 open class LegacyModManifest : ModManifest {
     override var id: String = ""

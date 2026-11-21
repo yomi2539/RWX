@@ -16,7 +16,7 @@ import java.util.*
 internal class UnitWorldImpl(
     private val backend: UnitWorldBackend = EngineUnitWorldBackend(),
 ) : UnitWorld {
-    fun activate(nativeUnits: Map<UnitId, CustomUnitConfig>) {
+    fun activate(nativeUnits: Map<String, CustomUnitConfig>) {
         (backend as? EngineUnitWorldBackend)?.activate(nativeUnits)
     }
 
@@ -37,7 +37,7 @@ internal class UnitWorldImpl(
                 val dy = state.position.y - center.y
                 dx * dx + dy * dy <= limit
             }
-            .sortedBy { it.ref.instanceId.value }
+            .sortedBy { it.ref.instanceId }
             .toList()
     }
 
@@ -63,16 +63,16 @@ internal interface UnitWorldBackend {
     fun states(includeDestroyed: Boolean): List<UnitRuntimeState>
     fun states(query: UnitQuery): List<UnitRuntimeState> = states(query.includeDestroyed)
     fun selectedStates(): List<UnitRuntimeState> = emptyList()
-    fun teleport(instanceId: UnitInstanceId, destination: WorldPosition): Boolean
+    fun teleport(instanceId: Long, destination: WorldPosition): Boolean
     fun spawn(request: UnitSpawnRequest): UnitRuntimeRef?
-    fun update(instanceId: UnitInstanceId, update: UnitRuntimeUpdate): Boolean
+    fun update(instanceId: Long, update: UnitRuntimeUpdate): Boolean
 }
 
 private class EngineUnitWorldBackend : UnitWorldBackend {
-    private val definitionIds = IdentityHashMap<CustomUnitConfig, UnitId>()
-    private val nativeUnits = linkedMapOf<UnitId, CustomUnitConfig>()
+    private val definitionIds = IdentityHashMap<CustomUnitConfig, String>()
+    private val nativeUnits = linkedMapOf<String, CustomUnitConfig>()
 
-    fun activate(nativeUnits: Map<UnitId, CustomUnitConfig>) {
+    fun activate(nativeUnits: Map<String, CustomUnitConfig>) {
         definitionIds.clear()
         this.nativeUnits.clear()
         this.nativeUnits.putAll(nativeUnits)
@@ -122,12 +122,12 @@ private class EngineUnitWorldBackend : UnitWorldBackend {
         }
     }
 
-    override fun teleport(instanceId: UnitInstanceId, destination: WorldPosition): Boolean {
+    override fun teleport(instanceId: Long, destination: WorldPosition): Boolean {
         val liveUnits = BaseUnit.bE
         val units = liveUnits.a()
         for (index in 0 until liveUnits.size) {
             val unit = units[index] ?: continue
-            if (unit.objectId != instanceId.value || unit.isDestroyed) continue
+            if (unit.objectId != instanceId || unit.isDestroyed) continue
             unit.posZ = destination.height
             unit.f(destination.x, destination.y)
             return true
@@ -154,13 +154,13 @@ private class EngineUnitWorldBackend : UnitWorldBackend {
         }
         PlayerTeam.c(unit)
         return UnitRuntimeRef(
-            instanceId = UnitInstanceId(unit.objectId),
+            instanceId = unit.objectId,
             definitionId = request.unitId,
             teamId = request.teamId,
         )
     }
 
-    override fun update(instanceId: UnitInstanceId, update: UnitRuntimeUpdate): Boolean {
+    override fun update(instanceId: Long, update: UnitRuntimeUpdate): Boolean {
         val unit = findLiveUnit(instanceId) ?: return false
         update.health?.let { unit.currentHealth = it.coerceAtMost(unit.maxHealth) }
         update.constructionProgress?.let { progress ->
@@ -170,12 +170,12 @@ private class EngineUnitWorldBackend : UnitWorldBackend {
         return true
     }
 
-    private fun findLiveUnit(instanceId: UnitInstanceId): BaseUnit? {
+    private fun findLiveUnit(instanceId: Long): BaseUnit? {
         val liveUnits = BaseUnit.bE
         val units = liveUnits.a()
         for (index in 0 until liveUnits.size) {
             val unit = units[index] ?: continue
-            if (unit.objectId == instanceId.value && !unit.isDestroyed) return unit
+            if (unit.objectId == instanceId && !unit.isDestroyed) return unit
         }
         return null
     }
@@ -187,7 +187,7 @@ private class EngineUnitWorldBackend : UnitWorldBackend {
         val availableActions = orderableUnit?.toAvailableActions().orEmpty()
         return UnitRuntimeState(
             ref = UnitRuntimeRef(
-                instanceId = UnitInstanceId(objectId),
+                instanceId = objectId,
                 definitionId = definitionId,
                 teamId = team?.teamId ?: -1,
             ),
@@ -210,16 +210,16 @@ private class EngineUnitWorldBackend : UnitWorldBackend {
             isBuilding = unitType.isBuildingUnit(),
             isBuilder = availableActions.any(UnitAvailableAction::unitTypeIsBuilding),
             isFactory = availableActions.any { it.unitTypeId != null && !it.unitTypeIsBuilding },
-            currentTargetId = attackTargetUnit?.let { UnitInstanceId(it.objectId) },
+            currentTargetId = attackTargetUnit?.objectId,
             tags = getTags()?.a
-                ?.mapNotNull { nativeTag -> runCatching { Tag(nativeTag.toString()) }.getOrNull() }
+                ?.map { nativeTag -> nativeTag.toString() }
                 ?.toSet()
                 .orEmpty(),
             availableActions = availableActions,
         )
     }
 
-    private fun BaseUnit.modDefinitionId(): UnitId? =
+    private fun BaseUnit.modDefinitionId(): String? =
         (this as? CustomUnit)?.let { definitionIds[it.unitConfig] }
 
     private fun OrderableUnit.toAvailableActions(): List<UnitAvailableAction> =

@@ -74,23 +74,15 @@ class UnitIniBuilder internal constructor() {
     fun template(name: String, configure: TemplateSpec.() -> Unit) =
         section(named("template", name), ::TemplateSpec, configure)
 
-    /**
-     * Emits an INI section with verbatim native keys, bypassing typed-spec encoding. Values must be
-     * flat basic types, enums, [ResourcePath] or iterables of those (the compiler serializes them
-     * directly to INI values). Repeated calls with the same [name] accumulate entries, matching
-     * typed-DSL merge semantics. Used for `copyFrom` delta sections the typed specs cannot express,
-     * such as `@copyFrom_skipThisSection` markers or `canAttack` overrides on
-     * `@field:RequiredIniKey` fields.
-     */
     fun rawSection(name: String, values: kotlin.collections.Map<String, Any?>) {
-        require(name.matches(Regex("[A-Za-z0-9_.-]+"))) { "Invalid native INI section name: $name" }
+        requireIniSectionName(name)
         rawSections.getOrPut(name) { linkedMapOf() }.putAll(values)
     }
 
     internal fun build(): List<IniSpecSection> {
         val merged = linkedMapOf<String, IniSpecSection>()
         sections.forEach { (name, spec) ->
-            IniSpecCodec.encode(spec, includeRequiredDefaults = true)
+            IniSpecCodec.encode(spec, includeRequiredDefaults = true, sectionName = name)
                 .takeIf { it.values.isNotEmpty() }
                 ?.let { merged[name] = IniSpecSection(name, it) }
         }
@@ -108,14 +100,16 @@ class UnitIniBuilder internal constructor() {
         spec.configure()
     }
 
-    private fun named(prefix: String, name: String): String {
-        require(name.matches(Regex("[A-Za-z0-9_.-]+"))) { "Invalid native INI section name: $name" }
-        return "${prefix}_$name"
-    }
+    private fun named(prefix: String, name: String): String =
+        "${prefix}_${requireIniSectionName(name)}"
 }
 
 internal object IniSpecCodec {
-    fun encode(spec: Any, includeRequiredDefaults: Boolean = false): IniSpecValues {
+    fun encode(
+        spec: Any,
+        includeRequiredDefaults: Boolean = false,
+        sectionName: String? = null,
+    ): IniSpecValues {
         val type = spec.javaClass
         val defaults = type.getDeclaredConstructor().newInstance()
         val keys = GeneratedIniSpecKeys.byClass[type.simpleName].orEmpty()
@@ -148,7 +142,7 @@ internal object IniSpecCodec {
                 values[key] = value
             }
         }
-        val warnings = values.keys.mapNotNull(::legacyKeyWarning).distinct()
+        val warnings = values.keys.mapNotNull { legacyKeyWarning(sectionName, it) }.distinct()
         return IniSpecValues(values, warnings)
     }
 
@@ -168,12 +162,13 @@ internal object IniSpecCodec {
         }
     }
 
-    private fun legacyKeyWarning(key: String): String? {
+    private fun legacyKeyWarning(sectionName: String?, key: String): String? {
         val normalized = key.lowercase()
         return when {
             "memory" in normalized ->
                 "Native key '$key' uses legacy untyped memory; prefer synchronized typed extension state"
-
+            sectionName == "core" && normalized == "name" ->
+                "Native key 'name' in [core] is overwritten by the unit id; set the unit id instead"
             else -> null
         }
     }

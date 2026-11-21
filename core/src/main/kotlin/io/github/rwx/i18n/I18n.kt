@@ -1,6 +1,6 @@
 package io.github.rwx.i18n
 
-import java.util.Locale
+import java.util.*
 
 // Auto-generated file - Do not modify
 object I18n {
@@ -150,22 +150,6 @@ object I18n {
                 translations = linkedMapOf(
                     "en" to "Remove AI",
                     "zh-CN" to "移除AI",
-                ),
-            )
-
-            val setTeamsFailed = entry(
-                key = "battleroom.admin.setTeamsFailed",
-                translations = linkedMapOf(
-                    "en" to "Unable to set teams: {0}",
-                    "zh-CN" to "无法设置队伍：{0}",
-                ),
-            )
-
-            val setTeamsRequires = entry(
-                key = "battleroom.admin.setTeamsRequires",
-                translations = linkedMapOf(
-                    "en" to "Set Teams requires a hosted RW room",
-                    "zh-CN" to "设置队伍需要已创建的RW房间",
                 ),
             )
 
@@ -2513,14 +2497,6 @@ object I18n {
             translations = linkedMapOf(
                 "en" to "Unable to load resources: {0}",
                 "zh-CN" to "无法加载资源：{0}",
-            ),
-        )
-
-        val loadMore = entry(
-            key = "resourcebrowser.loadMore",
-            translations = linkedMapOf(
-                "en" to "Load More",
-                "zh-CN" to "加载更多",
             ),
         )
 
